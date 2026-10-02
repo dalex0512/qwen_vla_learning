@@ -182,6 +182,33 @@ details.ex > div > p:first-child { margin-top: 12px; }
 
 footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: var(--step--1); }
 </style>
+<style>
+.notation td:first-child { font-family: var(--f-mono); font-size: 1rem; white-space: nowrap; }
+.calc { font-family: var(--f-mono); font-size: 0.86rem; background: var(--code-bg); border-radius: 8px; padding: 10px 14px; margin: 10px 0 14px; overflow-x: auto; max-width: 78ch; white-space: pre; line-height: 1.75; }
+.mtx { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.mtx table { min-width: 0; }
+.mtx td, .mtx th { text-align: center; padding: 6px 10px; font-variant-numeric: tabular-nums; }
+.mtx tr.pick { cursor: pointer; }
+.mtx tr.pick:hover td { background: var(--accent-soft); }
+.mtx tr.sel td { background: var(--accent-soft); font-weight: 700; }
+.mtx .op { font: 700 1.3rem var(--f-mono); color: var(--muted); }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { font: 600 0.85rem var(--f-body); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); cursor: pointer; }
+.btn:hover { background: var(--accent-soft); }
+.two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 640px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.steps4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 14px 0 18px; max-width: 900px; }
+.steps4 div { border: 1px solid var(--rule); background: var(--surface); border-radius: 10px; padding: 12px 14px; }
+.steps4 b { display: block; font-family: var(--f-mono); color: var(--accent); font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px; }
+.say { font-style: italic; color: var(--ink); border-left: 3px solid var(--accent); padding-left: 12px; margin: 10px 0 14px; max-width: 70ch; }
+.small-tbl table { min-width: 0; }
+details.more { max-width: 78ch; margin: 12px 0 16px; border: 1px dashed var(--rule); border-radius: 10px; padding: 0 14px; }
+details.more > summary { cursor: pointer; padding: 10px 0; font-weight: 600; color: var(--muted); }
+details.more[open] > summary { color: var(--ink); }
+.recap { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin: 18px 0 8px; max-width: 70ch; }
+.recap .lab { font-family: var(--f-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 600; display: block; margin-bottom: 2px; }
+.recap p:last-child { margin-bottom: 0; }
+</style>
 
 <div class="shell">
   <nav class="toc" aria-label="Mục lục">
@@ -190,26 +217,28 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule);
     <details id="tocd" open>
       <summary>Mục lục</summary>
       <ol>
-        <li><a href="#mo-dau"><span class="n">0.0</span>Mở đầu</a></li>
+        <li><a href="#mo-dau"><span class="n">0.1</span>Trước khi bắt đầu</a></li>
+        <li><a href="#doc-cong-thuc"><span class="n">0.2</span>Cách đọc công thức</a></li>
+        <li><a href="#ky-hieu"><span class="n">0.3</span>Bảng ký hiệu</a></li>
         <li class="grp">A · Toán</li>
-        <li><a href="#dstt"><span class="n">A1</span>Vector, ma trận, tensor</a></li>
-        <li><a href="#xacsuat"><span class="n">A2</span>Xác suất</a></li>
-        <li><a href="#giaitich"><span class="n">A3</span>Đạo hàm, gradient</a></li>
+        <li><a href="#dstt"><span class="n">A1</span>Vector và ma trận</a></li>
+        <li><a href="#giaitich"><span class="n">A2</span>Đạo hàm, gradient</a></li>
+        <li><a href="#xacsuat"><span class="n">A3</span>Xác suất</a></li>
         <li><a href="#ode"><span class="n">A4</span>ODE và Euler</a></li>
-        <li><a href="#quantile"><span class="n">A5</span>Percentile, chuẩn hóa</a></li>
+        <li><a href="#quantile"><span class="n">A5</span>Chuẩn hóa</a></li>
         <li class="grp">B · Lập trình</li>
-        <li><a href="#tensor"><span class="n">B1</span>Tensor, broadcasting</a></li>
+        <li><a href="#tensor"><span class="n">B1</span>Tensor</a></li>
         <li><a href="#autograd"><span class="n">B2</span>Autograd</a></li>
         <li><a href="#module"><span class="n">B3</span>nn.Module</a></li>
         <li><a href="#vonglap"><span class="n">B4</span>Vòng lặp training</a></li>
-        <li><a href="#mask"><span class="n">B5</span>Mask và loss có che</a></li>
+        <li><a href="#mask"><span class="n">B5</span>Mask và công thức (1)</a></li>
         <li class="grp">C · Deep Learning</li>
-        <li><a href="#loss"><span class="n">C1</span>MSE, cross-entropy</a></li>
-        <li><a href="#optim"><span class="n">C2</span>SGD → AdamW</a></li>
-        <li><a href="#lr"><span class="n">C3</span>Learning rate schedule</a></li>
+        <li><a href="#loss"><span class="n">C1</span>Hàm loss</a></li>
+        <li><a href="#optim"><span class="n">C2</span>Optimizer</a></li>
+        <li><a href="#lr"><span class="n">C3</span>Learning rate</a></li>
         <li><a href="#clip"><span class="n">C4</span>Gradient clipping</a></li>
         <li><a href="#overfit"><span class="n">C5</span>Overfitting, ablation</a></li>
-        <li><a href="#pretrain"><span class="n">C6</span>Pretrain, freeze, forgetting</a></li>
+        <li><a href="#pretrain"><span class="n">C6</span>Pretrain, freeze</a></li>
         <li class="grp">Tổng kết</li>
         <li><a href="#paper"><span class="n">D</span>Đọc lại công thức (1)–(5)</a></li>
         <li><a href="#baitap"><span class="n">E</span>Bài tập</a></li>
@@ -223,34 +252,69 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule);
   </nav>
 
   <main>
-    <header class="hero" id="mo-dau">
+    <header class="hero">
       <span class="eyebrow">Roadmap VLA · Giai đoạn 0 / 9</span>
       <h1>Nền tảng toán, PyTorch và Deep Learning</h1>
-      <p class="lede">Mọi công thức trong paper Qwen-VLA đều được viết bằng một bộ "ngôn ngữ chung": tensor, xác suất, gradient, ODE và vòng lặp huấn luyện. Học xong trang này, bạn đọc được công thức (1)–(5) của paper và tự viết lại chúng bằng PyTorch.</p>
+      <p class="lede">Trang này viết cho người chưa biết gì. Mỗi khái niệm đi chậm theo cùng một thứ tự: hình dung bằng ví dụ đời thường, tự tay thử, rồi mới đến ký hiệu toán, và cuối cùng là nó dùng vào đâu trong robot. Học xong, bạn đọc được công thức (1)–(5) của paper Qwen-VLA.</p>
     </header>
 
-    <section class="lesson">
-      <h3><span class="n">0.0</span>Cách học trang này</h3>
-      <p>Mỗi bài có cùng một cấu trúc: <strong>trực giác</strong> trước, rồi <strong>định nghĩa và công thức</strong>, <strong>ví dụ có số</strong>, <strong>code chạy được</strong>, và cuối cùng là <strong>chỗ nó xuất hiện trong paper</strong>. Toàn bộ code trên trang đã được chạy thử với PyTorch 2.x.</p>
-      <p>Với mỗi công thức, mục tiêu là trả lời được ba câu hỏi. Bạn không cần chứng minh.</p>
+    <section class="lesson" id="mo-dau">
+      <h3><span class="n">0.1</span>Trước khi bắt đầu</h3>
+      <p>Bạn <strong>không cần</strong> nhớ kiến thức toán phổ thông để đọc trang này. Mọi thứ cần thiết đều được giải thích lại từ đầu bằng ví dụ quen thuộc như bảng điểm, vặn núm radio, thời gian đi học, ly cà phê nguội.</p>
+      <p>Mỗi bài có cấu trúc giống nhau, bạn sẽ quen dần:</p>
+      <div class="steps4">
+        <div><b>Hình dung</b>Một tình huống đời thường có cùng ý tưởng.</div>
+        <div><b>Thử tay</b>Kéo thanh trượt, bấm nút, xem con số thay đổi.</div>
+        <div><b>Ký hiệu</b>Chỉ đến bước này mới viết công thức, và đọc nó thành câu tiếng Việt.</div>
+        <div><b>Trong robot</b>Ý tưởng này nằm ở đâu trong Qwen-VLA.</div>
+      </div>
+      <p>Cuối mỗi bài có ô <strong>Tóm lại</strong> màu xanh. Ô màu cam <strong>Trong paper</strong> nối kiến thức với paper. Phần đánh dấu "Đọc thêm" là tùy chọn, có thể bỏ qua ở lần đọc đầu.</p>
+      <p>Cách học gợi ý: mỗi ngày một hoặc hai bài, làm đủ phần "thử tay", và tự nói lại ô "Tóm lại" bằng lời của mình trước khi sang bài kế.</p>
+    </section>
+
+    <section class="lesson" id="doc-cong-thuc">
+      <h3><span class="n">0.2</span>Cách đọc một công thức mà không sợ</h3>
+      <p>Công thức toán là <strong>một câu văn được viết tắt</strong>. Nó trông khó vì ta nhìn thấy phần viết tắt trước khi biết câu văn đầy đủ. Với mọi công thức trên trang này và trong paper, hãy đi qua 4 bước:</p>
       <ol class="plain">
-        <li>Mỗi ký hiệu là gì, và <strong>shape</strong> của nó ra sao?</li>
-        <li>Công thức này làm gì, nói bằng một câu đời thường?</li>
-        <li>Viết nó ra PyTorch thì khoảng mấy dòng?</li>
+        <li><strong>Dịch ký hiệu:</strong> tra từng ký hiệu trong bảng ở mục 0.3, viết nghĩa cạnh nó.</li>
+        <li><strong>Nói thành câu:</strong> đọc to công thức như một câu tiếng Việt bình thường.</li>
+        <li><strong>Thay số nhỏ:</strong> chọn 2–3 con số dễ, tự tính ra kết quả.</li>
+        <li><strong>Hỏi "để làm gì":</strong> công thức này giúp mô hình hoặc robot làm được gì?</li>
       </ol>
-      <p>Bảng dưới cho thấy mỗi bài phục vụ phần nào của paper. Các ô màu cam trên trang (nhãn <em>Trong paper</em>) là chỗ nối kiến thức với paper.</p>
-      <div class="tbl"><table>
-        <thead><tr><th>Bài</th><th>Kiến thức</th><th>Dùng ở đâu trong paper</th></tr></thead>
+      <p>Thử ngay với công thức <strong>trung bình cộng</strong>, thứ bạn đã biết từ tiểu học:</p>
+      <div class="math">\[ \bar{x} = \frac{1}{N}\sum_{i=1}^{N} x_i \]</div>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(\bar{x}\) là "trung bình"; \(N\) là số phần tử; \(\sum_{i=1}^{N}\) nghĩa là "cộng lần lượt từ phần tử thứ 1 đến phần tử thứ N"; \(x_i\) là "phần tử thứ i".</li>
+        <li><strong>Nói thành câu:</strong> "Trung bình bằng tổng tất cả các phần tử, chia cho số phần tử."</li>
+        <li><strong>Thay số:</strong> ba bài kiểm tra được 7, 8, 9 điểm. \(N=3\), tổng là 24, trung bình là \(24/3=8\).</li>
+        <li><strong>Để làm gì:</strong> khi huấn luyện, "loss của cả nhóm dữ liệu" chính là trung bình loss của từng mẫu.</li>
+      </ol>
+      <p>Vậy là bạn vừa đọc được một công thức có ký hiệu \(\sum\). Mọi công thức trong paper Qwen-VLA đều đọc được theo đúng cách này, kể cả công thức (1) trông đáng sợ nhất (bài B5).</p>
+    </section>
+
+    <section class="lesson" id="ky-hieu">
+      <h3><span class="n">0.3</span>Bảng đọc ký hiệu</h3>
+      <p>Toàn bộ ký hiệu xuất hiện ở công thức (1)–(5) của paper. Không cần học thuộc: mở bảng này mỗi khi gặp ký hiệu lạ.</p>
+      <div class="tbl notation"><table>
+        <thead><tr><th>Ký hiệu</th><th>Đọc là</th><th>Nghĩa</th><th>Ví dụ</th></tr></thead>
         <tbody>
-          <tr><td>A1, B1</td><td>Tensor và shape</td><td>§2.4: tensor hành động <code>Y ∈ R^(H×K)</code>, zero-padding</td></tr>
-          <tr><td>A2, C1</td><td>Gaussian, log-likelihood, cross-entropy</td><td>§2.5: nhiễu <code>N(0, I)</code>, loss chữ (3); §4.2: log-prob cho PPO</td></tr>
-          <tr><td>A3, B2</td><td>Gradient, autograd, stop-gradient</td><td>Toàn bộ huấn luyện; §4.2: value head với stop-gradient</td></tr>
-          <tr><td>A4</td><td>ODE, phương pháp Euler</td><td>§2.2, §2.5: "vài bước Euler" sinh hành động</td></tr>
-          <tr><td>A5</td><td>Percentile, chuẩn hóa</td><td>§3.2.1: công thức (5)</td></tr>
-          <tr><td>B5</td><td>Mask, trung bình có che</td><td>§2.5: công thức (1) và (2)</td></tr>
-          <tr><td>C2–C4</td><td>AdamW, cosine LR, clipping</td><td>§4: "cosine-decayed learning rates", "gradient clipping"</td></tr>
-          <tr><td>C5</td><td>Overfitting, ablation</td><td>§5.2: toàn bộ ablation; T2A 40k bước bị overfit</td></tr>
-          <tr><td>C6</td><td>Freeze, fine-tune, forgetting</td><td>§3.1: T2A đóng băng VLM; trọng số loss 0.1 / 1.0 ở §4.1</td></tr>
+          <tr><td>\(x_i\)</td><td>x thứ i</td><td>Phần tử ở vị trí i của dãy x</td><td>x = (7, 8, 9) thì \(x_2 = 8\)</td></tr>
+          <tr><td>\(M_{h,k}\)</td><td>M hàng h, cột k</td><td>Ô ở hàng h, cột k của bảng M</td><td>Bước thời gian h, kênh k</td></tr>
+          <tr><td>\(\sum_{i=1}^{N}\)</td><td>tổng, i từ 1 đến N</td><td>Cộng lần lượt tất cả phần tử</td><td>\(\sum_{i=1}^{3} i = 1+2+3 = 6\)</td></tr>
+          <tr><td>\(\in\)</td><td>thuộc</td><td>Là một phần tử của tập</td><td>\(\tau\in[0,1]\): τ là số từ 0 đến 1</td></tr>
+          <tr><td>\(\mathbb{R}^{H\times K}\)</td><td>R mũ H nhân K</td><td>Bảng số có H hàng, K cột</td><td>\(\mathbb{R}^{16\times 7}\): bảng 16 × 7</td></tr>
+          <tr><td>\(\{0,1\}^{H\times K}\)</td><td>tập 0, 1 mũ H nhân K</td><td>Bảng H × K chỉ chứa số 0 hoặc 1</td><td>Mask (bài B5)</td></tr>
+          <tr><td>\(\sim\)</td><td>được lấy ngẫu nhiên từ</td><td>Một giá trị ngẫu nhiên theo phân phối nào đó</td><td>\(Y_1\sim\mathcal{N}(0,I)\): nhiễu ngẫu nhiên</td></tr>
+          <tr><td>\(\mathcal{N}(\mu,\sigma^2)\)</td><td>phân phối chuẩn</td><td>Ngẫu nhiên quanh tâm μ, độ trải σ</td><td>Bài A3</td></tr>
+          <tr><td>\(\mathbb{E}[\cdot]\)</td><td>kỳ vọng của</td><td>Trung bình nếu lặp lại rất nhiều lần</td><td>Bài A3</td></tr>
+          <tr><td>\(p(y\mid x)\)</td><td>xác suất y khi biết x</td><td>Khả năng xảy ra y nếu đã có x</td><td>Hành động khi biết ảnh, câu lệnh</td></tr>
+          <tr><td>\(\theta\)</td><td>theta</td><td>Toàn bộ tham số của mô hình ("các núm vặn")</td><td>\(v_\theta\): mạng v với tham số θ</td></tr>
+          <tr><td>\(\frac{dy}{dx}\)</td><td>đạo hàm y theo x</td><td>y thay đổi nhanh cỡ nào khi x tăng một chút</td><td>Bài A2</td></tr>
+          <tr><td>\(\nabla_\theta L\)</td><td>gradient của L theo θ</td><td>Đạo hàm của L theo từng tham số, gom lại</td><td>Bài A2</td></tr>
+          <tr><td>\(\lVert a\rVert_2^2\)</td><td>bình phương độ dài a</td><td>Tổng bình phương các thành phần</td><td>\(\lVert(3,4)\rVert_2^2 = 9+16 = 25\)</td></tr>
+          <tr><td>\(\log\), \(\exp\)</td><td>log, e mũ</td><td>Hai phép ngược nhau; log biến nhân thành cộng</td><td>\(\log(a\cdot b) = \log a + \log b\)</td></tr>
+          <tr><td>\(\leftarrow\)</td><td>gán bằng</td><td>Cập nhật giá trị, như <code>x = ...</code> trong code</td><td>\(w \leftarrow w - 0.1\)</td></tr>
+          <tr><td>\(\approx\)</td><td>xấp xỉ</td><td>Gần bằng</td><td>\(\pi\approx3.14\)</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -259,74 +323,202 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule);
     <div class="part">
       <span class="eyebrow">Phần A</span>
       <h2>Toán</h2>
-      <p class="intro">Năm mảng toán, mỗi mảng chỉ học đúng phần paper dùng tới.</p>
+      <p class="intro">Năm mảng toán, mỗi mảng chỉ học đúng phần paper dùng tới. Đi theo thứ tự: bài sau dùng ý của bài trước.</p>
     </div>
 
     <section class="lesson" id="dstt">
-      <h3><span class="n">A1</span>Vector, ma trận và tensor</h3>
-      <h4><span class="tag">Trực giác</span>Mọi thứ đều là một mảng số có hình dạng</h4>
-      <p>Mạng nơ-ron không làm việc với "ảnh", "câu" hay "hành động robot". Nó chỉ thấy các mảng số. Một ảnh là mảng 3 chiều (kênh màu × cao × rộng). Một chuỗi hành động robot là mảng 2 chiều (số bước × số chiều điều khiển). Một batch gồm nhiều mẫu thì thêm một chiều nữa ở đầu.</p>
+      <h3><span class="n">A1</span>Vector và ma trận: chỉ là bảng số</h3>
+      <h4><span class="tag">Hình dung</span>Bảng điểm của lớp</h4>
+      <p>Bạn đã dùng ma trận từ lâu mà không gọi tên nó: <strong>bảng điểm</strong>. Mỗi <strong>hàng</strong> là một học sinh, mỗi <strong>cột</strong> là một môn.</p>
       <ul>
-        <li><strong>Scalar</strong> (0 chiều): một số, ví dụ giá trị loss.</li>
-        <li><strong>Vector</strong> (1 chiều): ví dụ một hành động 7 số (Δx, Δy, Δz, 3 góc xoay, độ mở kẹp).</li>
-        <li><strong>Ma trận</strong> (2 chiều): ví dụ 16 hành động liên tiếp, mỗi hành động 7 số, là ma trận 16 × 7.</li>
-        <li><strong>Tensor</strong> (n chiều): tên chung. Một batch 32 chuỗi như trên là tensor shape <code>[32, 16, 7]</code>.</li>
+        <li>Một dãy số, ví dụ điểm của An (8, 7, 9), gọi là <strong>vector</strong>.</li>
+        <li>Cả bảng gọi là <strong>ma trận</strong>.</li>
+        <li><strong>Shape</strong> (kích thước) chỉ là "số hàng × số cột". Bảng 3 học sinh × 3 môn có shape 3 × 3.</li>
       </ul>
-
-      <h4><span class="tag">Định nghĩa</span>Phép nhân ma trận và quy tắc shape</h4>
-      <p>Tích của ma trận \(A\) cỡ \(m\times n\) và \(B\) cỡ \(n\times p\) là ma trận \(C\) cỡ \(m\times p\), với mỗi phần tử là tích vô hướng của một hàng của \(A\) và một cột của \(B\):</p>
-      <div class="math">\[ C_{ij} = \sum_{k=1}^{n} A_{ik}\,B_{kj}, \qquad (m\times n)\cdot(n\times p) = (m\times p) \]</div>
-      <p>Quy tắc cần nhớ: <strong>chiều trong phải bằng nhau</strong> (\(n\)), kết quả lấy <strong>hai chiều ngoài</strong>. Với tensor nhiều chiều, PyTorch nhân theo hai chiều cuối và giữ nguyên các chiều phía trước (chiều batch).</p>
-      <p><strong>Tích vô hướng</strong> \(a\cdot b=\sum_k a_k b_k\) đo mức "cùng hướng" của hai vector. Đây là phép tính cốt lõi của attention ở Giai đoạn 1: điểm \(QK^\top\) chính là một bảng tích vô hướng.</p>
-
-      <h4><span class="tag">Ví dụ</span>Lớp Linear là một phép nhân ma trận</h4>
-      <p>Một lớp tuyến tính biến vector \(x\in\mathbb{R}^{n}\) thành \(y = xW + b\) với \(W\in\mathbb{R}^{n\times p}\). Trong paper, các <em>action projection MLP</em> làm đúng việc này: đưa hành động 7 chiều lên không gian ẩn của DiT. Batch hành động <code>[32, 16, 7]</code> nhân với <code>W</code> shape <code>[7, 256]</code> cho ra <code>[32, 16, 256]</code>.</p>
-
+      <h4><span class="tag">Thử tay</span>Tính điểm tổng kết có hệ số</h4>
+      <p>Trường tính điểm tổng kết với Toán hệ số 0.5, Lý 0.3, Anh 0.2. Với mỗi học sinh: nhân từng điểm với hệ số, rồi cộng lại. <strong>Việc này chính là phép nhân ma trận.</strong> Bấm vào tên từng học sinh để xem phép tính:</p>
+      <div class="lab-box">
+        <div class="head"><span class="title">Bảng điểm × hệ số = điểm tổng kết</span><span class="kind">Bấm vào một hàng</span></div>
+        <div class="mtx" style="overflow-x:auto">
+          <table id="grades">
+            <thead><tr><th></th><th>Toán</th><th>Lý</th><th>Anh</th></tr></thead>
+            <tbody>
+              <tr class="pick" data-i="0"><th>An</th><td>8</td><td>7</td><td>9</td></tr>
+              <tr class="pick" data-i="1"><th>Bình</th><td>6</td><td>9</td><td>7</td></tr>
+              <tr class="pick" data-i="2"><th>Chi</th><td>9</td><td>8</td><td>6</td></tr>
+            </tbody>
+          </table>
+          <span class="op">×</span>
+          <table><thead><tr><th>Hệ số</th></tr></thead><tbody><tr><td>0.5</td></tr><tr><td>0.3</td></tr><tr><td>0.2</td></tr></tbody></table>
+          <span class="op">=</span>
+          <table id="totals"><thead><tr><th>Tổng kết</th></tr></thead><tbody><tr><td>7.9</td></tr><tr><td>7.1</td></tr><tr><td>8.1</td></tr></tbody></table>
+        </div>
+        <div class="calc" id="mmCalc">Bấm vào tên một học sinh.</div>
+        <div class="readout">Shape: (3 × 3) × (3 × 1) = (3 × 1).</div>
+      </div>
+      <p>Để ý quy tắc shape: bảng điểm có <strong>3 cột (3 môn)</strong>, bảng hệ số có <strong>3 hàng (3 hệ số)</strong>. Hai số này phải bằng nhau, vì không ai tính được điểm tổng kết khi có 3 môn mà chỉ có 2 hệ số. Sau khi nhân, con số chung đó "biến mất", còn lại 3 học sinh × 1 điểm.</p>
+      <h4><span class="tag">Mở rộng</span>Nhiều bộ hệ số cùng lúc</h4>
+      <p>Bây giờ tưởng tượng có 256 bộ hệ số khác nhau thay vì một bộ, tức bảng hệ số 3 × 256. Mỗi học sinh sẽ có 256 "điểm tổng kết", mỗi điểm nhìn học sinh theo một góc độ khác. Một <strong>lớp Linear</strong> trong mạng nơ-ron làm đúng việc đó. Điều quan trọng nhất: <strong>các hệ số chính là thứ mô hình tự học</strong>, không ai đặt sẵn.</p>
+      <h4><span class="tag">Ký hiệu</span>Viết gọn bằng toán</h4>
+      <p>Phép nhân ma trận \(A\) (\(m\) hàng, \(n\) cột) với \(B\) (\(n\) hàng, \(p\) cột) cho ra \(C\) có \(m\) hàng, \(p\) cột:</p>
+      <div class="math">\[ C_{ij} = \sum_{k=1}^{n} A_{ik}\,B_{kj} \]</div>
+      <p class="say">"Ô ở hàng i, cột j của kết quả bằng: lấy hàng i của A, lấy cột j của B, nhân từng cặp rồi cộng lại."</p>
+      <p>Đây đúng là phép tính điểm tổng kết ở trên: hàng i là một học sinh, cột j là một bộ hệ số. Phép "nhân từng cặp rồi cộng lại" còn có tên riêng là <strong>tích vô hướng</strong>; nó sẽ quay lại ở Giai đoạn 1 (attention).</p>
+      <p>Bạn có thể tự thử quy tắc shape với máy tính dưới đây (dấu <code>@</code> là phép nhân ma trận trong Python):</p>
       <div class="lab-box" id="labShape">
-        <div class="head"><span class="title">Máy tính shape cho phép nhân <code>A @ B</code></span><span class="kind">Thử nghiệm</span></div>
+        <div class="head"><span class="title">Máy tính shape cho <code>A @ B</code></span><span class="kind">Thử nghiệm</span></div>
         <div class="shape-row">
-          <label for="shA">A</label><input id="shA" value="32, 16, 7" aria-label="Shape của A">
+          <label for="shA">A</label><input id="shA" value="3, 3" aria-label="Shape của A">
           <span>@</span>
-          <label for="shB">B</label><input id="shB" value="7, 256" aria-label="Shape của B">
+          <label for="shB">B</label><input id="shB" value="3, 1" aria-label="Shape của B">
         </div>
         <div class="shape-res" id="shRes" aria-live="polite"></div>
-        <div class="readout">Thử: <code>16, 7</code> @ <code>16, 7</code> (lỗi), hoặc <code>8, 12, 64</code> @ <code>8, 64, 12</code> (giống attention).</div>
+        <div class="readout">Thử: <code>3, 3</code> @ <code>2, 1</code> (lỗi: 3 môn mà 2 hệ số), rồi <code>16, 7</code> @ <code>7, 256</code>.</div>
       </div>
-
+      <h4><span class="tag">Trong robot</span>Bảng hành động</h4>
+      <p>Thay "học sinh" bằng "thời điểm", thay "môn học" bằng "chiều điều khiển". Robot WidowX ở mỗi thời điểm cần 7 số: dịch theo x, y, z, ba góc xoay, và độ mở kẹp. Mô hình dự đoán 16 thời điểm liên tiếp, nên kết quả là một bảng 16 hàng × 7 cột:</p>
+      <div class="tbl small-tbl"><table>
+        <thead><tr><th>Bước</th><th>Δx</th><th>Δy</th><th>Δz</th><th>xoay 1</th><th>xoay 2</th><th>xoay 3</th><th>kẹp</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="num">0.01</td><td class="num">0.00</td><td class="num">−0.02</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.1</td><td class="num">1</td></tr>
+          <tr><td>2</td><td class="num">0.01</td><td class="num">0.01</td><td class="num">−0.02</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.1</td><td class="num">1</td></tr>
+          <tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+          <tr><td>16</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0</td></tr>
+        </tbody>
+      </table></div>
+      <p class="readout" style="margin-top:-8px">Số liệu minh họa: tay đi xuống dần và đóng kẹp ở bước cuối.</p>
+      <p>Khi huấn luyện, ta đưa nhiều mẫu cùng lúc (gọi là một <strong>batch</strong>). 32 bảng như trên xếp chồng lên nhau tạo thành một khối 3 chiều có shape <code>[32, 16, 7]</code>. Khối nhiều chiều như vậy gọi chung là <strong>tensor</strong>.</p>
       <div class="paper"><span class="lab">Trong paper · §2.4</span>
-        <p>Mỗi mẫu đóng góp một tensor đích \(Y\in\mathbb{R}^{H\times K}\): \(H\) bước thời gian, \(K\) kênh dùng chung cho mọi robot. Robot WidowX chỉ dùng 7 kênh đầu, dữ liệu tay người dùng 32 kênh; phần còn lại được <strong>đệm số 0</strong> (zero-padding). Nhờ vậy, mọi robot có chung một shape và đi chung một batch. Bài B5 sẽ cho thấy cách "che" phần đệm khỏi loss.</p>
+        <p>Paper viết \(Y\in\mathbb{R}^{H\times K}\): mỗi mẫu là một bảng \(H\) hàng thời gian × \(K\) cột điều khiển. Robot khác nhau dùng số cột khác nhau (WidowX 7, dữ liệu tay người 32), nên paper cho mọi robot <strong>dùng chung một số cột \(K\)</strong> và điền số 0 vào các cột thừa (zero-padding). Bài B5 sẽ giải thích cách mô hình "bỏ qua" các ô số 0 đó.</p>
       </div>
-      <div class="trap"><span class="lab">Bẫy thường gặp</span>
-        <p>Lỗi phổ biến nhất trong code deep learning là sai shape. Khi đọc bất kỳ công thức nào, hãy viết shape cạnh từng ký hiệu trước khi làm gì khác.</p>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Ma trận là bảng số. Nhân ma trận là "nhân từng cặp rồi cộng", như tính điểm tổng kết. Hành động robot là một bảng 16 × 7; nhiều bảng xếp chồng thành tensor.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="giaitich">
+      <h3><span class="n">A2</span>Đạo hàm và gradient: mô hình "học" như thế nào</h3>
+      <h4><span class="tag">Hình dung</span>Vặn núm radio</h4>
+      <p>Bạn dò đài trên một chiếc radio cũ. Vặn núm sang phải một chút: nếu tiếng rè giảm, vặn tiếp sang phải; nếu tiếng rè tăng, vặn ngược lại. Bạn không cần hiểu mạch điện bên trong, chỉ cần biết <strong>vặn theo hướng nào thì tốt hơn</strong>.</p>
+      <p>Huấn luyện mô hình là đúng việc này, chỉ khác là có rất nhiều núm:</p>
+      <ul>
+        <li><strong>Núm vặn</strong> = tham số của mô hình (thường viết là \(w\), gộp tất cả lại thì viết là \(\theta\)).</li>
+        <li><strong>Tiếng rè</strong> = <strong>loss</strong>: một con số cho biết mô hình đang sai nhiều hay ít.</li>
+        <li><strong>"Vặn sang phải một chút thì tiếng rè tăng hay giảm, nhanh cỡ nào"</strong> = <strong>đạo hàm</strong>.</li>
+        <li><strong>Vặn một chút theo hướng làm tiếng rè giảm</strong> = một bước <strong>gradient descent</strong>.</li>
+      </ul>
+      <h4><span class="tag">Thử tay</span>Đoán giá thuê phòng từ diện tích</h4>
+      <p>Có 5 phòng trọ đã biết diện tích và giá thuê. Ta muốn một quy tắc đơn giản để đoán: <em>giá = w × diện tích</em>. Câu hỏi: núm \(w\) đặt bằng bao nhiêu thì đoán tốt nhất?</p>
+      <ol class="plain">
+        <li>Kéo thanh trượt \(w\): đường xanh xoay theo. Các đoạn đỏ là độ sai của từng phòng.</li>
+        <li>Nhìn hình bên phải: chấm xanh cho biết loss ở \(w\) hiện tại. Loss thấp nhất ở đáy đường cong.</li>
+        <li>Bấm <strong>"Đi 1 bước gradient"</strong> vài lần để máy tự vặn núm.</li>
+      </ol>
+      <div class="lab-box">
+        <div class="head"><span class="title">Tự dò tham số w và xem loss</span><span class="kind">Thử nghiệm</span></div>
+        <div class="two">
+          <canvas id="cvFit" aria-label="Các phòng trọ và đường dự đoán"></canvas>
+          <canvas id="cvLoss" aria-label="Đường loss theo w"></canvas>
+        </div>
+        <div class="controls">
+          <label for="wFit">w (triệu/m²) <input type="range" id="wFit" min="0.05" max="0.26" step="0.001" value="0.08"><output id="wFitO">0.080</output></label>
+          <div class="btnrow">
+            <button type="button" class="btn" id="gdStep">Đi 1 bước gradient</button>
+            <button type="button" class="btn" id="gdReset">Đặt lại</button>
+          </div>
+        </div>
+        <div class="calc" id="fitCalc"></div>
+      </div>
+      <p>Bạn sẽ thấy ba điều:</p>
+      <ol class="plain">
+        <li><strong>Loss</strong> ở đây là trung bình của bình phương các đoạn đỏ (gọi là MSE). Đường càng sát các chấm, loss càng nhỏ.</li>
+        <li><strong>Đạo hàm</strong> là độ dốc của đường loss tại chỗ bạn đang đứng. Đạo hàm âm nghĩa là tăng \(w\) thì loss giảm; dương thì ngược lại.</li>
+        <li>Mỗi bước, \(w\) đi <strong>ngược dấu đạo hàm</strong>. Bước nhỏ dần khi gần đáy, vì càng gần đáy dốc càng thoải.</li>
+      </ol>
+      <h4><span class="tag">Ký hiệu</span>Công thức gradient descent</h4>
+      <div class="math">\[ w \leftarrow w - \eta\cdot\frac{dL}{dw} \]</div>
+      <p class="say">"Giá trị mới của w bằng giá trị cũ, trừ đi một bước nhỏ η nhân với độ dốc của loss."</p>
+      <ul>
+        <li>\(\frac{dL}{dw}\): đạo hàm, độ dốc của loss theo \(w\).</li>
+        <li>\(\eta\) (đọc là "eta"): <strong>learning rate</strong>, quyết định mỗi bước dài bao nhiêu.</li>
+        <li>Dấu trừ: đi ngược hướng dốc lên, tức là đi xuống.</li>
+      </ul>
+      <p>Khi có nhiều núm, ta tính đạo hàm theo từng núm và gom lại thành một danh sách. Danh sách đó gọi là <strong>gradient</strong>, viết \(\nabla_\theta L\). Công thức giữ nguyên: \(\theta \leftarrow \theta - \eta\,\nabla_\theta L\).</p>
+      <h4><span class="tag">Thử thêm</span>Bước quá dài thì sao?</h4>
+      <p>Learning rate \(\eta\) rất quan trọng. Thí nghiệm dưới dùng một đường loss đơn giản hình chữ U. Kéo \(\eta\) và xem các bước đi:</p>
+      <div class="lab-box">
+        <div class="head"><span class="title">Gradient descent trên đường loss hình chữ U</span><span class="kind">Thử nghiệm</span></div>
+        <canvas id="cvGD" aria-label="Đường loss và các bước gradient descent"></canvas>
+        <div class="controls">
+          <label for="lrR">Learning rate η <input type="range" id="lrR" min="0.02" max="1.1" step="0.01" value="0.15"><output id="lrO">0.15</output></label>
+          <label for="w0R">Điểm bắt đầu <input type="range" id="w0R" min="-2" max="8" step="0.1" value="-1"><output id="w0O">-1.0</output></label>
+        </div>
+        <div class="readout" id="gdRead"></div>
+      </div>
+      <ul>
+        <li>η nhỏ (0.05): đi chắc chắn nhưng rất chậm.</li>
+        <li>η vừa (0.3–0.5): đến đáy nhanh.</li>
+        <li>η gần 1: nhảy qua nhảy lại hai bên đáy.</li>
+        <li>η lớn hơn 1: mỗi bước càng xa đáy hơn, tức <strong>phân kỳ</strong>. Khi huấn luyện thật, loss sẽ tăng vọt.</li>
+      </ul>
+      <h4><span class="tag">Chain rule</span>Hiệu ứng dây chuyền</h4>
+      <p>Mô hình thật có nhiều tầng nối tiếp: núm ở tầng 1 ảnh hưởng tầng 2, tầng 2 ảnh hưởng tầng 3, rồi mới tới loss. Muốn biết vặn núm tầng 1 thì loss đổi bao nhiêu, ta <strong>nhân các mức ảnh hưởng dọc theo dây chuyền</strong>.</p>
+      <p>Ví dụ đời thường: giá xăng tăng 1 đồng làm giá vận chuyển tăng 0.5 đồng; giá vận chuyển tăng 1 đồng làm giá rau tăng 0.2 đồng. Vậy giá xăng tăng 1 đồng làm giá rau tăng \(0.5\times0.2 = 0.1\) đồng. Đó là <strong>chain rule</strong>:</p>
+      <div class="math">\[ \frac{d\,\text{rau}}{d\,\text{xăng}} = \frac{d\,\text{rau}}{d\,\text{vận chuyển}}\cdot\frac{d\,\text{vận chuyển}}{d\,\text{xăng}} \]</div>
+      <p>Bạn không cần tự tính: PyTorch làm việc nhân dây chuyền này tự động khi gọi <code>loss.backward()</code> (bài B2). Quá trình đó có tên là <strong>backpropagation</strong>.</p>
+      <h4><span class="tag">Trong robot</span>Hàng tỉ núm cùng lúc</h4>
+      <p>Qwen-VLA có khoảng 5 tỉ tham số (4 tỉ của Qwen3.5 và 1,15 tỉ của DiT). Mỗi bước huấn luyện, PyTorch tính đạo hàm của loss theo từng tham số, rồi vặn tất cả cùng lúc một chút. Lặp lại rất nhiều lần trên dữ liệu robot, các núm dần được chỉnh để robot làm đúng.</p>
+      <div class="paper"><span class="lab">Trong paper · §4, §4.2</span>
+        <p>Paper dùng learning rate <strong>khác nhau</strong> cho từng phần mô hình. Ở giai đoạn RL, value head dùng \(10^{-4}\) nhưng policy chỉ dùng \(5\times10^{-6}\), nhỏ hơn khoảng 20 lần, để "cập nhật policy thận trọng". Giờ bạn hiểu lý do: bước nhỏ thì không làm hỏng thứ đã học tốt. Cách cài đặt ở bài C3.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Loss đo mô hình sai bao nhiêu. Đạo hàm cho biết vặn núm theo hướng nào thì loss giảm. Gradient descent lặp lại việc "vặn một chút theo hướng tốt", với độ dài bước là learning rate.</p>
       </div>
     </section>
 
     <section class="lesson" id="xacsuat">
-      <h3><span class="n">A2</span>Xác suất: Gaussian, kỳ vọng, log-likelihood</h3>
-      <h4><span class="tag">Trực giác</span>Mô hình không đưa ra một đáp án, mà một phân phối</h4>
-      <p>Khi người điều khiển robot cầm cái cốc, mỗi lần họ làm hơi khác nhau. Dữ liệu hành động vì thế là ngẫu nhiên. Cách nghĩ đúng là: với ảnh và câu lệnh \(x\), có một <strong>phân phối có điều kiện</strong> \(p(y\mid x)\) trên các hành động \(y\) hợp lý. Paper viết đúng như vậy ở §2.1: \(p_\theta(y_{t:t+H-1}\mid o_t, x, e, z)\).</p>
-
-      <h4><span class="tag">Định nghĩa</span>Phân phối Gaussian</h4>
-      <p>Gaussian (phân phối chuẩn) một chiều với trung bình \(\mu\) và phương sai \(\sigma^2\):</p>
-      <div class="math">\[ \mathcal{N}(y;\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\frac{(y-\mu)^2}{2\sigma^2}\right) \]</div>
-      <p>Ký hiệu \(\mathcal{N}(0, I)\) trong paper là Gaussian <strong>nhiều chiều</strong>: mỗi phần tử độc lập, trung bình 0, phương sai 1. Trong PyTorch đó đơn giản là <code>torch.randn(H, K)</code>.</p>
-
-      <h4><span class="tag">Định nghĩa</span>Kỳ vọng</h4>
-      <p>\(\mathbb{E}[f(y)]\) là giá trị trung bình của \(f(y)\) khi lấy mẫu \(y\) rất nhiều lần. Trong thực tế ta xấp xỉ bằng trung bình trên một batch. Khi paper viết \(\mathbb{E}_{\tau, Y_0, Y_1}[\ldots]\) ở công thức (2), nghĩa là: lấy ngẫu nhiên mức nhiễu \(\tau\), một mẫu dữ liệu \(Y_0\) và một mẫu nhiễu \(Y_1\), tính loss, rồi lấy trung bình trên batch.</p>
-
-      <h4><span class="tag">Định nghĩa</span>Likelihood và vì sao lấy log</h4>
-      <p><strong>Likelihood</strong> là xác suất mô hình gán cho dữ liệu thật. Với \(N\) mẫu độc lập, likelihood là tích \(\prod_i p_\theta(y_i\mid x_i)\). Ta luôn làm việc với <strong>log</strong> của nó vì ba lý do:</p>
-      <ul>
-        <li>Tích nhiều số nhỏ rất nhanh tràn về 0 trên máy tính; log biến tích thành tổng.</li>
-        <li>Tổng thì dễ lấy đạo hàm và dễ tính trung bình theo batch.</li>
-        <li>Log đơn điệu tăng, nên tối đa likelihood cũng là tối đa log-likelihood.</li>
-      </ul>
-      <p>Huấn luyện thường là <strong>tối thiểu negative log-likelihood</strong> (NLL). Một kết quả quan trọng: nếu giả sử \(p_\theta(y\mid x)\) là Gaussian với trung bình \(f_\theta(x)\) và phương sai cố định, thì</p>
-      <div class="math">\[ -\log \mathcal{N}(y; f_\theta(x), \sigma^2) = \frac{(y-f_\theta(x))^2}{2\sigma^2} + \text{hằng số} \]</div>
-      <p>Tức là <strong>tối thiểu MSE chính là tối đa likelihood dưới giả định Gaussian một đỉnh</strong>. Giả định "một đỉnh" này là điểm yếu, như thí nghiệm dưới đây cho thấy.</p>
-
+      <h3><span class="n">A3</span>Xác suất: làm việc với điều không chắc chắn</h3>
+      <h4><span class="tag">Hình dung</span>Thời gian đi học mỗi sáng</h4>
+      <p>Bạn đi học mất khoảng 20 phút, nhưng mỗi ngày một khác: hôm 18, hôm 23, hôm 20. Bạn không đoán chính xác được ngày mai mất bao lâu, nhưng bạn biết nó <strong>thường quanh 20 phút</strong> và <strong>hiếm khi dưới 14 hay trên 26</strong>. Mô tả "giá trị nào hay xảy ra, giá trị nào hiếm" đó gọi là một <strong>phân phối</strong>.</p>
+      <h4><span class="tag">Thử tay</span>Ghi lại nhiều buổi sáng</h4>
       <div class="lab-box">
-        <div class="head"><span class="title">Vì sao MSE thất bại khi có hai cách đúng</span><span class="kind">Thử nghiệm</span></div>
+        <div class="head"><span class="title">Ghi lại thời gian đi học</span><span class="kind">Thử nghiệm</span></div>
+        <canvas id="cvHist" aria-label="Biểu đồ tần suất thời gian đi học"></canvas>
+        <div class="controls">
+          <div class="btnrow">
+            <button type="button" class="btn" data-n="10">Thêm 10 ngày</button>
+            <button type="button" class="btn" data-n="100">Thêm 100 ngày</button>
+            <button type="button" class="btn" data-n="1000">Thêm 1000 ngày</button>
+            <button type="button" class="btn" id="hReset">Xóa</button>
+          </div>
+        </div>
+        <div class="readout" id="histRead"></div>
+      </div>
+      <ul>
+        <li>Mỗi cột cho biết có bao nhiêu ngày rơi vào khoảng thời gian đó.</li>
+        <li>Càng ghi nhiều ngày, hình càng giống một <strong>quả chuông</strong>. Hình quả chuông này có tên là <strong>phân phối chuẩn</strong>, hay <strong>Gaussian</strong>.</li>
+        <li>Con số trung bình ở dòng dưới tiến dần về 20. "Trung bình nếu ghi vô hạn ngày" gọi là <strong>kỳ vọng</strong>.</li>
+      </ul>
+      <h4><span class="tag">Ký hiệu</span>Viết gọn</h4>
+      <ul>
+        <li>\(\mathcal{N}(\mu, \sigma^2)\): quả chuông có tâm \(\mu\) (đọc "muy") và độ trải \(\sigma\) (đọc "xích-ma"). Ví dụ đi học: \(\mathcal{N}(20, 3^2)\).</li>
+        <li>\(\mathcal{N}(0, I)\) trong paper: quả chuông tâm 0, độ trải 1, áp riêng cho từng ô của một bảng. Trong code chỉ là <code>torch.randn(16, 7)</code>.</li>
+        <li>\(\mathbb{E}[\ldots]\): kỳ vọng, "trung bình nếu lặp lại rất nhiều lần". Khi huấn luyện, ta xấp xỉ nó bằng trung bình trên một batch.</li>
+        <li>\(p(y\mid x)\): xác suất của \(y\) khi đã biết \(x\). Ví dụ: xác suất đi học mất 25 phút <em>khi biết hôm nay trời mưa</em>.</li>
+      </ul>
+      <h4><span class="tag">Likelihood</span>Dự đoán nào giải thích dữ liệu tốt hơn?</h4>
+      <p>Bạn ghi lại 5 ngày: 18, 21, 20, 23, 19 phút. Hai người đoán: A nói "trung bình 20 phút", B nói "trung bình 25 phút". Ai đúng hơn?</p>
+      <p>Cách đo là xem dữ liệu thật "hợp lý" thế nào dưới dự đoán của mỗi người. Mức hợp lý đó gọi là <strong>likelihood</strong>. Với quả chuông, việc so sánh quy về việc đếm xem các ngày thật lệch khỏi dự đoán bao nhiêu:</p>
+      <div class="calc">A (tâm 20): độ lệch −2, 1, 0, 3, −1  → bình phương 4 + 1 + 0 + 9 + 1  = 15
+B (tâm 25): độ lệch −7, −4, −5, −2, −6 → bình phương 49 + 16 + 25 + 4 + 36 = 130</div>
+      <p>A lệch ít hơn nhiều, tức dữ liệu hợp lý hơn dưới dự đoán của A. Hãy để ý: so sánh likelihood ở đây quy về <strong>tổng bình phương độ lệch</strong>, chính là MSE ở bài A2. Đó là lý do MSE xuất hiện khắp nơi: dùng MSE nghĩa là ngầm giả định sai số có hình quả chuông.</p>
+      <h4><span class="tag">Log</span>Vì sao lúc nào cũng thấy log</h4>
+      <p>Likelihood của cả bộ dữ liệu là <em>tích</em> likelihood của từng mẫu. Nhân nhiều số nhỏ với nhau thì kết quả nhỏ dần đến mức máy tính làm tròn về 0. Ví dụ \(0.5^{10}\approx0.001\); với 1.000 mẫu, \(0.5^{1000}\) nhỏ đến mức máy không biểu diễn được.</p>
+      <p>Log biến phép nhân thành phép cộng: \(\log(0.5^{1000}) = 1000\times\log 0.5\approx-693\), một con số bình thường. Vì vậy paper luôn viết \(\log p\), và huấn luyện thường là làm cho \(-\log p\) nhỏ nhất (gọi là <strong>negative log-likelihood</strong>).</p>
+      <h4><span class="tag">Trong robot</span>Khi có hai cách làm đúng</h4>
+      <p>Đổi "thời gian đi học" thành "hướng tay robot tiến vào cái cốc". Nếu người điều khiển lúc thì tiếp cận từ trái, lúc thì từ phải, dữ liệu sẽ có <strong>hai quả chuông</strong>. Một mô hình chỉ đoán "trung bình" (dùng MSE) sẽ đưa tay vào chính giữa, nơi chưa ai từng làm. Thử kéo thanh trượt dưới đây:</p>
+      <div class="lab-box">
+        <div class="head"><span class="title">Vì sao "đoán trung bình" thất bại khi có hai cách đúng</span><span class="kind">Thử nghiệm</span></div>
         <canvas id="cvBimodal" aria-label="Biểu đồ phân phối hai đỉnh và dự đoán MSE"></canvas>
         <div class="controls">
           <label for="sepR">Khoảng cách hai cách cầm <input type="range" id="sepR" min="0" max="3" step="0.1" value="2"><output id="sepO">2.0</output></label>
@@ -334,101 +526,103 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule);
         </div>
         <div class="readout" id="bimodalRead"></div>
       </div>
-      <p>Trục ngang là "góc tiếp cận" khi cầm cốc. Dữ liệu có hai cụm: tiếp cận từ trái và từ phải. Mô hình MSE dự đoán <strong>trung bình</strong> (vạch đỏ), rơi đúng vào vùng hầu như không có dữ liệu. Khi hai cụm sát nhau, trung bình vẫn ổn; khi cách xa, nó vô nghĩa. Đây là lý do Giai đoạn 3 cần mô hình <strong>sinh</strong> (flow matching): mô hình học cả phân phối và lấy mẫu một trong hai cách.</p>
-
+      <p>Khi hai cách gần nhau, đoán trung bình vẫn tạm ổn. Khi chúng xa nhau, vạch đỏ rơi vào vùng trống. Đây là lý do các VLA hiện đại dùng <strong>mô hình sinh</strong> (Giai đoạn 3): mô hình học cả hình dạng phân phối, rồi chọn ngẫu nhiên <em>một</em> trong các cách đúng.</p>
       <div class="paper"><span class="lab">Trong paper · §2.5, §4.2</span>
-        <p>Nhiễu \(Y_1\sim\mathcal{N}(0,I)\) là điểm xuất phát của quá trình sinh hành động. Ở phần RL, paper biến mỗi bước khử nhiễu thành một Gaussian để <strong>tính được log-probability</strong> \(\log\pi_\theta(a_t\mid s_t)\), thứ mà PPO cần.</p>
+        <p>Nhiễu \(Y_1\sim\mathcal{N}(0,I)\) là điểm xuất phát khi sinh hành động. Ở phần RL, paper cần tính \(\log\pi_\theta(a\mid s)\), tức log-xác suất của hành động, để chạy thuật toán PPO.</p>
       </div>
-    </section>
-
-    <section class="lesson" id="giaitich">
-      <h3><span class="n">A3</span>Đạo hàm, gradient và gradient descent</h3>
-      <h4><span class="tag">Trực giác</span>Đi xuống dốc trong sương mù</h4>
-      <p>Hãy tưởng tượng loss là độ cao của một vùng đồi, còn tham số mô hình là vị trí của bạn. Bạn không nhìn thấy cả vùng đồi, chỉ cảm nhận được độ dốc dưới chân. <strong>Gradient</strong> chỉ hướng dốc lên nhanh nhất; đi ngược hướng đó một bước nhỏ thì loss giảm.</p>
-
-      <h4><span class="tag">Định nghĩa</span>Gradient và quy tắc cập nhật</h4>
-      <p>Với loss \(L(\theta)\) phụ thuộc vào vector tham số \(\theta\), gradient là vector các đạo hàm riêng \(\nabla_\theta L = (\partial L/\partial\theta_1,\ldots,\partial L/\partial\theta_n)\). Gradient descent cập nhật:</p>
-      <div class="math">\[ \theta \leftarrow \theta - \eta\,\nabla_\theta L(\theta) \]</div>
-      <p>trong đó \(\eta\) là <strong>learning rate</strong>. Gradient có cùng shape với tham số: mỗi tham số có một đạo hàm riêng của nó.</p>
-
-      <h4><span class="tag">Định nghĩa</span>Chain rule: cách gradient đi ngược qua mạng</h4>
-      <p>Mạng nơ-ron là chuỗi hàm lồng nhau. Nếu \(L = f(g(w))\), đặt \(u=g(w)\):</p>
-      <div class="math">\[ \frac{dL}{dw} = \frac{dL}{du}\cdot\frac{du}{dw} \]</div>
-      <p>Ví dụ: \(y=(3w+1)^2\). Đặt \(u=3w+1\), ta có \(dy/du = 2u\), \(du/dw=3\), nên \(dy/dw = 6(3w+1)\). Tại \(w=2\): \(dy/dw = 42\). <strong>Backpropagation</strong> chỉ là áp dụng chain rule từ loss ngược về từng tham số, và PyTorch làm việc này tự động (bài B2).</p>
-
-      <div class="lab-box">
-        <div class="head"><span class="title">Gradient descent trên \(L(w) = (w-3)^2 + 1\)</span><span class="kind">Thử nghiệm</span></div>
-        <canvas id="cvGD" aria-label="Đường loss và các bước gradient descent"></canvas>
-        <div class="controls">
-          <label for="lrR">Learning rate η <input type="range" id="lrR" min="0.02" max="1.1" step="0.01" value="0.15"><output id="lrO">0.15</output></label>
-          <label for="w0R">Điểm bắt đầu w₀ <input type="range" id="w0R" min="-2" max="8" step="0.1" value="-1"><output id="w0O">-1.0</output></label>
-        </div>
-        <div class="readout" id="gdRead"></div>
-      </div>
-      <p>Thử kéo η: nhỏ (0.05) thì đi rất chậm; vừa (0.3–0.5) thì hội tụ nhanh; gần 1 thì dao động qua lại; lớn hơn 1 thì <strong>phân kỳ</strong>. Lý do: ở đây \(dL/dw = 2(w-3)\), nên sau mỗi bước, khoảng cách tới đáy nhân với \((1-2\eta)\). Khi \(|1-2\eta|>1\), tức \(\eta>1\), khoảng cách tăng dần. Mạng thật cũng có hiện tượng này, chỉ là nhiều chiều hơn.</p>
-      <div class="paper"><span class="lab">Trong paper · §4, §4.2</span>
-        <p>Paper dùng learning rate <strong>khác nhau</strong> cho backbone và action decoder, và ở RL dùng \(10^{-4}\) cho value head nhưng chỉ \(5\times10^{-6}\) cho policy (khoảng 20 lần nhỏ hơn) để "cập nhật policy thận trọng". Bạn sẽ hiểu cách cài đặt điều này ở bài C3.</p>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Phân phối mô tả giá trị nào hay xảy ra. Gaussian là hình quả chuông; kỳ vọng là trung bình dài hạn. MSE tương đương giả định một quả chuông, nên thất bại khi dữ liệu có nhiều cách đúng. Log dùng để biến tích thành tổng cho máy tính được.</p>
       </div>
     </section>
 
     <section class="lesson" id="ode">
-      <h3><span class="n">A4</span>Phương trình vi phân (ODE) và phương pháp Euler</h3>
-      <h4><span class="tag">Trực giác</span>Biết vận tốc ở mọi nơi, tìm đường đi</h4>
-      <p>Giả sử bạn đứng trên một dòng sông và biết vận tốc nước ở mọi điểm. Thả một chiếc lá xuống, nó sẽ trôi theo đường nào? Đó là bài toán ODE. Cách đơn giản nhất để tính: nhìn vận tốc tại chỗ, đi một bước nhỏ theo hướng đó, rồi lặp lại. Đó là <strong>phương pháp Euler</strong>.</p>
-
-      <h4><span class="tag">Định nghĩa</span>ODE và bước Euler</h4>
-      <p>Một ODE mô tả tốc độ thay đổi của trạng thái \(x\) theo thời gian \(\tau\): \(\dfrac{dx}{d\tau} = v(x,\tau)\). Bước Euler với cỡ bước \(\Delta\):</p>
-      <div class="math">\[ x_{\tau+\Delta} \approx x_\tau + \Delta\cdot v(x_\tau, \tau) \]</div>
-      <p>Bước càng nhỏ thì càng chính xác nhưng càng tốn nhiều lần tính \(v\). Ví dụ \(dx/d\tau=-x\), \(x_0 = 1\), cần \(x\) tại \(\tau=1\). Đáp án chính xác là \(e^{-1}\approx0.368\). Euler 2 bước (\(\Delta=0.5\)): \(1\to 1-0.5\cdot1=0.5\to0.5-0.5\cdot0.5=0.25\). Sai số khá lớn vì đường cong.</p>
-
+      <h3><span class="n">A4</span>ODE và phương pháp Euler: đi từng bước theo chỉ dẫn</h3>
+      <h4><span class="tag">Hình dung</span>Ly cà phê nguội dần</h4>
+      <p>Ly cà phê 90°C đặt trong phòng 30°C. Quy luật: <strong>mỗi phút, nó nguội đi 10% phần chênh lệch với nhiệt độ phòng</strong>.</p>
+      <ul>
+        <li>Lúc mới pha, chênh 60°C, nên nguội nhanh: 6°C mỗi phút.</li>
+        <li>Khi đã còn ấm, chênh 10°C, nên nguội chậm: 1°C mỗi phút.</li>
+      </ul>
+      <p>Đặc điểm quan trọng: <strong>tốc độ thay đổi phụ thuộc vào trạng thái hiện tại</strong>. Mô tả kiểu này gọi là <strong>phương trình vi phân</strong>, viết tắt ODE.</p>
+      <h4><span class="tag">Thử tay</span>Tính nhiệt độ từng bước</h4>
+      <p>Muốn biết sau 20 phút cà phê còn bao nhiêu độ, cách đơn giản nhất là: nhìn tốc độ nguội hiện tại, <em>giả sử</em> nó giữ nguyên trong một khoảng ngắn, tính nhiệt độ sau khoảng đó, rồi lặp lại. Cách này gọi là <strong>phương pháp Euler</strong>.</p>
+      <div class="lab-box">
+        <div class="head"><span class="title">Tính nhiệt độ ly cà phê bằng Euler</span><span class="kind">Thử nghiệm</span></div>
+        <canvas id="cvCool" aria-label="Nhiệt độ thật và nhiệt độ tính bằng Euler theo thời gian"></canvas>
+        <div class="controls">
+          <label for="dtR">Mỗi bước dài (phút) <input type="range" id="dtR" min="0" max="3" step="1" value="2"><output id="dtO">5</output></label>
+        </div>
+        <div class="calc" id="coolCalc"></div>
+      </div>
+      <p>Nét đứt là nhiệt độ thật, nét liền là kết quả tính từng bước. Bước ngắn (1 phút) thì bám sát; bước dài (10 phút) thì sai hẳn, vì "giả sử tốc độ không đổi" chỉ đúng trong khoảng ngắn khi đường đi bị <strong>cong</strong>.</p>
+      <h4><span class="tag">Ký hiệu</span>Viết gọn</h4>
+      <div class="math">\[ \frac{dT}{dt} = -0.1\,(T - 30) \qquad\qquad T_{\text{mới}} = T_{\text{cũ}} + \Delta t\cdot\frac{dT}{dt} \]</div>
+      <p class="say">"Tốc độ thay đổi nhiệt độ bằng âm 0.1 nhân phần chênh so với 30 độ. Nhiệt độ mới bằng nhiệt độ cũ cộng độ dài bước nhân tốc độ hiện tại."</p>
+      <p>Viết tổng quát cho trạng thái \(x\) bất kỳ và "quy luật tốc độ" \(v\): \(x_{\text{mới}} = x_{\text{cũ}} + \Delta\cdot v(x_{\text{cũ}})\).</p>
+      <h4><span class="tag">Ý then chốt</span>Đường thẳng thì một bước là đủ</h4>
+      <p>Nếu tốc độ <strong>không đổi</strong> suốt quãng đường, tức đường đi là <strong>đường thẳng</strong>, thì "giả sử tốc độ không đổi" đúng tuyệt đối, và một bước dài cũng đến đúng đích. Thử chuyển qua lại hai chế độ:</p>
       <div class="lab-box">
         <div class="head"><span class="title">Euler trên đường cong và trên đường thẳng</span><span class="kind">Thử nghiệm</span></div>
         <canvas id="cvEuler" aria-label="So sánh quỹ đạo thật và quỹ đạo Euler"></canvas>
         <div class="controls">
-          <div class="seg" role="group" aria-label="Loại trường vận tốc">
-            <button type="button" id="evCurve" aria-pressed="true">Trường xoay (cong)</button>
-            <button type="button" id="evLine" aria-pressed="false">Đường thẳng (flow matching)</button>
+          <div class="seg" role="group" aria-label="Loại đường đi">
+            <button type="button" id="evCurve" aria-pressed="true">Đường cong</button>
+            <button type="button" id="evLine" aria-pressed="false">Đường thẳng</button>
           </div>
-          <label for="nR">Số bước Euler <input type="range" id="nR" min="1" max="20" step="1" value="3"><output id="nO">3</output></label>
+          <label for="nR">Số bước <input type="range" id="nR" min="1" max="20" step="1" value="3"><output id="nO">3</output></label>
         </div>
         <div class="readout" id="eulerRead"></div>
       </div>
-      <p>Với trường xoay, quỹ đạo thật là cung tròn; Euler ít bước "văng" ra ngoài. Với đường thẳng (vận tốc không đổi dọc đường đi), <strong>chỉ một bước Euler đã đến đúng đích</strong>. Đây là trực giác quan trọng nhất của bài này.</p>
+      <h4><span class="tag">Trong robot</span>Biến nhiễu thành hành động</h4>
+      <p>Trong Qwen-VLA, mạng DiT đóng vai trò "quy luật tốc độ": nhìn vào một bảng hành động còn lộn xộn (nhiễu), nó cho biết nên dịch chuyển theo hướng nào để gọn hơn. Bắt đầu từ nhiễu ngẫu nhiên, đi vài bước Euler theo chỉ dẫn đó, ta thu được bảng hành động 16 × 7.</p>
+      <p>Phương pháp <strong>flow matching</strong> (Giai đoạn 3) cố tình huấn luyện để đường đi từ nhiễu đến hành động gần như <strong>thẳng</strong>. Nhờ vậy chỉ cần vài bước, đủ nhanh để robot phản ứng theo thời gian thực.</p>
       <div class="paper"><span class="lab">Trong paper · §2.2, §2.5</span>
-        <p>Flow matching nối hành động sạch \(Y_0\) với nhiễu \(Y_1\) bằng <strong>đường thẳng</strong> \(Y_\tau=(1-\tau)Y_0+\tau Y_1\). Đạo hàm theo \(\tau\) là \(dY_\tau/d\tau = Y_1-Y_0\), chính là vận tốc mà DiT học dự đoán. Khi chạy, mô hình đi từ \(\tau=1\) (nhiễu) về \(\tau=0\) (hành động): \(Y\leftarrow Y-\Delta\cdot v_\theta\). Vì đường đi gần thẳng nên chỉ cần "a few Euler integration steps", nhờ đó điều khiển được thời gian thực.</p>
+        <p>Paper viết: hành động được sinh ra "via a few Euler integration steps", nhờ đó điều khiển được với độ trễ thấp. Quãng đường là từ \(\tau=1\) (nhiễu thuần) về \(\tau=0\) (hành động sạch).</p>
       </div>
       <div class="code"><pre><code>def euler(x0, v, t0, t1, n):
     x, dt, t = x0, (t1 - t0) / n, t0
     for _ in range(n):
-        x = x + dt * v(x, t)     # một bước Euler
+        x = x + dt * v(x, t)     # một bước: vị trí mới = cũ + bước × tốc độ
         t += dt
     return x
 
-euler(1.0, lambda x, t: -x, 0, 1, 2)   # 0.25, so với e^-1 = 0.368</code></pre></div>
+# Ly cà phê: tốc độ = -0.1 * (T - 30), từ phút 0 đến phút 20, chia 4 bước
+euler(90, lambda T, t: -0.1 * (T - 30), 0, 20, 4)   # 33.75 (thật: 38.12)</code></pre></div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>ODE mô tả "tốc độ thay đổi phụ thuộc trạng thái hiện tại". Euler giải nó bằng cách đi từng bước nhỏ theo tốc độ hiện tại. Đường càng thẳng thì càng cần ít bước, và đó là lý do flow matching chạy nhanh.</p>
+      </div>
     </section>
 
     <section class="lesson" id="quantile">
-      <h3><span class="n">A5</span>Percentile và chuẩn hóa dữ liệu</h3>
-      <h4><span class="tag">Trực giác</span>Đưa mọi robot về cùng một thước đo</h4>
-      <p>Robot A ra lệnh dịch chuyển cỡ vài milimét (0.001–0.01 m), robot B ra lệnh góc khớp cỡ vài radian. Nếu đưa nguyên số thô vào mạng, chiều có số lớn sẽ chiếm trọn gradient. <strong>Chuẩn hóa</strong> đưa mọi chiều về cùng một khoảng, thường là \([-1, 1]\).</p>
-      <h4><span class="tag">Định nghĩa</span>Percentile (quantile)</h4>
-      <p>Percentile thứ \(p\) là giá trị mà \(p\%\) dữ liệu nằm dưới nó. Percentile 1 và 99 bỏ qua 1% giá trị cực đoan ở mỗi đầu, nên bền với dữ liệu lỗi hơn min/max.</p>
-      <h4><span class="tag">Công thức (5) của paper</span>Chuẩn hóa theo quantile</h4>
-      <div class="math">\[ \tilde a_d = 2\cdot\frac{a_d - q^k_{01}}{q^k_{99}-q^k_{01}} - 1, \quad \text{rồi cắt về } [-1,1] \]</div>
-      <p>Đọc theo từng phần: phân số đưa \(a_d\) về khoảng \([0,1]\) (giá trị bằng \(q_{01}\) thành 0, bằng \(q_{99}\) thành 1), nhân 2 trừ 1 đưa về \([-1,1]\). Chỉ số \(k\) cho biết thống kê được tính <strong>riêng cho từng dataset</strong>, chỉ số \(d\) là <strong>riêng cho từng chiều</strong> hành động.</p>
-      <p>Ví dụ: \(q_{01}=-0.8\), \(q_{99}=1.2\). Với \(a=0.2\): \(2\cdot(1.0/2.0)-1=0\). Với \(a=1.5\) (giá trị cực đoan): \(2\cdot(2.3/2.0)-1=1.3\), cắt về 1.</p>
+      <h3><span class="n">A5</span>Chuẩn hóa: đưa mọi thứ về cùng một thước đo</h3>
+      <h4><span class="tag">Hình dung</span>Điểm thang 10 và thang 100</h4>
+      <p>Trường A chấm thang 10, trường B chấm thang 100. Muốn so sánh hai học sinh, ta đổi về cùng một thang. Điểm 7/10 đổi sang thang 0–1 là \(7/10 = 0.7\); điểm 70/100 cũng thành \(0.7\). Công thức tổng quát:</p>
+      <p class="say">"(giá trị − mức thấp nhất) chia cho (mức cao nhất − mức thấp nhất)" cho ra một số từ 0 đến 1.</p>
+      <h4><span class="tag">Vấn đề</span>Một giá trị lỗi làm hỏng cả thang</h4>
+      <p>Nếu một lần đo bị ghi nhầm thành 999, dùng "giá trị lớn nhất" làm mức cao sẽ khiến mọi giá trị khác co lại gần 0. Cách khắc phục: dùng <strong>percentile</strong>. Percentile 99 là giá trị mà 99% dữ liệu nằm dưới nó; percentile 1 là giá trị mà chỉ 1% dữ liệu nằm dưới. Dùng hai mốc này giống như bỏ qua 1% học sinh có điểm bất thường nhất ở mỗi đầu khi đặt thang.</p>
+      <h4><span class="tag">Ký hiệu</span>Công thức (5) của paper, đọc theo 4 bước</h4>
+      <div class="math">\[ \tilde a_d = 2\cdot\frac{a_d - q^k_{01}}{q^k_{99}-q^k_{01}} - 1 \]</div>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(a_d\) là một giá trị hành động ở chiều \(d\) (ví dụ Δx); \(q_{01}\), \(q_{99}\) là percentile 1 và 99 của chiều đó, tính riêng cho từng bộ dữ liệu \(k\); \(\tilde a_d\) là giá trị sau khi chuẩn hóa.</li>
+        <li><strong>Nói thành câu:</strong> "Đưa giá trị về thang 0–1 theo percentile 1 và 99, rồi nhân 2 trừ 1 để thành thang −1 đến 1." Sau đó, giá trị nào vượt ra ngoài thì cắt về −1 hoặc 1.</li>
+        <li><strong>Thay số:</strong> \(q_{01}=-0.8\), \(q_{99}=1.2\), \(a=0.2\). Phân số: \((0.2+0.8)/(1.2+0.8)=1.0/2.0=0.5\). Nhân 2 trừ 1: \(0\), nằm đúng giữa thang. Với \(a=1.5\) (bất thường): \(2\times(2.3/2.0)-1=1.3\), cắt về \(1\).</li>
+        <li><strong>Để làm gì:</strong> robot A ra lệnh tính bằng mét (cỡ 0.01), robot B tính bằng radian (cỡ 1). Nếu để nguyên, chiều có số lớn sẽ lấn át khi học. Sau chuẩn hóa, mọi chiều của mọi robot đều nằm trong \([-1, 1]\).</li>
+      </ol>
       <div class="code"><pre><code>import numpy as np
 
 def quantile_normalize(a, q01, q99):
-    a_n = 2 * (a - q01) / (q99 - q01) - 1
-    return np.clip(a_n, -1.0, 1.0)
+    a_n = 2 * (a - q01) / (q99 - q01) - 1      # công thức (5)
+    return np.clip(a_n, -1.0, 1.0)             # cắt phần vượt ra ngoài [-1, 1]
 
-# actions: [N, D], thống kê tính riêng cho từng chiều (axis=0)
+# actions: bảng [số mẫu, số chiều]; tính percentile riêng cho từng chiều (axis=0)
 q01 = np.percentile(actions, 1, axis=0)
 q99 = np.percentile(actions, 99, axis=0)
 actions_n = quantile_normalize(actions, q01, q99)</code></pre></div>
       <div class="trap"><span class="lab">Bẫy thường gặp</span>
-        <p>Lúc chạy thật, mô hình xuất ra giá trị trong \([-1,1]\). Phải <strong>đảo ngược</strong> công thức với đúng \(q_{01}, q_{99}\) của robot đó trước khi gửi lệnh cho robot. Lưu thống kê chuẩn hóa cùng checkpoint.</p>
+        <p>Mô hình xuất ra số trong \([-1, 1]\). Trước khi gửi lệnh cho robot thật, phải <strong>đổi ngược</strong> về đơn vị gốc bằng đúng \(q_{01}, q_{99}\) của robot đó. Vì vậy các thống kê này phải được lưu cùng mô hình.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Chuẩn hóa đưa dữ liệu của mọi robot về cùng thang −1 đến 1. Dùng percentile 1 và 99 thay cho min và max để không bị vài giá trị lỗi làm hỏng thang.</p>
       </div>
     </section>
 
@@ -436,198 +630,245 @@ actions_n = quantile_normalize(actions, q01, q99)</code></pre></div>
     <div class="part">
       <span class="eyebrow">Phần B</span>
       <h2>Lập trình với PyTorch</h2>
-      <p class="intro">Năm bài, đi từ tensor đến một vòng huấn luyện hoàn chỉnh và loss có mask giống hệt paper.</p>
+      <p class="intro">PyTorch là thư viện Python để làm việc với tensor và tự tính đạo hàm. Phần này biến các ý toán ở trên thành code chạy được. Mọi đoạn code đều đã được chạy thử.</p>
     </div>
 
     <section class="lesson" id="tensor">
-      <h3><span class="n">B1</span>Tensor, indexing và broadcasting</h3>
-      <p>Tensor PyTorch giống mảng NumPy nhưng chạy được trên GPU và tự tính gradient. Ba thao tác bạn sẽ dùng liên tục:</p>
+      <h3><span class="n">B1</span>Tensor: bảng số nhiều tầng</h3>
+      <h4><span class="tag">Hình dung</span>Quyển sách</h4>
+      <p>Một tensor 3 chiều giống một quyển sách: chọn trang, chọn dòng, chọn chữ. Tensor hành động <code>[32, 16, 7]</code> nghĩa là 32 "trang" (32 mẫu), mỗi trang 16 dòng (16 bước), mỗi dòng 7 số (7 chiều điều khiển).</p>
+      <h4><span class="tag">Code</span>Những thao tác dùng hằng ngày</h4>
       <div class="code"><pre><code>import torch
 
-A = torch.randn(32, 16, 7)       # batch 32, 16 bước, 7 chiều hành động
+A = torch.randn(32, 16, 7)       # tạo tensor ngẫu nhiên: 32 mẫu, 16 bước, 7 chiều
 A.shape                          # torch.Size([32, 16, 7])
-A[:, 0, :]                       # bước đầu tiên của mọi mẫu: [32, 7]
-A[..., :3]                       # chỉ lấy (dx, dy, dz): [32, 16, 3]
+
+A[0]                             # trang đầu tiên (mẫu 0): [16, 7]
+A[:, 0, :]                       # dòng đầu của MỌI trang (bước 0 của mọi mẫu): [32, 7]
+A[..., :3]                       # chỉ lấy 3 cột đầu (dx, dy, dz): [32, 16, 3]
 
 W = torch.randn(7, 256)
-(A @ W).shape                    # [32, 16, 256]: nhân theo chiều cuối
+(A @ W).shape                    # nhân ma trận theo chiều cuối: [32, 16, 256]
 
-A.mean(dim=1).shape              # trung bình theo thời gian: [32, 7]
-A.reshape(32, -1).shape          # gộp hai chiều cuối: [32, 112]</code></pre></div>
-      <h4><span class="tag">Định nghĩa</span>Broadcasting</h4>
-      <p>Khi hai tensor khác shape được cộng hoặc nhân, PyTorch so shape <strong>từ phải sang trái</strong>. Hai chiều tương thích nếu bằng nhau hoặc một trong hai bằng 1 (hoặc không tồn tại). Chiều bằng 1 được "kéo giãn" cho khớp.</p>
+A.mean(dim=1).shape              # trung bình theo chiều bước: [32, 7]</code></pre></div>
+      <p>Cách đọc dấu <code>:</code> trong ngoặc vuông: "lấy hết theo chiều này". Còn <code>...</code> nghĩa là "mọi chiều phía trước".</p>
+      <h4><span class="tag">Broadcasting</span>Cộng điểm thưởng cho cả lớp</h4>
+      <p>Giả sử thầy cộng thêm điểm thưởng cho từng môn: Toán +0.5, Lý +0, Anh +0.2. Bạn không cần viết lại bảng thưởng cho từng học sinh; chỉ cần một dòng thưởng, và nó tự "nhân bản" cho mọi học sinh. PyTorch làm điều này tự động, gọi là <strong>broadcasting</strong>.</p>
+      <div class="code"><pre><code>diem = torch.tensor([[8., 7., 9.],
+                     [6., 9., 7.],
+                     [9., 8., 6.]])     # [3 học sinh, 3 môn]
+thuong = torch.tensor([0.5, 0., 0.2])  # [3 môn]
+diem + thuong                          # dòng thưởng tự áp cho cả 3 học sinh</code></pre></div>
+      <p>Quy tắc: PyTorch so shape hai tensor <strong>từ phải sang trái</strong>. Mỗi cặp chiều phải bằng nhau, hoặc một bên bằng 1 (khi đó nó được nhân bản).</p>
       <div class="tbl"><table>
         <thead><tr><th>Tensor 1</th><th>Tensor 2</th><th>Kết quả</th><th>Giải thích</th></tr></thead>
         <tbody>
-          <tr><td><code>[32, 16, 7]</code></td><td><code>[7]</code></td><td><code>[32, 16, 7]</code></td><td>Nhân mỗi chiều hành động với một hệ số</td></tr>
+          <tr><td><code>[32, 16, 7]</code></td><td><code>[7]</code></td><td><code>[32, 16, 7]</code></td><td>Một dòng 7 số áp cho mọi bước, mọi mẫu</td></tr>
           <tr><td><code>[32, 16, 7]</code></td><td><code>[32, 7]</code></td><td>Lỗi</td><td>So từ phải: 7 = 7, rồi 16 ≠ 32</td></tr>
-          <tr><td><code>[32, 16, 7]</code></td><td><code>[32, 1, 7]</code></td><td><code>[32, 16, 7]</code></td><td>Sửa bằng <code>b.unsqueeze(1)</code></td></tr>
+          <tr><td><code>[32, 16, 7]</code></td><td><code>[32, 1, 7]</code></td><td><code>[32, 16, 7]</code></td><td>Sửa bằng <code>b.unsqueeze(1)</code>: chèn chiều 1 vào giữa</td></tr>
         </tbody>
       </table></div>
       <div class="trap"><span class="lab">Bẫy thường gặp</span>
-        <p>Broadcasting đôi khi "chạy được nhưng sai": ví dụ <code>[32, 1] - [32]</code> cho ra <code>[32, 32]</code> chứ không báo lỗi. Luôn in <code>.shape</code> khi nghi ngờ.</p>
+        <p>Lỗi phổ biến nhất trong code deep learning là sai shape. Thói quen tốt: in <code>.shape</code> sau mỗi dòng khi bạn chưa chắc.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Tensor là bảng số nhiều tầng. Biết cách cắt lát (<code>A[:, 0, :]</code>), nhân (<code>@</code>), lấy trung bình theo chiều (<code>mean(dim=...)</code>) và quy tắc broadcasting là đủ cho hầu hết công việc.</p>
       </div>
     </section>
 
     <section class="lesson" id="autograd">
-      <h3><span class="n">B2</span>Autograd: gradient tự động</h3>
-      <p>Đánh dấu <code>requires_grad=True</code> cho một tensor, PyTorch ghi lại mọi phép tính dùng tới nó thành một đồ thị. Gọi <code>.backward()</code> trên loss, chain rule chạy ngược qua đồ thị và ghi gradient vào <code>.grad</code>.</p>
-      <div class="code"><pre><code>x = torch.tensor(2.0, requires_grad=True)
-y = (3 * x + 1) ** 2
-y.backward()
-x.grad            # tensor(42.) — khớp với tính tay ở bài A3</code></pre></div>
-      <h4><span class="tag">Ba công cụ cần biết</span>no_grad, detach, requires_grad</h4>
+      <h3><span class="n">B2</span>Autograd: PyTorch tự tính đạo hàm</h3>
+      <p>Ở bài A2, bạn bấm nút "Đi 1 bước gradient" và máy tự biết vặn núm theo hướng nào. Trong PyTorch, phần "tự biết" đó tên là <strong>autograd</strong>. Bạn chỉ cần:</p>
+      <ol class="plain">
+        <li>Đánh dấu tensor nào là núm vặn bằng <code>requires_grad=True</code>.</li>
+        <li>Tính loss như bình thường.</li>
+        <li>Gọi <code>loss.backward()</code>. PyTorch tự áp dụng chain rule và ghi đạo hàm vào <code>.grad</code>.</li>
+      </ol>
+      <div class="code"><pre><code>x = torch.tensor(2.0, requires_grad=True)   # x là một núm vặn
+y = (3 * x + 1) ** 2                        # y = (3x + 1)²
+y.backward()                                # tự tính dy/dx
+x.grad                                      # tensor(42.)</code></pre></div>
+      <details class="more"><summary>Đọc thêm: tự kiểm tra con số 42 bằng chain rule</summary>
+        <p>Đặt \(u = 3x+1\), thì \(y = u^2\). Hai mắt xích: \(dy/du = 2u\) và \(du/dx = 3\). Nhân lại: \(dy/dx = 2u\times3 = 6(3x+1)\). Tại \(x=2\): \(6\times7 = 42\). Khớp với PyTorch.</p>
+      </details>
+      <h4><span class="tag">Ba công cụ</span>Khi nào KHÔNG muốn tính đạo hàm</h4>
       <ul>
-        <li><code>with torch.no_grad():</code> tắt ghi đồ thị. Dùng khi đánh giá (evaluate) hoặc chạy mô hình lúc suy luận, cho nhanh và tiết kiệm bộ nhớ.</li>
-        <li><code>t.detach()</code> tạo bản sao "cắt đứt" khỏi đồ thị: gradient không chảy ngược qua điểm này. Đây chính là <strong>stop-gradient</strong>.</li>
-        <li><code>p.requires_grad = False</code> trên tham số: tham số đó không được cập nhật, tức là <strong>đóng băng</strong> (freeze).</li>
+        <li><code>with torch.no_grad():</code>: tắt hẳn việc tính đạo hàm. Dùng khi <strong>chấm điểm</strong> mô hình (chỉ cần kết quả, không cần học), cho nhanh và nhẹ bộ nhớ.</li>
+        <li><code>t.detach()</code>: tạo bản sao "cắt dây chuyền": đạo hàm không chảy ngược qua điểm này. Tên gọi trong paper là <strong>stop-gradient</strong>.</li>
+        <li><code>p.requires_grad = False</code>: khóa một núm lại, không cho vặn. Tên gọi là <strong>đóng băng</strong> (freeze), sẽ gặp lại ở bài C6.</li>
       </ul>
       <div class="paper"><span class="lab">Trong paper · §4.2</span>
-        <p>Value head của PPO đọc hidden states của VLM, nhưng paper áp <strong>stop-gradient</strong> để gradient của value không làm hỏng backbone đã pretrain. Trong code, đó là một chữ <code>.detach()</code>:</p>
+        <p>Ở giai đoạn RL, có một mạng nhỏ (value head) đọc thông tin từ Qwen3.5. Paper áp <strong>stop-gradient</strong> để việc học của mạng nhỏ này không làm hỏng Qwen3.5 đã được huấn luyện kỹ. Trong code chỉ là thêm <code>.detach()</code>:</p>
       </div>
-      <div class="code"><pre><code>h = vlm(inputs)                         # hidden states: [B, T, D]
-value = value_head(h.detach().mean(1))  # mean-pool rồi chiếu ra một số
-# value_loss.backward() chỉ cập nhật value_head, không chạm vào vlm</code></pre></div>
+      <div class="code"><pre><code>h = vlm(inputs)                          # đầu ra của Qwen3.5
+value = value_head(h.detach().mean(1))   # .detach(): không cho đạo hàm chảy về vlm</code></pre></div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Đánh dấu núm vặn, tính loss, gọi <code>backward()</code>: PyTorch tự tính đạo hàm cho mọi núm. Dùng <code>no_grad</code>, <code>detach</code>, <code>requires_grad=False</code> khi muốn chặn việc đó.</p>
+      </div>
     </section>
 
     <section class="lesson" id="module">
       <h3><span class="n">B3</span>nn.Module: đóng gói một mô hình</h3>
-      <p>Mọi mô hình PyTorch là một lớp kế thừa <code>nn.Module</code> với hai phần: <code>__init__</code> khai báo các lớp con (và tham số của chúng), <code>forward</code> mô tả dữ liệu chạy qua thế nào. Mô hình lớn như Qwen-VLA cũng chỉ là các module lồng nhau.</p>
+      <p>Một mô hình có rất nhiều núm. <code>nn.Module</code> là "cái hộp" giúp gom chúng lại cho gọn. Mỗi mô hình viết thành một lớp (class) có hai phần:</p>
+      <ul>
+        <li><code>__init__</code>: khai báo các bộ phận (mỗi bộ phận có núm riêng).</li>
+        <li><code>forward</code>: mô tả dữ liệu đi qua các bộ phận theo thứ tự nào.</li>
+      </ul>
       <div class="code"><pre><code>import torch.nn as nn
 
 class MLP(nn.Module):
     def __init__(self, hidden=64):
         super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(1, hidden), nn.GELU(),
+        self.net = nn.Sequential(          # 3 lớp Linear nối tiếp
+            nn.Linear(1, hidden), nn.GELU(),   # GELU: "bẻ cong" để mô hình học được đường cong
             nn.Linear(hidden, hidden), nn.GELU(),
             nn.Linear(hidden, 1),
         )
 
-    def forward(self, x):          # x: [B, 1]
-        return self.net(x)         # [B, 1]
+    def forward(self, x):          # x: [số mẫu, 1]
+        return self.net(x)         # kết quả: [số mẫu, 1]
 
 model = MLP()
-sum(p.numel() for p in model.parameters())   # đếm số tham số</code></pre></div>
-      <p>Hình dung cấu trúc Qwen-VLA ở mức code (giản lược, chỉ để hiểu ý):</p>
-      <div class="code"><pre><code>class QwenVLA(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.vlm = Qwen35_4B()                 # backbone ~4B tham số
-        self.dit = DiT(num_blocks=16)          # action expert ~1.15B
-        self.action_in = nn.Linear(K, D_dit)   # action projection MLP
-        self.cond_proj = nn.Linear(D_vlm, D_dit)
-
-    def forward(self, images, text, noisy_actions, tau):
-        h = self.vlm(images, text)                     # hidden states
-        return self.dit(self.cond_proj(h), self.action_in(noisy_actions), tau)</code></pre></div>
+sum(p.numel() for p in model.parameters())   # đếm tổng số núm: 4.353</code></pre></div>
+      <p>Mỗi <code>nn.Linear</code> chính là phép "bảng × hệ số" ở bài A1, với bảng hệ số do mô hình tự học. <code>GELU</code> được chèn giữa các lớp để mô hình biểu diễn được quan hệ cong, không chỉ đường thẳng.</p>
       <div class="paper"><span class="lab">Trong paper · §2.2</span>
-        <p>Paper liệt kê đúng các module con và số tham số: 16 khối DiT (70.8M mỗi khối), action projection MLP (4.9M), lớp tuyến tính chiếu hidden states của VLM sang chiều của DiT (3.9M), timestep embedding (2.8M), AdaLN đầu ra (4.7M). Tổng khoảng 1.15B.</p>
+        <p>Qwen-VLA cũng là các hộp lồng nhau: hộp lớn Qwen3.5 (khoảng 4 tỉ núm) và hộp DiT (khoảng 1,15 tỉ núm, gồm 16 khối nhỏ, mỗi khối 70,8 triệu núm), cộng vài lớp Linear nhỏ nối chúng lại.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p><code>nn.Module</code> gom các núm vào một hộp: <code>__init__</code> khai báo bộ phận, <code>forward</code> mô tả đường đi của dữ liệu.</p>
       </div>
     </section>
 
     <section class="lesson" id="vonglap">
       <h3><span class="n">B4</span>Vòng lặp training hoàn chỉnh</h3>
-      <p>Mọi bài huấn luyện, từ hồi quy đơn giản đến Qwen-VLA, đều lặp lại năm bước trên mỗi batch:</p>
+      <h4><span class="tag">Hình dung</span>Học bài bằng cách làm đề</h4>
+      <p>Bạn ôn thi bằng cách lặp lại: làm một đề → so với đáp án → xem sai ở đâu → sửa lại cách hiểu → làm đề tiếp. Huấn luyện mô hình lặp lại đúng 5 bước đó trên mỗi nhóm dữ liệu:</p>
       <div class="diagram" role="img" aria-label="Năm bước của một bước huấn luyện">
         <svg viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg">
           <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
           <g font-family="Be Vietnam Pro, system-ui, sans-serif" font-size="13" text-anchor="middle">
             <rect x="10" y="40" width="120" height="58" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
-            <text x="70" y="64" font-weight="700" fill="var(--ink)">1. Lấy batch</text><text x="70" y="84" fill="var(--muted)" font-size="11.5">xb, yb</text>
+            <text x="70" y="64" font-weight="700" fill="var(--ink)">1. Lấy đề</text><text x="70" y="84" fill="var(--muted)" font-size="11.5">một batch dữ liệu</text>
             <rect x="160" y="40" width="120" height="58" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
-            <text x="220" y="64" font-weight="700" fill="var(--ink)">2. Forward</text><text x="220" y="84" fill="var(--muted)" font-size="11.5">pred = model(xb)</text>
+            <text x="220" y="64" font-weight="700" fill="var(--ink)">2. Làm bài</text><text x="220" y="84" fill="var(--muted)" font-size="11.5">pred = model(x)</text>
             <rect x="310" y="40" width="120" height="58" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
-            <text x="370" y="64" font-weight="700" fill="var(--ink)">3. Tính loss</text><text x="370" y="84" fill="var(--muted)" font-size="11.5">loss_fn(pred, yb)</text>
+            <text x="370" y="64" font-weight="700" fill="var(--ink)">3. Chấm điểm</text><text x="370" y="84" fill="var(--muted)" font-size="11.5">tính loss</text>
             <rect x="460" y="40" width="130" height="58" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
-            <text x="525" y="64" font-weight="700" fill="var(--ink)">4. Backward</text><text x="525" y="84" fill="var(--muted)" font-size="11.5">loss.backward()</text>
+            <text x="525" y="64" font-weight="700" fill="var(--ink)">4. Tìm chỗ sai</text><text x="525" y="84" fill="var(--muted)" font-size="11.5">loss.backward()</text>
             <rect x="620" y="40" width="130" height="58" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
-            <text x="685" y="64" font-weight="700" fill="var(--ink)">5. Cập nhật</text><text x="685" y="84" fill="var(--muted)" font-size="11.5">optimizer.step()</text>
+            <text x="685" y="64" font-weight="700" fill="var(--ink)">5. Sửa</text><text x="685" y="84" fill="var(--muted)" font-size="11.5">optimizer.step()</text>
             <g stroke="var(--muted)" stroke-width="1.25" fill="none">
               <path d="M130 69H158" marker-end="url(#arr)"/><path d="M280 69H308" marker-end="url(#arr)"/>
               <path d="M430 69H458" marker-end="url(#arr)"/><path d="M590 69H618" marker-end="url(#arr)"/>
               <path d="M685 98V124H70V100" marker-end="url(#arr)"/>
             </g>
-            <text x="378" y="140" fill="var(--muted)" font-size="11.5">lặp lại cho batch tiếp theo</text>
+            <text x="378" y="140" fill="var(--muted)" font-size="11.5">lặp lại với đề tiếp theo</text>
           </g>
         </svg>
       </div>
-      <p>Code đầy đủ dưới đây khớp mô hình MLP với dữ liệu \(y=\sin x + \text{nhiễu}\). Nó đã có mọi thành phần mà paper nhắc tới: <strong>DataLoader, AdamW, cosine schedule, gradient clipping, tập validation</strong>.</p>
+      <p>Bài toán ví dụ: dạy mô hình MLP (bài B3) bắt chước đường cong \(y = \sin x\) từ 2.000 điểm có lẫn chút nhiễu. Đọc code từng khối, phần chú thích nói rõ dòng đó làm gì:</p>
       <div class="code"><pre><code>import torch, torch.nn as nn
 from torch.utils.data import Dataset, DataLoader, random_split
 
-class NoisySine(Dataset):                       # 1. Dữ liệu
+# ---- Chuẩn bị dữ liệu ----
+class NoisySine(Dataset):
     def __init__(self, n=2000):
-        self.x = torch.rand(n, 1) * 6 - 3        # x trong [-3, 3]
-        self.y = torch.sin(self.x) + 0.1 * torch.randn(n, 1)
+        self.x = torch.rand(n, 1) * 6 - 3                        # 2000 số x trong khoảng [-3, 3]
+        self.y = torch.sin(self.x) + 0.1 * torch.randn(n, 1)     # đáp án = sin(x) + chút nhiễu
     def __len__(self):
         return len(self.x)
     def __getitem__(self, i):
-        return self.x[i], self.y[i]
+        return self.x[i], self.y[i]                              # trả về một cặp (đề, đáp án)
 
-train_set, val_set = random_split(NoisySine(2000), [1600, 400])
-train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
+train_set, val_set = random_split(NoisySine(2000), [1600, 400])  # 1600 để học, 400 để kiểm tra
+train_loader = DataLoader(train_set, batch_size=64, shuffle=True) # chia thành các đề 64 câu
 val_loader = DataLoader(val_set, batch_size=256)
 
+# ---- Chuẩn bị mô hình và "người sửa bài" ----
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = MLP().to(device)                         # MLP từ bài B3
-loss_fn = nn.MSELoss()
+model = MLP().to(device)
+loss_fn = nn.MSELoss()                                           # chấm điểm bằng MSE
 optimizer = torch.optim.AdamW(model.parameters(), lr=3e-3, weight_decay=1e-2)
-epochs = 60
+epochs = 60                                                      # đi qua toàn bộ dữ liệu 60 lần
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-    optimizer, T_max=epochs * len(train_loader))  # giảm LR theo cosine mỗi bước
+    optimizer, T_max=epochs * len(train_loader))                 # giảm dần độ dài bước (bài C3)
 
+# ---- Vòng lặp học ----
 for epoch in range(epochs):
     model.train()
-    for xb, yb in train_loader:
+    for xb, yb in train_loader:                                  # 1. lấy một đề
         xb, yb = xb.to(device), yb.to(device)
-        pred = model(xb)                         # 2. forward
-        loss = loss_fn(pred, yb)                 # 3. loss
-        optimizer.zero_grad()                    #    xóa gradient cũ
-        loss.backward()                          # 4. backward
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-        optimizer.step()                         # 5. cập nhật
+        pred = model(xb)                                         # 2. làm bài
+        loss = loss_fn(pred, yb)                                 # 3. chấm điểm
+        optimizer.zero_grad()                                    #    xóa ghi chú sửa bài cũ
+        loss.backward()                                          # 4. tìm chỗ sai (tính đạo hàm)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # giới hạn bước sửa (C4)
+        optimizer.step()                                         # 5. sửa (vặn núm)
         scheduler.step()
 
     model.eval()
-    with torch.no_grad():                        # đánh giá trên val
+    with torch.no_grad():                                        # kiểm tra trên 400 điểm chưa học
         val = sum(loss_fn(model(xb.to(device)), yb.to(device)).item() * len(xb)
                   for xb, yb in val_loader) / len(val_set)
-    print(f"epoch {epoch} | val {val:.4f} | lr {scheduler.get_last_lr()[0]:.1e}")</code></pre></div>
-      <div class="out">Kết quả chạy thử: val loss giảm từ 0.024 xuống khoảng 0.0093, LR giảm dần từ 3e-3 về 0.</div>
-      <p>Để ý: val loss dừng ở khoảng 0.01. Đó không phải mô hình kém, mà là <strong>sàn nhiễu</strong>: dữ liệu có nhiễu độ lệch chuẩn 0.1, phương sai 0.01, không mô hình nào dự đoán được phần ngẫu nhiên đó. Biết sàn của bài toán giúp bạn biết khi nào nên dừng cải thiện.</p>
+    print(f"epoch {epoch} | val {val:.4f}")</code></pre></div>
+      <div class="out">Kết quả chạy thử: loss trên tập kiểm tra giảm từ 0.024 xuống khoảng 0.0093.</div>
+      <p>Vì sao loss dừng ở khoảng 0.01 mà không về 0? Vì dữ liệu có nhiễu ngẫu nhiên (độ lệch 0.1, bình phương là 0.01). Phần ngẫu nhiên đó không mô hình nào đoán được. Đây gọi là <strong>sàn nhiễu</strong> của bài toán.</p>
       <div class="trap"><span class="lab">Ba lỗi kinh điển</span>
         <ul>
-          <li>Quên <code>optimizer.zero_grad()</code>: gradient cộng dồn qua các batch.</li>
-          <li>Quên <code>model.eval()</code> / <code>model.train()</code>: các lớp như Dropout, BatchNorm chạy sai chế độ.</li>
-          <li>Đánh giá không có <code>torch.no_grad()</code>: tốn bộ nhớ vô ích, dễ tràn GPU.</li>
+          <li>Quên <code>optimizer.zero_grad()</code>: ghi chú sửa bài của đề cũ cộng dồn vào đề mới.</li>
+          <li>Quên chuyển <code>model.train()</code> / <code>model.eval()</code>: một số lớp chạy sai chế độ.</li>
+          <li>Chấm điểm mà không có <code>torch.no_grad()</code>: tốn bộ nhớ vô ích.</li>
         </ul>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Mọi bài huấn luyện, từ đường sin đến Qwen-VLA, đều là vòng lặp 5 bước: lấy dữ liệu, dự đoán, tính loss, <code>backward()</code>, <code>step()</code>.</p>
       </div>
     </section>
 
     <section class="lesson" id="mask">
-      <h3><span class="n">B5</span>Mask và loss có che: tự viết công thức (1)–(2)</h3>
-      <p>Đây là bài nối trực tiếp với paper. Nhắc lại bối cảnh ở A1: mọi mẫu có tensor đích \(Y\) shape \(H\times K\), nhưng robot WidowX chỉ dùng 7 kênh, dữ liệu tay người dùng 32 kênh. Phần còn lại là số 0 đệm vào. Mô hình vẫn dự đoán ra cả các kênh đệm, và ta phải <strong>không tính lỗi ở đó</strong>.</p>
-      <h4><span class="tag">Định nghĩa</span>Mask</h4>
-      <p>Mask \(M\in\{0,1\}^{H\times K}\) cùng shape với \(Y\): \(M_{h,k}=1\) nếu ô đó là dữ liệu thật, 0 nếu là phần đệm. Nhân lỗi với \(M\) thì phần đệm đóng góp 0. Chia cho \(\sum M\) (số ô thật) chứ không chia cho \(H\cdot K\).</p>
-      <h4><span class="tag">Công thức (1)–(2)</span>Trung bình hai tầng</h4>
-      <div class="math">\[ \ell_k = \frac{\sum_{h=1}^{H} M_{h,k}\,\big(v_\theta - (Y_1-Y_0)\big)_{h,k}^2}{\sum_{h=1}^{H} M_{h,k}}, \qquad \mathcal{L}_{\text{act}} = \mathbb{E}\Big[\frac{1}{c}\sum_{k=0}^{c-1}\ell_k\Big] \]</div>
-      <p>Tầng 1: với mỗi kênh \(k\), lấy trung bình lỗi trên các bước thời gian hợp lệ. Tầng 2: lấy trung bình đều trên \(c\) kênh đang dùng. Hai tầng này bảo đảm: phần đệm không ảnh hưởng gì, mỗi kênh điều khiển có trọng số như nhau, và một mẫu tay người 32 kênh không "nặng" hơn một mẫu WidowX 7 kênh.</p>
+      <h3><span class="n">B5</span>Mask và công thức (1) của paper</h3>
+      <h4><span class="tag">Hình dung</span>Phiếu trả lời có câu bỏ trống</h4>
+      <p>Lớp bạn làm chung một mẫu phiếu 32 câu, nhưng lớp A chỉ học 7 câu đầu, lớp B học đủ 32. Khi chấm lớp A, thầy không trừ điểm 25 câu chưa học. Thầy dùng một <strong>tấm che</strong> đặt lên phiếu: câu nào được chấm thì để lộ, câu nào không thì che lại. Tấm che đó trong deep learning gọi là <strong>mask</strong>.</p>
+      <h4><span class="tag">Trong robot</span>Vì sao cần</h4>
+      <p>Bài A1 đã nói: mọi robot dùng chung một bảng có \(K\) cột, robot nào ít cột thì điền 0 vào phần thừa. WidowX dùng 7 cột, dữ liệu tay người dùng 32. Mô hình vẫn "điền" vào mọi ô, nhưng ta <strong>chỉ chấm</strong> những ô là dữ liệu thật.</p>
+      <p>Mask là một bảng cùng kích thước, mỗi ô là 1 (chấm) hoặc 0 (che). Nhân lỗi với mask thì ô bị che đóng góp 0. Khi chia để lấy trung bình, chỉ chia cho <strong>số ô được chấm</strong>.</p>
+      <h4><span class="tag">Ký hiệu</span>Công thức (1), đọc theo 4 bước</h4>
+      <div class="math">\[ \ell_k = \frac{\sum_{h=1}^{H} M_{h,k}\,\big(\text{dự đoán}_{h,k} - \text{đích}_{h,k}\big)^2}{\sum_{h=1}^{H} M_{h,k}} \]</div>
+      <p>(Paper viết "dự đoán" là \(v_\theta(\ldots)\) và "đích" là \(Y_1 - Y_0\). Bạn chưa cần biết chúng là gì cho đến Giai đoạn 3, cứ coi là "mô hình đoán" và "đáp án đúng".)</p>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(\ell_k\) là lỗi của cột \(k\) (một chiều điều khiển, ví dụ Δx). \(h\) chạy qua các bước thời gian, từ 1 đến \(H\). \(M_{h,k}\) là ô của mask. Tử số: cộng các bình phương sai lệch, mỗi cái đã nhân với mask. Mẫu số: cộng các ô mask, tức đếm số ô được chấm.</li>
+        <li><strong>Nói thành câu:</strong> <em>"Lỗi của một cột bằng trung bình bình phương sai lệch, chỉ tính trên những ô là dữ liệu thật."</em> Nói gọn hơn nữa: đây là công thức <strong>trung bình cộng</strong> ở mục 0.2, có thêm tấm che.</li>
+        <li><strong>Thay số:</strong> một cột có 4 bước, trong đó 3 bước thật và 1 bước là ô đệm:</li>
+      </ol>
+      <div class="calc">Bước h        1     2     3     4 (ô đệm)
+Dự đoán      0.5   0.2   0.9   0.7
+Đích         0.3   0.2   0.5   0.0
+Sai lệch²    0.04  0.00  0.16  0.49
+Mask M       1     1     1     0
+
+Tử số  = 1·0.04 + 1·0.00 + 1·0.16 + 0·0.49 = 0.20
+Mẫu số = 1 + 1 + 1 + 0 = 3
+ℓ = 0.20 / 3 ≈ 0.067
+
+Nếu quên mask: (0.04 + 0 + 0.16 + 0.49) / 4 ≈ 0.17   ← bị ô đệm làm sai</div>
+      <ol class="plain" start="4">
+        <li><strong>Để làm gì:</strong> nhờ mask, mô hình chỉ bị chấm trên phần dữ liệu thật của từng robot, và robot nhiều cột không "lấn át" robot ít cột.</li>
+      </ol>
+      <p>Công thức (2) của paper chỉ làm thêm một việc: lấy trung bình \(\ell_k\) qua các cột đang dùng, rồi trung bình qua cả batch.</p>
       <div class="code"><pre><code>def masked_flow_loss(pred, target, mask):
-    # pred = v_theta, target = Y1 - Y0, mask = M; tất cả shape [B, H, K]
-    se = (pred - target) ** 2 * mask              # lỗi bình phương, phần đệm = 0
-    steps = mask.sum(dim=1)                       # số bước hợp lệ mỗi kênh: [B, K]
-    per_ch = se.sum(dim=1) / steps.clamp(min=1)   # tầng 1, công thức (1): [B, K]
-    ch_valid = (steps > 0).float()                # kênh nào đang dùng: [B, K]
-    per_sample = (per_ch * ch_valid).sum(-1) / ch_valid.sum(-1).clamp(min=1)  # tầng 2
-    return per_sample.mean()                      # kỳ vọng E[...] ~ trung bình batch</code></pre></div>
-      <p><strong>Ví dụ số.</strong> Một mẫu, \(H=2\), \(K=2\), chỉ kênh 0 là thật. Dự đoán kênh 0 là \((1, 3)\), đích \((0, 1)\); kênh 1 (đệm) mô hình đoán \(5\), đích \(0\).</p>
-      <ul>
-        <li>Có mask: lỗi kênh 0 là \((1^2 + 2^2)/2 = 2.5\). Loss = <strong>2.5</strong>.</li>
-        <li>Không mask, trung bình cả 4 ô: \((1+4+25+25)/4 = 13.75\). Loss bị chi phối bởi phần đệm vô nghĩa.</li>
-      </ul>
-      <div class="trap"><span class="lab">Một chi tiết tinh</span>
-        <p>Nếu mọi kênh đang dùng có cùng số bước hợp lệ (trường hợp phổ biến), trung bình hai tầng cho đúng kết quả của "trung bình trên các ô có mask = 1". Cách viết hai tầng chỉ khác khi các kênh có độ dài hợp lệ khác nhau. Hiểu được điều này là dấu hiệu bạn đọc công thức thật sự, chứ không chỉ chép lại.</p>
+    # pred = dự đoán, target = đích, mask = tấm che; cả ba có shape [B, H, K]
+    se = (pred - target) ** 2 * mask              # bình phương sai lệch, ô bị che thành 0
+    steps = mask.sum(dim=1)                       # đếm ô được chấm ở mỗi cột: [B, K]
+    per_ch = se.sum(dim=1) / steps.clamp(min=1)   # công thức (1): lỗi từng cột [B, K]
+    ch_valid = (steps > 0).float()                # cột nào đang được dùng
+    per_sample = (per_ch * ch_valid).sum(-1) / ch_valid.sum(-1).clamp(min=1)  # công thức (2)
+    return per_sample.mean()                      # trung bình cả batch</code></pre></div>
+      <p><code>.clamp(min=1)</code> chỉ để tránh chia cho 0 ở cột bị che hoàn toàn.</p>
+      <details class="more"><summary>Đọc thêm: một chi tiết tinh về trung bình hai tầng</summary>
+        <p>Nếu mọi cột đang dùng có cùng số bước được chấm (trường hợp phổ biến), cách tính hai tầng (trước theo bước, sau theo cột) cho cùng kết quả với "trung bình trên mọi ô có mask = 1". Hai cách chỉ khác nhau khi các cột có số ô được chấm khác nhau.</p>
+      </details>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Mask là tấm che: ô dữ liệu thật thì chấm, ô đệm thì bỏ. Công thức (1) chỉ là trung bình bình phương sai lệch, có thêm tấm che.</p>
       </div>
     </section>
 
@@ -635,166 +876,217 @@ for epoch in range(epochs):
     <div class="part">
       <span class="eyebrow">Phần C</span>
       <h2>Deep Learning cơ bản</h2>
-      <p class="intro">Những khái niệm huấn luyện mà paper dùng mà không giải thích lại, vì coi là kiến thức chung.</p>
+      <p class="intro">Những khái niệm huấn luyện mà paper dùng mà không giải thích lại. Mỗi khái niệm có một ví dụ đời thường đi kèm.</p>
     </div>
 
     <section class="lesson" id="loss">
-      <h3><span class="n">C1</span>Hàm loss: MSE và cross-entropy</h3>
-      <p>Loss đo "mô hình sai bao nhiêu" bằng một số. Paper dùng đúng hai loại, ứng với hai kiểu đầu ra.</p>
-      <h4><span class="tag">Đầu ra liên tục</span>MSE (Mean Squared Error)</h4>
-      <div class="math">\[ \text{MSE} = \frac{1}{N}\sum_{i=1}^{N}\big(\hat y_i - y_i\big)^2 \]</div>
-      <p>Dùng cho số thực: vận tốc trong flow matching, tọa độ, góc. Bình phương phạt lỗi lớn nặng hơn lỗi nhỏ. Như bài A2 đã chỉ ra, MSE tương đương giả định Gaussian.</p>
-      <h4><span class="tag">Đầu ra rời rạc</span>Cross-entropy</h4>
-      <p>Dùng cho lựa chọn trong một tập: chọn token tiếp theo trong từ điển. Mô hình xuất ra một vector điểm số (logits), qua <strong>softmax</strong> thành xác suất:</p>
-      <div class="math">\[ p_j = \frac{e^{z_j}}{\sum_m e^{z_m}}, \qquad \text{CE} = -\log p_{\text{đúng}} \]</div>
-      <p>Ví dụ: logits \((2.0, 0.5, -1.0)\), đáp án là lớp 0. Softmax cho \(p_0\approx0.786\), nên CE \(= -\log 0.786 \approx 0.241\). Mô hình càng tự tin vào đáp án đúng, CE càng gần 0.</p>
-      <div class="code"><pre><code>logits = torch.tensor([[2.0, 0.5, -1.0]])
+      <h3><span class="n">C1</span>Hàm loss: chấm điểm mô hình</h3>
+      <p>Loss là <strong>điểm phạt</strong>: mô hình sai càng nhiều, điểm phạt càng cao. Huấn luyện là tìm cách làm điểm phạt nhỏ nhất. Paper dùng hai kiểu chấm, ứng với hai kiểu câu hỏi.</p>
+      <h4><span class="tag">Câu hỏi điền số</span>MSE</h4>
+      <p>Khi đáp án là một con số (vận tốc, tọa độ, góc), ta đo khoảng cách giữa số đoán và số đúng, bình phương lên, rồi lấy trung bình. Bạn đã dùng nó ở bài A2 (giá thuê phòng).</p>
+      <div class="math">\[ \text{MSE} = \frac{1}{N}\sum_{i=1}^{N}\big(\text{đoán}_i - \text{đúng}_i\big)^2 \]</div>
+      <p>Bình phương có hai tác dụng: số âm và số dương đều thành dương (sai bên nào cũng là sai), và sai nhiều bị phạt nặng hơn hẳn sai ít (sai 2 bị phạt 4, sai 10 bị phạt 100).</p>
+      <h4><span class="tag">Câu hỏi trắc nghiệm</span>Cross-entropy</h4>
+      <p>Khi phải chọn một đáp án trong nhiều lựa chọn (chọn từ tiếp theo trong câu), mô hình đưa ra <strong>xác suất</strong> cho từng lựa chọn. Cross-entropy chấm theo câu hỏi: <em>"Mô hình đã tin vào đáp án đúng bao nhiêu?"</em></p>
+      <div class="math">\[ \text{CE} = -\log\big(\text{xác suất mô hình gán cho đáp án đúng}\big) \]</div>
+      <div class="calc">Mô hình tin đáp án đúng 90%  →  CE = −log(0.90) ≈ 0.11   (phạt nhẹ)
+Mô hình tin đáp án đúng 50%  →  CE = −log(0.50) ≈ 0.69
+Mô hình tin đáp án đúng 1%   →  CE = −log(0.01) ≈ 4.61   (phạt rất nặng)</div>
+      <details class="more"><summary>Đọc thêm: mô hình biến điểm số thành xác suất thế nào (softmax)</summary>
+        <p>Mô hình đưa ra một điểm số thô cho mỗi lựa chọn (gọi là logits), ví dụ \((2.0,\ 0.5,\ -1.0)\). Hàm <strong>softmax</strong> biến chúng thành xác suất cộng lại bằng 1: lấy \(e\) mũ từng điểm rồi chia cho tổng.</p>
+        <div class="math">\[ p_j = \frac{e^{z_j}}{\sum_m e^{z_m}} \]</div>
+        <p>Với ví dụ trên, xác suất lần lượt khoảng 0.786, 0.175, 0.039. Nếu đáp án đúng là lựa chọn đầu, CE \(= -\log 0.786 \approx 0.241\).</p>
+        <div class="code"><pre><code>logits = torch.tensor([[2.0, 0.5, -1.0]])
 nn.functional.cross_entropy(logits, torch.tensor([0]))   # 0.2413</code></pre></div>
+      </details>
       <div class="paper"><span class="lab">Trong paper · công thức (3)</span>
-        <p>\(\mathcal{L}_{\text{vl}} = -\sum_i \log p_\theta(w_i\mid w_{&lt;i}, o_{1:t})\) chính là cross-entropy trên từng token tiếp theo, cho trước các token trước đó và ảnh. Paper giữ loss này trên dữ liệu ảnh–chữ để Qwen3.5 không "quên" cách nhìn và hiểu.</p>
+        <p>\(\mathcal{L}_{\text{vl}} = -\sum_i \log p_\theta(w_i\mid w_{&lt;i}, o_{1:t})\). Đọc thành câu: "cộng cross-entropy của từng từ, khi mô hình đoán từ thứ i dựa trên các từ đứng trước và hình ảnh". Paper giữ loss này để Qwen3.5 không quên cách nhìn ảnh và hiểu chữ trong khi học điều khiển robot.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Loss là điểm phạt. Đáp án là số thì dùng MSE (bình phương độ sai). Đáp án là lựa chọn thì dùng cross-entropy (mô hình tin đáp án đúng bao nhiêu).</p>
       </div>
     </section>
 
     <section class="lesson" id="optim">
-      <h3><span class="n">C2</span>Optimizer: từ SGD đến AdamW</h3>
-      <p><strong>SGD</strong> là gradient descent trên từng batch nhỏ (stochastic: gradient chỉ là ước lượng từ một batch). Hai cải tiến dẫn tới optimizer mặc định ngày nay:</p>
+      <h3><span class="n">C2</span>Optimizer: người vặn núm</h3>
+      <p>Optimizer là phần code thực hiện bước "vặn núm" ở bài A2. Có vài cách vặn, từ đơn giản đến thông minh:</p>
       <ul>
-        <li><strong>Momentum</strong>: dùng trung bình động của gradient thay vì gradient tức thời, giống hòn bi lăn có quán tính, ít bị nhiễu bởi từng batch.</li>
-        <li><strong>Learning rate thích nghi theo từng tham số</strong>: tham số có gradient lớn thất thường thì đi bước nhỏ lại.</li>
+        <li><strong>SGD</strong>: đúng như công thức ở bài A2, mỗi lần nhìn một nhóm dữ liệu rồi vặn theo đạo hàm của nhóm đó.</li>
+        <li><strong>Momentum</strong>: như hòn bi lăn xuống dốc có quán tính. Nó không đổi hướng đột ngột vì một nhóm dữ liệu "lạ", nên đi mượt hơn.</li>
+        <li><strong>Adam</strong>: thêm ý "mỗi núm một tốc độ riêng". Núm nào đạo hàm dao động thất thường thì vặn nhẹ tay, núm nào ổn định thì vặn mạnh hơn.</li>
+        <li><strong>AdamW</strong>: Adam cộng thêm một lực nhẹ kéo mọi núm về gần 0 (weight decay), giúp mô hình không "học vẹt" (bài C5). Đây là lựa chọn mặc định khi huấn luyện Transformer.</li>
       </ul>
-      <p><strong>Adam</strong> kết hợp cả hai. Với gradient \(g_t\) tại bước \(t\):</p>
-      <div class="math">\[ m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t,\quad v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2,\quad \theta \leftarrow \theta - \eta\,\frac{\hat m_t}{\sqrt{\hat v_t}+\epsilon} \]</div>
-      <p>với \(\hat m_t, \hat v_t\) là bản đã hiệu chỉnh độ lệch ban đầu. <strong>AdamW</strong> thêm <em>weight decay tách rời</em>: mỗi bước kéo tham số về gần 0 một chút, \(\theta\leftarrow\theta-\eta\lambda\theta\), giúp giảm overfitting. AdamW là lựa chọn mặc định khi huấn luyện Transformer.</p>
-      <div class="code"><pre><code>optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4,
-                              betas=(0.9, 0.999), weight_decay=0.01)</code></pre></div>
-      <p>Bạn chỉ cần nắm ý nghĩa và các siêu tham số (<code>lr</code>, <code>betas</code>, <code>weight_decay</code>), không cần nhớ công thức chi tiết.</p>
+      <div class="code"><pre><code>optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=0.01)
+# lr: độ dài bước (learning rate) · weight_decay: lực kéo núm về 0</code></pre></div>
+      <details class="more"><summary>Đọc thêm: công thức của Adam (không bắt buộc)</summary>
+        <div class="math">\[ m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t,\quad v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2,\quad \theta \leftarrow \theta - \eta\,\frac{\hat m_t}{\sqrt{\hat v_t}+\epsilon} \]</div>
+        <p>\(m_t\) là trung bình động của đạo hàm (phần "quán tính"), \(v_t\) là trung bình động của bình phương đạo hàm (đo độ dao động). Chia cho \(\sqrt{v_t}\) làm núm dao động nhiều thì bước nhỏ lại.</p>
+      </details>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Optimizer là người vặn núm. AdamW là lựa chọn mặc định: có quán tính, mỗi núm một tốc độ, và kéo nhẹ núm về 0. Bạn chỉ cần biết chỉnh <code>lr</code> và <code>weight_decay</code>.</p>
+      </div>
     </section>
 
     <section class="lesson" id="lr">
-      <h3><span class="n">C3</span>Learning rate schedule và param groups</h3>
-      <p>Learning rate không cần cố định suốt quá trình. Đầu quá trình, bước lớn giúp đi nhanh; cuối quá trình, bước nhỏ giúp "đậu" chính xác vào đáy. <strong>Cosine decay</strong> giảm LR mượt theo nửa chu kỳ cosin. Thường kèm <strong>warmup</strong>: vài trăm bước đầu tăng LR từ 0 lên để tránh cập nhật quá mạnh khi mô hình còn ngẫu nhiên.</p>
-      <div class="math">\[ \eta_t = \eta_{\min} + \tfrac{1}{2}(\eta_{\max}-\eta_{\min})\Big(1+\cos\frac{\pi\,(t-T_w)}{T-T_w}\Big), \quad t\ge T_w \]</div>
+      <h3><span class="n">C3</span>Learning rate thay đổi theo thời gian</h3>
+      <h4><span class="tag">Hình dung</span>Lái xe vào chỗ đỗ</h4>
+      <p>Trên đường, bạn đi nhanh. Gần đến chỗ đỗ, bạn đi chậm dần để vào đúng vị trí. Lúc mới nổ máy, bạn cũng không phóng ngay mà tăng tốc từ từ. Learning rate cũng nên như vậy:</p>
+      <ul>
+        <li><strong>Warmup</strong>: vài trăm bước đầu tăng dần độ dài bước từ 0, vì lúc đầu mô hình còn "ngơ ngác", vặn mạnh dễ hỏng.</li>
+        <li><strong>Cosine decay</strong>: sau đó giảm dần độ dài bước theo một đường cong mượt, để cuối cùng "đậu" chính xác vào đáy.</li>
+      </ul>
       <div class="lab-box">
         <div class="head"><span class="title">Warmup + cosine decay</span><span class="kind">Thử nghiệm</span></div>
         <canvas id="cvLR" aria-label="Đồ thị learning rate theo bước"></canvas>
         <div class="controls">
           <label for="wuR">Warmup (% tổng số bước) <input type="range" id="wuR" min="0" max="30" step="1" value="5"><output id="wuO">5%</output></label>
-          <label for="mnR">η_min / η_max <input type="range" id="mnR" min="0" max="0.5" step="0.01" value="0.1"><output id="mnO">0.10</output></label>
+          <label for="mnR">Mức thấp nhất / cao nhất <input type="range" id="mnR" min="0" max="0.5" step="0.01" value="0.1"><output id="mnO">0.10</output></label>
         </div>
       </div>
-      <h4><span class="tag">Kỹ thuật</span>Param groups: mỗi phần mô hình một learning rate</h4>
-      <p>Phần đã pretrain tốt (backbone) chỉ nên chỉnh nhẹ, phần mới khởi tạo (decoder) cần học nhanh. PyTorch cho phép chia tham số thành nhóm, mỗi nhóm một LR. Các con số dưới chỉ là ví dụ; paper không công bố LR cụ thể cho từng nhóm.</p>
+      <details class="more"><summary>Đọc thêm: công thức cosine decay</summary>
+        <div class="math">\[ \eta_t = \eta_{\min} + \tfrac{1}{2}(\eta_{\max}-\eta_{\min})\Big(1+\cos\frac{\pi\,(t-T_w)}{T-T_w}\Big) \]</div>
+        <p>Khi \(t\) đi từ cuối warmup \(T_w\) đến cuối \(T\), phần \(\cos\) đi từ 1 xuống −1, nên \(\eta_t\) đi mượt từ \(\eta_{\max}\) xuống \(\eta_{\min}\).</p>
+      </details>
+      <h4><span class="tag">Kỹ thuật</span>Mỗi phần mô hình một tốc độ học</h4>
+      <p>Hình dung một nhóm làm việc gồm một người đã nhiều kinh nghiệm và một người mới vào. Người cũ chỉ cần điều chỉnh nhẹ, người mới cần học nhanh. PyTorch cho phép chia các núm thành nhóm, mỗi nhóm một learning rate riêng. Con số dưới chỉ là ví dụ, paper không công bố con số cụ thể:</p>
       <div class="code"><pre><code>optimizer = torch.optim.AdamW([
-    {"params": model.vlm.parameters(), "lr": 1e-5},   # backbone: chỉnh nhẹ
-    {"params": model.dit.parameters(), "lr": 1e-4},   # decoder mới: học nhanh hơn
-], weight_decay=0.01)
-# Scheduler áp lên mọi nhóm, giữ nguyên tỉ lệ giữa các nhóm.</code></pre></div>
+    {"params": model.vlm.parameters(), "lr": 1e-5},   # Qwen3.5 đã học kỹ: chỉnh nhẹ
+    {"params": model.dit.parameters(), "lr": 1e-4},   # DiT mới tạo: học nhanh hơn
+], weight_decay=0.01)</code></pre></div>
       <div class="paper"><span class="lab">Trong paper · §4</span>
-        <p>"We use cosine-decayed learning rates with separate group-wise schedules for the vision-language backbone and the action decoder, along with gradient clipping." Sau bài này, cả câu đó bạn đều hiểu và viết được thành code.</p>
+        <p>Paper viết rằng họ dùng "cosine-decayed learning rates with separate group-wise schedules for the vision-language backbone and the action decoder, along with gradient clipping". Sau bài này và bài C4, bạn hiểu và viết được cả câu đó thành code.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Learning rate tăng dần lúc đầu (warmup), giảm dần về sau (cosine). Phần mô hình đã giỏi dùng learning rate nhỏ, phần mới dùng learning rate lớn hơn.</p>
       </div>
     </section>
 
     <section class="lesson" id="clip">
-      <h3><span class="n">C4</span>Gradient clipping</h3>
-      <p>Thỉnh thoảng một batch xấu tạo ra gradient rất lớn, đẩy tham số văng xa và làm hỏng quá trình học (loss nhảy lên <code>NaN</code>). <strong>Gradient clipping theo norm</strong> giới hạn độ lớn tổng của gradient: nếu \(\|g\| &gt; c\), thu nhỏ \(g\) lại thành \(g\cdot c/\|g\|\). Hướng giữ nguyên, chỉ độ dài bị giới hạn.</p>
-      <div class="code"><pre><code>loss.backward()
-torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)   # sau backward, trước step
-optimizer.step()</code></pre></div>
-      <p>Clipping đặc biệt quan trọng khi huấn luyện chung hai khối ở trạng thái rất khác nhau (backbone đã pretrain + DiT mới), đúng tình huống mà paper mô tả ở §3.1.</p>
+      <h3><span class="n">C4</span>Gradient clipping: giới hạn tốc độ</h3>
+      <p>Thỉnh thoảng một nhóm dữ liệu "xấu" tạo ra đạo hàm rất lớn, khiến lần vặn núm đó quá mạnh, làm hỏng những gì đã học. Loss có thể tăng vọt hoặc thành <code>NaN</code> (không phải số).</p>
+      <p><strong>Gradient clipping</strong> giống biển giới hạn tốc độ: nếu bước vặn định đi dài hơn một ngưỡng, nó bị rút ngắn về đúng ngưỡng đó. Hướng đi giữ nguyên, chỉ độ dài bị giới hạn.</p>
+      <div class="code"><pre><code>loss.backward()                                                   # tính đạo hàm
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # giới hạn độ lớn
+optimizer.step()                                                  # rồi mới vặn</code></pre></div>
+      <p>Clipping đặc biệt quan trọng trong Qwen-VLA, vì paper huấn luyện chung hai khối ở trạng thái rất khác nhau: Qwen3.5 đã học kỹ và DiT mới khởi tạo ngẫu nhiên (§3.1).</p>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Clipping chặn những bước vặn quá mạnh do dữ liệu bất thường, giúp huấn luyện ổn định.</p>
+      </div>
     </section>
 
     <section class="lesson" id="overfit">
-      <h3><span class="n">C5</span>Overfitting, train/val/test và ablation</h3>
-      <h4><span class="tag">Định nghĩa</span>Overfitting</h4>
-      <p>Mô hình <strong>học thuộc</strong> dữ liệu huấn luyện thay vì học quy luật: loss trên tập train tiếp tục giảm, nhưng loss trên dữ liệu chưa thấy bắt đầu tăng. Vì vậy dữ liệu được chia ba phần:</p>
-      <ul>
-        <li><strong>Train</strong>: dùng để cập nhật tham số.</li>
-        <li><strong>Validation</strong>: dùng để chọn siêu tham số, chọn lúc dừng.</li>
-        <li><strong>Test</strong>: chỉ dùng một lần cuối để báo cáo. Benchmark trong paper đóng vai trò test.</li>
-      </ul>
+      <h3><span class="n">C5</span>Overfitting, tập dữ liệu và ablation</h3>
+      <h4><span class="tag">Hình dung</span>Học vẹt đề cũ</h4>
+      <p>Một bạn học thuộc lòng đáp án 50 đề cũ. Làm lại đúng các đề đó thì được 10 điểm, nhưng gặp đề mới thì lúng túng. Đó là <strong>overfitting</strong>: mô hình học thuộc dữ liệu huấn luyện thay vì hiểu quy luật.</p>
+      <p>Để phát hiện học vẹt, dữ liệu được chia làm ba phần, giống cách ôn thi:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Tập</th><th>Giống như</th><th>Dùng để</th></tr></thead>
+        <tbody>
+          <tr><td>Train</td><td>Bài tập về nhà</td><td>Học, vặn núm</td></tr>
+          <tr><td>Validation</td><td>Đề thi thử</td><td>Kiểm tra giữa chừng, chọn lúc dừng, chọn cấu hình</td></tr>
+          <tr><td>Test</td><td>Đề thi thật</td><td>Chỉ làm một lần cuối để báo cáo kết quả. Các benchmark trong paper đóng vai trò này.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Dấu hiệu học vẹt: điểm bài tập về nhà ngày càng tốt, nhưng điểm thi thử bắt đầu tệ đi.</p>
       <div class="paper"><span class="lab">Trong paper · §5.2.1</span>
-        <p>Ablation về thời lượng T2A là một ví dụ overfitting đẹp. Kết quả trên Simpler-WidowX sau SFT:</p>
+        <p>Paper thử huấn luyện giai đoạn T2A với số bước khác nhau, rồi đo tỉ lệ thành công trên Simpler-WidowX:</p>
         <div class="tbl"><table>
           <thead><tr><th>Số bước T2A</th><th>2.000</th><th>4.000</th><th>10.000</th><th>40.000</th></tr></thead>
-          <tbody><tr><td>Success rate</td><td class="num">71.1%</td><td class="num">67.5%</td><td class="num">67.2%</td><td class="num">60.4%</td></tr></tbody>
+          <tbody><tr><td>Tỉ lệ thành công</td><td class="num">71.1%</td><td class="num">67.5%</td><td class="num">67.2%</td><td class="num">60.4%</td></tr></tbody>
         </table></div>
-        <p>Paper giải thích: train lâu thì decoder bắt đầu "học thuộc từng quỹ đạo" thay vì học cấu trúc chung, nên mất độ linh hoạt cho giai đoạn sau.</p>
+        <p>Học lâu hơn lại tệ hơn. Paper giải thích: học quá lâu thì mô hình bắt đầu "học thuộc từng quỹ đạo cụ thể" thay vì học cấu trúc chung.</p>
       </div>
-      <h4><span class="tag">Định nghĩa</span>Ablation study</h4>
-      <p>Thí nghiệm <strong>bỏ hoặc thay một thành phần</strong>, giữ nguyên mọi thứ khác, để đo thành phần đó đóng góp bao nhiêu. Ví dụ trong paper: có T2A và không có T2A (71.1% so với 60.9%), có ảnh và không có ảnh ở T2A, có trạng thái khớp và không có (Bảng 12). Khi đọc ablation, câu hỏi luôn là: <em>chỉ một thứ thay đổi phải không? Mức chênh có lớn hơn độ nhiễu không?</em></p>
+      <h4><span class="tag">Khái niệm</span>Ablation: bỏ một nguyên liệu</h4>
+      <p>Muốn biết muối quan trọng thế nào trong một món ăn, bạn nấu lại món đó <strong>y hệt nhưng không có muối</strong>, rồi so sánh. Trong nghiên cứu, cách làm này gọi là <strong>ablation</strong>: bỏ hoặc thay đúng một thành phần, giữ nguyên mọi thứ khác, rồi đo chênh lệch.</p>
+      <p>Ví dụ trong paper: có giai đoạn T2A thì đạt 71.1%, bỏ T2A thì còn 60.9%, vậy T2A đóng góp khoảng 10 điểm. Khi đọc một ablation, luôn hỏi hai câu: <em>"Có đúng là chỉ một thứ thay đổi không?"</em> và <em>"Chênh lệch này có lớn hơn mức dao động ngẫu nhiên không?"</em></p>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Overfitting là học vẹt. Chia dữ liệu thành train, validation, test để phát hiện nó. Ablation là thí nghiệm bỏ một thành phần để đo nó đóng góp bao nhiêu.</p>
+      </div>
     </section>
 
     <section class="lesson" id="pretrain">
-      <h3><span class="n">C6</span>Pretrain, fine-tune, freeze và catastrophic forgetting</h3>
-      <h4><span class="tag">Định nghĩa</span>Pretrain và fine-tune</h4>
-      <p><strong>Pretrain</strong>: huấn luyện trên lượng dữ liệu rất lớn, đa dạng để học biểu diễn chung. <strong>Fine-tune</strong>: tiếp tục huấn luyện mô hình đã pretrain trên dữ liệu nhỏ hơn của tác vụ đích. Toàn bộ Qwen-VLA dựa trên ý này: lấy Qwen3.5 đã pretrain trên ảnh–chữ, rồi dạy thêm hành động.</p>
-      <h4><span class="tag">Kỹ thuật</span>Freeze (đóng băng)</h4>
+      <h3><span class="n">C6</span>Pretrain, fine-tune, freeze và chuyện "học cái mới quên cái cũ"</h3>
+      <h4><span class="tag">Hình dung</span>Học đại học rồi học nghề</h4>
+      <p>Bạn học đại học 4 năm, có kiến thức nền rộng. Sau đó đi làm, bạn học thêm vài tháng kỹ năng riêng của công việc. Bạn không học lại từ đầu, mà xây tiếp trên nền đã có.</p>
+      <ul>
+        <li><strong>Pretrain</strong> (huấn luyện trước) = học đại học: học trên lượng dữ liệu khổng lồ và đa dạng.</li>
+        <li><strong>Fine-tune</strong> (tinh chỉnh) = học nghề: học tiếp trên dữ liệu nhỏ hơn của đúng công việc cần làm.</li>
+      </ul>
+      <p>Qwen-VLA đi đúng con đường đó: lấy Qwen3.5 đã "học đại học" trên hàng tỉ ảnh và câu chữ, rồi dạy thêm cách điều khiển robot.</p>
+      <h4><span class="tag">Kỹ thuật</span>Freeze: giữ nguyên phần đã giỏi</h4>
+      <p>Đôi khi ta muốn chỉ dạy phần mới, còn phần cũ giữ nguyên. Đó là <strong>đóng băng</strong> (freeze): khóa các núm của phần cũ lại.</p>
       <div class="code"><pre><code>for p in model.vlm.parameters():
-    p.requires_grad = False                  # VLM đứng yên
+    p.requires_grad = False                  # khóa mọi núm của Qwen3.5
 
 optimizer = torch.optim.AdamW(
     [p for p in model.parameters() if p.requires_grad], lr=1e-4)   # chỉ DiT được học</code></pre></div>
       <div class="paper"><span class="lab">Trong paper · §3.1</span>
-        <p>Stage I (T2A): "We freeze the VLM and train only the DiT". Stage II (CPT) mở khóa cả hai. Lý do: DiT mới khởi tạo sinh gradient nhiễu, nếu train chung ngay từ đầu sẽ "làm xáo trộn" biểu diễn đã pretrain của VLM.</p>
+        <p>Giai đoạn đầu tiên (T2A), paper khóa Qwen3.5 và chỉ dạy DiT. Lý do: DiT mới tạo, lúc đầu "sửa bài" rất lung tung. Nếu cho các lần sửa đó chạm tới Qwen3.5, nó có thể làm hỏng kiến thức mà Qwen3.5 đã học kỹ. Sang giai đoạn hai (CPT), khi DiT đã ổn định, paper mới mở khóa cả hai.</p>
       </div>
-      <h4><span class="tag">Định nghĩa</span>Catastrophic forgetting</h4>
-      <p>Khi fine-tune chỉ trên dữ liệu mới, mô hình có thể đánh mất khả năng cũ. Cách chống phổ biến là <strong>co-training</strong>: trộn một ít dữ liệu cũ vào, với loss riêng và trọng số riêng. Đó chính là công thức (4) của paper:</p>
+      <h4><span class="tag">Vấn đề</span>Học cái mới, quên cái cũ</h4>
+      <p>Bạn dành cả năm học tiếng Nhật, không đụng đến tiếng Anh, và thấy tiếng Anh kém đi. Mô hình cũng vậy: chỉ học dữ liệu robot thì có thể quên cách nhìn ảnh và hiểu chữ. Hiện tượng này gọi là <strong>catastrophic forgetting</strong>.</p>
+      <p>Cách chống giống cách người ta giữ ngoại ngữ: <strong>ôn xen kẽ</strong>. Trong khi học dữ liệu robot, vẫn trộn vào một ít dữ liệu ảnh và chữ cũ. Mỗi loại có điểm phạt riêng, rồi cộng lại với trọng số. Đây là công thức (4):</p>
       <div class="math">\[ \mathcal{L} = \lambda_{\text{act}}\,\mathcal{L}_{\text{act}} + \lambda_{\text{vl}}\,\mathcal{L}_{\text{vl}} \]</div>
-      <p>Ở SFT (§4.1), paper đặt \(\lambda_{\text{vl}}=0.1\) và \(\lambda_{\text{act}}=1.0\): giữ khả năng nhìn–hiểu, nhưng dồn phần lớn "sức học" cho hành động. Trong code, đó chỉ là <code>loss = 1.0 * loss_act + 0.1 * loss_vl</code>.</p>
+      <p class="say">"Tổng điểm phạt bằng điểm phạt hành động nhân trọng số của nó, cộng điểm phạt ảnh–chữ nhân trọng số của nó."</p>
+      <p>Ở giai đoạn SFT (§4.1), paper đặt \(\lambda_{\text{act}} = 1.0\) và \(\lambda_{\text{vl}} = 0.1\): vẫn ôn bài cũ, nhưng dồn phần lớn sức cho việc học hành động. Trong code chỉ là <code>loss = 1.0 * loss_act + 0.1 * loss_vl</code>.</p>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Pretrain là học nền rộng, fine-tune là học chuyên sâu. Freeze là khóa phần đã giỏi. Để không quên cái cũ, trộn một ít dữ liệu cũ vào và cộng loss có trọng số.</p>
+      </div>
     </section>
 
     <!-- ================= PART D ================= -->
     <div class="part" id="paper">
       <span class="eyebrow">Phần D</span>
       <h2>Đọc lại công thức (1)–(5) của paper</h2>
-      <p class="intro">Bảng tổng kết: mỗi công thức, ý nghĩa bằng lời, và đoạn code tương ứng bạn vừa học.</p>
+      <p class="intro">Bảng tổng kết: mỗi công thức, câu nói thành lời, và bài đã giải thích nó.</p>
     </div>
     <div class="tbl"><table>
-      <thead><tr><th>Công thức</th><th>Nói bằng lời</th><th>Code</th><th>Bài</th></tr></thead>
+      <thead><tr><th>Công thức</th><th>Nói thành lời</th><th>Code</th><th>Bài</th></tr></thead>
       <tbody>
-        <tr><td>(1) \(\ell_k\)</td><td>Lỗi bình phương của kênh \(k\), trung bình trên các bước hợp lệ</td><td><code>se.sum(1) / mask.sum(1)</code></td><td>B5</td></tr>
-        <tr><td>(2) \(\mathcal{L}_{\text{act}}\)</td><td>Trung bình đều trên các kênh đang dùng, rồi trên batch</td><td><code>masked_flow_loss(...)</code></td><td>B5, A2</td></tr>
-        <tr><td>(3) \(\mathcal{L}_{\text{vl}}\)</td><td>Cross-entropy dự đoán token tiếp theo, giữ khả năng VLM</td><td><code>F.cross_entropy(logits, tokens)</code></td><td>C1</td></tr>
-        <tr><td>(4) \(\mathcal{L}\)</td><td>Tổng có trọng số của hai loss (co-training)</td><td><code>1.0*l_act + 0.1*l_vl</code></td><td>C6</td></tr>
-        <tr><td>(5) \(\tilde a_d\)</td><td>Đưa từng chiều hành động về \([-1,1]\) theo percentile 1 và 99 của dataset</td><td><code>quantile_normalize(...)</code></td><td>A5</td></tr>
+        <tr><td>(1) \(\ell_k\)</td><td>Trung bình bình phương sai lệch của một cột, chỉ tính ô thật</td><td><code>se.sum(1) / mask.sum(1)</code></td><td>B5</td></tr>
+        <tr><td>(2) \(\mathcal{L}_{\text{act}}\)</td><td>Trung bình các cột đang dùng, rồi trung bình cả batch</td><td><code>masked_flow_loss(...)</code></td><td>B5</td></tr>
+        <tr><td>(3) \(\mathcal{L}_{\text{vl}}\)</td><td>Cross-entropy khi đoán từng từ tiếp theo, để không quên ảnh–chữ</td><td><code>F.cross_entropy(...)</code></td><td>C1</td></tr>
+        <tr><td>(4) \(\mathcal{L}\)</td><td>Cộng hai điểm phạt có trọng số (ôn xen kẽ)</td><td><code>1.0*l_act + 0.1*l_vl</code></td><td>C6</td></tr>
+        <tr><td>(5) \(\tilde a_d\)</td><td>Đưa từng chiều hành động về thang −1 đến 1 theo percentile 1 và 99</td><td><code>quantile_normalize(...)</code></td><td>A5</td></tr>
       </tbody>
     </table></div>
-    <p>Phần còn thiếu để hiểu trọn công thức (1) là <strong>vì sao đích lại là \(Y_1-Y_0\)</strong> và \(v_\theta\) học cái gì. Đó là nội dung Giai đoạn 3 (flow matching). Công thức (6)–(7) về PPO thuộc Giai đoạn 7.</p>
+    <div class="keyidea">Gần như mọi công thức ở đây đều là một trong ba thứ quen thuộc: <strong>trung bình</strong> (có hoặc không có tấm che), <strong>bình phương sai lệch</strong>, và <strong>đi một bước nhỏ theo hướng tốt hơn</strong>. Phần còn lại là cách viết tắt.</div>
+    <p>Câu hỏi còn bỏ ngỏ là "dự đoán" \(v_\theta\) và "đích" \(Y_1 - Y_0\) trong công thức (1) thực chất là gì. Đó là nội dung Giai đoạn 3 (flow matching).</p>
 
     <!-- ================= PART E ================= -->
     <div class="part" id="baitap">
       <span class="eyebrow">Phần E</span>
       <h2>Bài tập</h2>
-      <p class="intro">Tự làm trước, rồi mới mở đáp án. Bài 9 là bài thực hành quan trọng nhất của giai đoạn này.</p>
+      <p class="intro">Từ dễ đến khó. Tự làm trước, rồi mới mở đáp án. Bài 1–4 chỉ cần giấy bút.</p>
     </div>
 
-    <details class="ex"><summary><span class="n">1</span><span class="q">Batch hành động <code>[64, 16, 7]</code> nhân với <code>W</code> shape <code>[7, 512]</code> cho ra shape gì? Nếu đổi thành <code>W</code> shape <code>[16, 512]</code> thì sao?</span></summary>
-      <div><p><code>[64, 16, 512]</code>. Với <code>[16, 512]</code> sẽ lỗi: chiều trong là 7 (chiều cuối của A) khác 16. Muốn nhân theo chiều thời gian phải chuyển vị trước: <code>A.transpose(1, 2) @ W</code> cho <code>[64, 7, 512]</code>.</p></div></details>
+    <details class="ex"><summary><span class="n">1</span><span class="q">Đổi hệ số môn thành Toán 0.4, Lý 0.4, Anh 0.2. Tính điểm tổng kết của An (8, 7, 9).</span></summary>
+      <div><p>\(8\times0.4 + 7\times0.4 + 9\times0.2 = 3.2 + 2.8 + 1.8 = 7.8\).</p></div></details>
 
-    <details class="ex"><summary><span class="n">2</span><span class="q">Vì sao huấn luyện tối thiểu negative log-likelihood thay vì tối đa likelihood trực tiếp?</span></summary>
-      <div><p>Likelihood là tích của rất nhiều xác suất nhỏ, tràn số về 0. Log biến tích thành tổng, ổn định số và dễ lấy đạo hàm. Dấu trừ để biến bài toán "tối đa" thành "tối thiểu", đúng quy ước của optimizer. Vì log đơn điệu tăng, nghiệm không đổi.</p></div></details>
+    <details class="ex"><summary><span class="n">2</span><span class="q">Đọc công thức \(\sum_{i=1}^{4} i^2\) thành câu và tính kết quả.</span></summary>
+      <div><p>"Cộng bình phương của i, với i chạy từ 1 đến 4." Kết quả: \(1 + 4 + 9 + 16 = 30\).</p></div></details>
 
-    <details class="ex"><summary><span class="n">3</span><span class="q">Với \(L(w)=(w-3)^2+1\), chọn \(\eta=0.5\), bắt đầu từ \(w_0=-1\). Sau 1 bước, \(w\) bằng bao nhiêu? Giải thích.</span></summary>
-      <div><p>\(dL/dw = 2(w-3) = -8\) tại \(w=-1\). Cập nhật \(w = -1 - 0.5\cdot(-8) = 3\). Đến đúng đáy sau 1 bước, vì hệ số co \(1-2\eta = 0\). Đây là trường hợp đặc biệt của hàm bậc hai; mạng thật không may mắn vậy.</p></div></details>
+    <details class="ex"><summary><span class="n">3</span><span class="q">Đường loss \(L(w)=(w-3)^2+1\) có đạo hàm \(2(w-3)\). Đang ở \(w=-1\), learning rate \(\eta=0.25\). Sau một bước gradient, \(w\) bằng bao nhiêu? Loss giảm từ bao nhiêu xuống bao nhiêu?</span></summary>
+      <div><p>Đạo hàm tại \(w=-1\): \(2\times(-4) = -8\). Bước mới: \(w = -1 - 0.25\times(-8) = 1\). Loss: \((-1-3)^2+1 = 17\) giảm xuống \((1-3)^2+1 = 5\). Đạo hàm âm nên \(w\) tăng, đúng như quy tắc "đi ngược dấu đạo hàm".</p></div></details>
 
-    <details class="ex"><summary><span class="n">4</span><span class="q">ODE \(dx/d\tau=-x\), \(x_0=1\). Tính \(x(1)\) bằng Euler 4 bước. So với đáp án chính xác.</span></summary>
-      <div><p>\(\Delta=0.25\), mỗi bước nhân với \(1-0.25=0.75\). \(x(1)\approx0.75^4\approx0.316\). Chính xác \(e^{-1}\approx0.368\). Sai số giảm từ 0.118 (2 bước) xuống 0.052 (4 bước). Đường cong cần nhiều bước; đường thẳng thì không, và đó là lý do flow matching dùng đường thẳng.</p></div></details>
+    <details class="ex"><summary><span class="n">4</span><span class="q">Ly cà phê 90°C, phòng 30°C, nguội 10% phần chênh mỗi phút. Dùng Euler với bước 10 phút để tính nhiệt độ sau 10 phút. Kết quả hợp lý không? Vì sao?</span></summary>
+      <div><p>Tốc độ lúc đầu: \(-0.1\times(90-30) = -6\)°C/phút. Sau 10 phút: \(90 + 10\times(-6) = 30\)°C. Không hợp lý: nhiệt độ thật khoảng 52°C. Euler giả sử cà phê nguội đều 6°C/phút suốt 10 phút, nhưng thật ra nó nguội chậm dần (đường cong). Bước quá dài trên đường cong thì sai nhiều.</p></div></details>
 
-    <details class="ex"><summary><span class="n">5</span><span class="q">Một chiều hành động có \(q_{01}=-0.05\), \(q_{99}=0.15\). Chuẩn hóa \(a=0.05\) và \(a=-0.2\). Rồi đảo ngược: mô hình xuất \(\tilde a=0.5\), lệnh thật gửi robot là bao nhiêu?</span></summary>
-      <div><p>\(a=0.05\): \(2\cdot(0.10/0.20)-1=0\). \(a=-0.2\): \(2\cdot(-0.15/0.20)-1=-2.5\), cắt về \(-1\). Đảo ngược: \(a = q_{01} + (\tilde a+1)/2\cdot(q_{99}-q_{01}) = -0.05 + 0.75\cdot0.20 = 0.10\).</p></div></details>
+    <details class="ex"><summary><span class="n">5</span><span class="q">Một chiều hành động có \(q_{01}=-0.05\), \(q_{99}=0.15\). Chuẩn hóa \(a=0.05\) và \(a=-0.2\). Rồi đảo ngược: mô hình đưa ra \(\tilde a=0.5\), lệnh thật gửi robot là bao nhiêu?</span></summary>
+      <div><p>\(a=0.05\): \(2\times(0.10/0.20)-1=0\). \(a=-0.2\): \(2\times(-0.15/0.20)-1=-2.5\), cắt về \(-1\). Đảo ngược: \(a = q_{01} + \frac{\tilde a+1}{2}\times(q_{99}-q_{01}) = -0.05 + 0.75\times0.20 = 0.10\).</p></div></details>
 
-    <details class="ex"><summary><span class="n">6</span><span class="q">Một batch gồm 1 mẫu WidowX (7 kênh) và 1 mẫu tay người (32 kênh), \(K=32\). Nếu tính loss bằng <code>((pred - target)**2).mean()</code> không có mask, hai lỗi gì xảy ra?</span></summary>
-      <div><p>(1) Với mẫu WidowX, 25 kênh đệm vẫn bị tính lỗi: mô hình bị phạt vì dự đoán khác 0 ở những kênh vô nghĩa, và gradient bị "phí" vào đó. (2) Mẫu WidowX bị chia cho 16×32 ô dù chỉ có 16×7 ô thật, nên lỗi thật của nó bị pha loãng khoảng 4.6 lần so với mẫu tay người. Mask cùng trung bình hai tầng sửa cả hai.</p></div></details>
+    <details class="ex"><summary><span class="n">6</span><span class="q">Một cột có 3 bước. Dự đoán (1, 2, 5), đích (1, 4, 0), mask (1, 1, 0). Tính \(\ell\) theo công thức (1). Nếu quên mask thì được bao nhiêu?</span></summary>
+      <div><p>Sai lệch²: 0, 4, 25. Có mask: \((0 + 4)/2 = 2\). Quên mask: \((0+4+25)/3 \approx 9.67\), bị ô đệm làm lệch gần gấp 5 lần.</p></div></details>
 
-    <details class="ex"><summary><span class="n">7</span><span class="q">Viết dòng code đóng băng VLM, và giải thích vì sao paper đóng băng VLM ở T2A nhưng mở ở CPT.</span></summary>
-      <div><p><code>for p in model.vlm.parameters(): p.requires_grad = False</code>. Ở T2A, DiT còn ngẫu nhiên nên gradient của nó rất nhiễu; cho chảy vào VLM sẽ làm hỏng biểu diễn đã pretrain. Ngoài ra T2A không dùng ảnh, nên cũng không có gì để VLM học về thị giác. Ở CPT, DiT đã có "action prior" ổn định và ảnh được đưa vào, lúc này cần VLM thích nghi với nhận thức cho robot.</p></div></details>
+    <details class="ex"><summary><span class="n">7</span><span class="q">Vì sao paper khóa (freeze) Qwen3.5 ở giai đoạn T2A, nhưng mở khóa ở giai đoạn CPT?</span></summary>
+      <div><p>Ở T2A, DiT mới tạo nên "sửa bài" rất lung tung; nếu cho chạm vào Qwen3.5 sẽ làm hỏng kiến thức đã học kỹ. Ngoài ra T2A không dùng ảnh, nên Qwen3.5 cũng chẳng có gì về hình ảnh để học. Ở CPT, DiT đã ổn định và ảnh được đưa vào, lúc này cần Qwen3.5 thích nghi với việc nhìn cho robot. Code: <code>for p in model.vlm.parameters(): p.requires_grad = False</code>.</p></div></details>
 
-    <details class="ex"><summary><span class="n">8</span><span class="q">Ablation T2A: 2k bước cho 71.1%, 40k bước cho 60.4%. Đó có phải bằng chứng chắc chắn của overfitting không? Cần thêm gì để chắc?</span></summary>
-      <div><p>Phù hợp với overfitting nhưng chưa chắc chắn. Paper chỉ báo một lần chạy mỗi cấu hình trên một benchmark. Muốn chắc cần: nhiều seed để thấy độ dao động, loss T2A trên tập validation riêng (thấy train giảm còn val tăng), và kiểm tra trên benchmark khác. Đây là kiểu câu hỏi phản biện tốt để thảo luận với mentor.</p></div></details>
+    <details class="ex"><summary><span class="n">8</span><span class="q">Học T2A 2.000 bước đạt 71.1%, 40.000 bước chỉ còn 60.4%. Đó có phải bằng chứng chắc chắn của học vẹt không? Cần thêm gì để chắc?</span></summary>
+      <div><p>Phù hợp với học vẹt nhưng chưa chắc chắn. Paper chỉ báo một lần chạy cho mỗi cấu hình, trên một benchmark. Muốn chắc cần: chạy nhiều lần để biết mức dao động, xem loss trên tập validation riêng (thấy loss train giảm còn validation tăng), và kiểm tra trên benchmark khác. Đây là câu hỏi phản biện tốt để thảo luận với mentor.</p></div></details>
 
     <div class="qtext" id="bai9">
-      <p><strong><span style="font-family:var(--f-mono);color:var(--accent)">9</span> · Thực hành: tự viết vòng training có mask.</strong> Không nhìn bài B4, B5. Tạo dữ liệu giả: mỗi mẫu là \(x\in\mathbb{R}^{4}\) và đích \(Y\) shape <code>[8, 6]</code>. Một nửa số mẫu là "robot A" chỉ dùng 3 kênh đầu, nửa còn lại là "robot B" dùng cả 6 kênh. Viết MLP dự đoán <code>Y</code> từ <code>x</code>, loss có mask như công thức (1)–(2), AdamW, cosine schedule, gradient clipping. In loss mỗi 10 epoch và kiểm tra loss giảm.</p>
-      <p>Gợi ý: mask cho robot A là <code>mask[:, :, :3] = 1</code>; đầu ra MLP là <code>48</code> số, reshape thành <code>[B, 8, 6]</code>.</p>
+      <p><strong><span style="font-family:var(--f-mono);color:var(--accent)">9</span> · Thực hành: tự viết vòng training có mask.</strong> Cố gắng không nhìn bài B4, B5. Tạo dữ liệu giả: mỗi mẫu là \(x\) gồm 4 số và đích \(Y\) là bảng <code>[8, 6]</code>. Một nửa số mẫu là "robot A" chỉ dùng 3 cột đầu, nửa còn lại là "robot B" dùng cả 6 cột. Viết MLP dự đoán <code>Y</code> từ <code>x</code>, dùng loss có mask, AdamW, cosine schedule, gradient clipping. In loss mỗi 10 epoch và kiểm tra loss giảm.</p>
+      <p>Gợi ý: mask của robot A là <code>mask[:, :, :3] = 1</code>; đầu ra MLP có 48 số, reshape thành <code>[B, 8, 6]</code>.</p>
     </div>
     <details class="ex"><summary><span class="n">↳</span><span class="q">Xem lời giải mẫu</span></summary>
       <div><div class="code"><pre><code>import torch, torch.nn as nn
@@ -804,9 +1096,9 @@ x = torch.randn(N, 4)
 W_true = torch.randn(4, H * K)
 Y = torch.tanh(x @ W_true).reshape(N, H, K)   # đích giả có quy luật
 mask = torch.zeros(N, H, K)
-mask[: N // 2, :, :3] = 1                     # robot A: 3 kênh
-mask[N // 2 :, :, :] = 1                      # robot B: 6 kênh
-Y = Y * mask                                  # phần đệm = 0, giống paper
+mask[: N // 2, :, :3] = 1                     # robot A: 3 cột
+mask[N // 2 :, :, :] = 1                      # robot B: 6 cột
+Y = Y * mask                                  # ô đệm = 0, giống paper
 
 model = nn.Sequential(nn.Linear(4, 128), nn.GELU(), nn.Linear(128, H * K))
 opt = torch.optim.AdamW(model.parameters(), lr=3e-3, weight_decay=1e-2)
@@ -814,7 +1106,7 @@ steps_per_epoch, epochs = N // 64, 50
 sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * steps_per_epoch)
 
 for epoch in range(epochs):
-    perm = torch.randperm(N)
+    perm = torch.randperm(N)                  # xáo trộn thứ tự mỗi epoch
     for i in range(steps_per_epoch):
         idx = perm[i * 64:(i + 1) * 64]
         pred = model(x[idx]).reshape(-1, H, K)
@@ -826,40 +1118,42 @@ for epoch in range(epochs):
         sched.step()
     if epoch % 10 == 0:
         print(epoch, round(loss.item(), 4))</code></pre></div>
-      <p>Mở rộng: in riêng loss của robot A và robot B; thử bỏ mask và quan sát loss của robot A thay đổi thế nào.</p></div></details>
+      <div class="out">Kết quả chạy thử: loss 0.144 → 0.052 sau 40 epoch.</div>
+      <p>Mở rộng: in riêng loss của robot A và robot B; thử bỏ mask và xem loss của robot A thay đổi thế nào.</p></div></details>
 
     <!-- ================= PART F ================= -->
     <div class="part" id="checklist">
       <span class="eyebrow">Phần F</span>
       <h2>Tự kiểm tra trước khi sang Giai đoạn 1</h2>
-      <p class="intro">Đánh dấu khi bạn tự trả lời được mà không nhìn trang. Tiến độ được lưu trên trình duyệt này. Đạt khoảng 80% là đủ để đi tiếp.</p>
+      <p class="intro">Mẹo: nếu bạn giải thích được mỗi câu cho một người bạn không học IT, bạn đã hiểu. Tiến độ được lưu trên trình duyệt này. Khoảng 80% là đủ để đi tiếp.</p>
     </div>
     <ul class="checks" id="checks">
-      <li><input type="checkbox" id="c1"><label for="c1">Đọc một công thức, viết được shape cạnh từng ký hiệu (ví dụ \(Y\in\mathbb{R}^{H\times K}\), batch <code>[B, H, K]</code>).</label></li>
-      <li><input type="checkbox" id="c2"><label for="c2">Giải thích vì sao MSE thất bại khi dữ liệu có hai cách làm đúng, và liên hệ MSE với Gaussian.</label></li>
-      <li><input type="checkbox" id="c3"><label for="c3">Giải thích gradient descent và chain rule; biết vì sao learning rate quá lớn làm phân kỳ.</label></li>
-      <li><input type="checkbox" id="c4"><label for="c4">Viết một bước Euler, và giải thích vì sao đường thẳng chỉ cần ít bước.</label></li>
-      <li><input type="checkbox" id="c5"><label for="c5">Tính tay công thức (5) và đảo ngược nó.</label></li>
-      <li><input type="checkbox" id="c6"><label for="c6">Phân biệt <code>no_grad</code>, <code>detach</code> và <code>requires_grad=False</code>; biết stop-gradient trong paper là gì.</label></li>
-      <li><input type="checkbox" id="c7"><label for="c7">Viết vòng training đầy đủ từ đầu: DataLoader, AdamW, cosine schedule, clipping, validation.</label></li>
-      <li><input type="checkbox" id="c8"><label for="c8">Tự viết loss có mask theo công thức (1)–(2) và giải thích vì sao cần mask.</label></li>
-      <li><input type="checkbox" id="c9"><label for="c9">Giải thích cross-entropy và liên hệ với công thức (3).</label></li>
-      <li><input type="checkbox" id="c10"><label for="c10">Giải thích "freeze VLM, chỉ train DiT" và vì sao co-training chống catastrophic forgetting (công thức (4)).</label></li>
-      <li><input type="checkbox" id="c11"><label for="c11">Đọc ablation T2A theo số bước và giải thích bằng khái niệm overfitting.</label></li>
+      <li><input type="checkbox" id="c1"><label for="c1">Đọc được một công thức có \(\sum\) theo 4 bước (dịch, nói thành câu, thay số, để làm gì).</label></li>
+      <li><input type="checkbox" id="c2"><label for="c2">Giải thích phép nhân ma trận bằng ví dụ bảng điểm × hệ số; nói được vì sao số môn phải bằng số hệ số.</label></li>
+      <li><input type="checkbox" id="c3"><label for="c3">Giải thích "bảng hành động 16 × 7" và tensor <code>[32, 16, 7]</code> là gì.</label></li>
+      <li><input type="checkbox" id="c4"><label for="c4">Giải thích gradient descent bằng ví dụ vặn núm radio; nói được vì sao learning rate quá lớn thì hỏng.</label></li>
+      <li><input type="checkbox" id="c5"><label for="c5">Giải thích quả chuông Gaussian và kỳ vọng bằng ví dụ thời gian đi học.</label></li>
+      <li><input type="checkbox" id="c6"><label for="c6">Giải thích vì sao "đoán trung bình" thất bại khi có hai cách làm đúng.</label></li>
+      <li><input type="checkbox" id="c7"><label for="c7">Giải thích Euler bằng ví dụ ly cà phê, và vì sao đường thẳng chỉ cần ít bước.</label></li>
+      <li><input type="checkbox" id="c8"><label for="c8">Tính tay công thức (5) và đảo ngược nó.</label></li>
+      <li><input type="checkbox" id="c9"><label for="c9">Tính tay công thức (1) với một cột có ô đệm, và giải thích vai trò của mask.</label></li>
+      <li><input type="checkbox" id="c10"><label for="c10">Kể được 5 bước của vòng lặp training và dòng code tương ứng.</label></li>
+      <li><input type="checkbox" id="c11"><label for="c11">Giải thích MSE và cross-entropy khác nhau ở đâu.</label></li>
+      <li><input type="checkbox" id="c12"><label for="c12">Giải thích overfitting, ablation, freeze và "học cái mới quên cái cũ" bằng ví dụ đời thường.</label></li>
     </ul>
 
     <section class="lesson">
       <h3><span class="n">→</span>Tài liệu học thêm</h3>
       <ul>
-        <li>3Blue1Brown: <a href="https://www.3blue1brown.com/topics/linear-algebra">Essence of Linear Algebra</a> và <a href="https://www.3blue1brown.com/topics/neural-networks">Neural Networks</a>, trực giác hình học rất tốt cho A1, A3.</li>
-        <li>Andrej Karpathy: <a href="https://karpathy.ai/zero-to-hero.html">Neural Networks: Zero to Hero</a>, đặc biệt video đầu (micrograd) để hiểu backprop từ gốc.</li>
-        <li><a href="https://d2l.ai/">Dive into Deep Learning</a>, chương 2 (Preliminaries) và 3 (Linear Neural Networks). Có bản dịch tiếng Việt <em>Đắm mình vào Học Sâu</em>.</li>
+        <li>3Blue1Brown: <a href="https://www.3blue1brown.com/topics/linear-algebra">Essence of Linear Algebra</a> và <a href="https://www.3blue1brown.com/topics/neural-networks">Neural Networks</a>: video hoạt hình, rất hợp người mới.</li>
+        <li>Andrej Karpathy: <a href="https://karpathy.ai/zero-to-hero.html">Neural Networks: Zero to Hero</a>, video đầu tiên (micrograd) giải thích đạo hàm và backpropagation từ con số 0.</li>
+        <li><a href="https://d2l.ai/">Dive into Deep Learning</a>, chương 2 và 3. Có bản dịch tiếng Việt <em>Đắm mình vào Học Sâu</em>.</li>
         <li><a href="https://pytorch.org/tutorials/beginner/basics/intro.html">PyTorch: Learn the Basics</a>, đọc song song với Phần B.</li>
       </ul>
-      <p>Khi hoàn thành checklist, bắt đầu Giai đoạn 1 (Transformer & LLM). Bài tích vô hướng ở A1 và cross-entropy ở C1 sẽ được dùng ngay.</p>
+      <p>Chỗ nào vẫn vướng, hãy gửi đúng câu hoặc công thức đó để được giải thích riêng theo 4 bước.</p>
     </section>
 
-    <footer>Giai đoạn 0 · Roadmap học VLA &amp; Qwen-VLA. Số liệu paper lấy từ bản PDF arXiv:2605.30280v2.</footer>
+    <footer>Giai đoạn 0 · Roadmap học VLA &amp; Qwen-VLA. Số liệu paper lấy từ bản PDF arXiv:2605.30280v2. Số liệu trong các ví dụ đời thường là minh họa.</footer>
   </main>
 </div>
 
@@ -868,23 +1162,20 @@ for epoch in range(epochs):
   "use strict";
   var css = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
 
-  /* ---------- syntax highlight + copy buttons ---------- */
+  /* ---------- syntax highlight + copy ---------- */
   var KW = /\b(def|class|for|in|return|import|from|as|if|else|with|lambda|None|True|False|not|and|or|super|range|print|sum|len)\b/g;
   function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   document.querySelectorAll(".code pre code").forEach(function (el) {
     var raw = el.textContent;
-    var lines = raw.split("\n").map(function (line) {
-      var code = line, comment = "";
-      var idx = line.indexOf("#");
+    el.innerHTML = raw.split("\n").map(function (line) {
+      var code = line, comment = "", idx = line.indexOf("#");
       if (idx >= 0) { code = line.slice(0, idx); comment = line.slice(idx); }
       var parts = code.split(/("[^"]*")/g).map(function (p, i) {
         if (i % 2 === 1) return '<span class="st">' + esc(p) + "</span>";
         return esc(p).replace(KW, '<span class="kw">$1</span>');
       }).join("");
       return parts + (comment ? '<span class="cm">' + esc(comment) + "</span>" : "");
-    });
-    el.innerHTML = lines.join("\n");
-    var box = el.closest(".code");
+    }).join("\n");
     var b = document.createElement("button");
     b.type = "button"; b.className = "copy"; b.textContent = "Sao chép";
     b.addEventListener("click", function () {
@@ -896,20 +1187,36 @@ for epoch in range(epochs):
       };
       try { navigator.clipboard.writeText(raw).then(done, fallback); } catch (e) { fallback(); }
     });
-    box.appendChild(b);
+    el.closest(".code").appendChild(b);
   });
 
-  /* ---------- canvas helper ---------- */
   function setup(cv) {
-    var dpr = window.devicePixelRatio || 1;
-    var w = cv.clientWidth, h = cv.clientHeight;
+    var dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
     cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
-    var ctx = cv.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    ctx.font = "12px " + css("--f-body");
-    return { ctx: ctx, w: w, h: h };
+    var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+    c.font = "12px " + css("--f-body");
+    return { c: c, ctx: c, w: w, h: h };
   }
+
+  /* ---------- A1 grades ---------- */
+  var G = [[8, 7, 9], [6, 9, 7], [9, 8, 6]], Wt = [0.5, 0.3, 0.2], names = ["An", "Bình", "Chi"], subj = ["Toán", "Lý", "Anh"];
+  var rows = document.querySelectorAll("#grades tr.pick"), totRows = document.querySelectorAll("#totals tbody tr");
+  function pick(i) {
+    rows.forEach(function (r, k) { r.classList.toggle("sel", k === i); });
+    totRows.forEach(function (r, k) { r.classList.toggle("sel", k === i); });
+    var parts = G[i].map(function (g, j) { return g + " × " + Wt[j]; });
+    var vals = G[i].map(function (g, j) { return (g * Wt[j]).toFixed(1); });
+    var sum = G[i].reduce(function (a, g, j) { return a + g * Wt[j]; }, 0);
+    document.getElementById("mmCalc").textContent =
+      names[i] + ": " + parts.join(" + ") + "\n     = " + vals.join(" + ") + " = " + sum.toFixed(1) +
+      "\n(" + subj.map(function (s, j) { return s + " × hệ số " + Wt[j]; }).join(", ") + ")";
+  }
+  rows.forEach(function (r) {
+    r.tabIndex = 0;
+    r.addEventListener("click", function () { pick(+r.dataset.i); });
+    r.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(+r.dataset.i); } });
+  });
+  pick(0);
 
   /* ---------- A1 shape calculator ---------- */
   var shA = document.getElementById("shA"), shB = document.getElementById("shB"), shRes = document.getElementById("shRes");
@@ -922,110 +1229,208 @@ for epoch in range(epochs):
     var a = parse(shA.value), b = parse(shB.value);
     shRes.className = "shape-res";
     if (!a || !b) { shRes.textContent = "Nhập các số nguyên dương, cách nhau bởi dấu phẩy."; shRes.classList.add("bad"); return; }
-    if (a.length < 2 || b.length < 2) { shRes.textContent = "Ví dụ này cần mỗi tensor có ít nhất 2 chiều."; shRes.classList.add("bad"); return; }
+    if (a.length < 2 || b.length < 2) { shRes.textContent = "Ví dụ này cần mỗi bảng có ít nhất 2 chiều (hàng, cột)."; shRes.classList.add("bad"); return; }
     var n1 = a[a.length - 1], n2 = b[b.length - 2];
-    if (n1 !== n2) { shRes.textContent = "Lỗi: chiều trong không khớp (" + n1 + " ≠ " + n2 + "). Chiều cuối của A phải bằng chiều kế cuối của B."; shRes.classList.add("bad"); return; }
-    var ba = a.slice(0, -2), bb = b.slice(0, -2), out = [];
-    var L = Math.max(ba.length, bb.length);
+    if (n1 !== n2) { shRes.textContent = "Lỗi: số cột của A (" + n1 + ") khác số hàng của B (" + n2 + "). Giống như có " + n1 + " môn mà chỉ có " + n2 + " hệ số."; shRes.classList.add("bad"); return; }
+    var ba = a.slice(0, -2), bb = b.slice(0, -2), out = [], L = Math.max(ba.length, bb.length);
     for (var i = 0; i < L; i++) {
       var x = ba[ba.length - 1 - i], y = bb[bb.length - 1 - i];
       if (x === undefined) x = 1; if (y === undefined) y = 1;
-      if (x !== y && x !== 1 && y !== 1) { shRes.textContent = "Lỗi: chiều batch không broadcast được (" + x + " và " + y + ")."; shRes.classList.add("bad"); return; }
+      if (x !== y && x !== 1 && y !== 1) { shRes.textContent = "Lỗi: chiều batch không khớp (" + x + " và " + y + ")."; shRes.classList.add("bad"); return; }
       out.unshift(Math.max(x, y));
     }
     out.push(a[a.length - 2], b[b.length - 1]);
-    shRes.textContent = "Kết quả: [" + out.join(", ") + "]   (chiều trong " + n1 + " bị \"tiêu\" đi)";
+    shRes.textContent = "Kết quả: [" + out.join(", ") + "]   (con số chung " + n1 + " bị \"tiêu\" đi)";
     shRes.classList.add("ok");
   }
   shA.addEventListener("input", calcShape); shB.addEventListener("input", calcShape); calcShape();
 
-  /* ---------- A2 bimodal ---------- */
-  var cvB = document.getElementById("cvBimodal"), sepR = document.getElementById("sepR"), wR = document.getElementById("wR");
-  function gauss(x, m, s) { return Math.exp(-0.5 * ((x - m) / s) * ((x - m) / s)) / (s * Math.sqrt(2 * Math.PI)); }
-  function drawBimodal() {
-    var S = setup(cvB), c = S.ctx, w = S.w, h = S.h;
-    var sep = +sepR.value, wl = +wR.value, s = 0.35;
-    document.getElementById("sepO").textContent = sep.toFixed(1);
-    document.getElementById("wO").textContent = wl.toFixed(2);
-    var m1 = -sep / 2, m2 = sep / 2, xmin = -3, xmax = 3, pad = 28;
-    var X = function (x) { return pad + (x - xmin) / (xmax - xmin) * (w - 2 * pad); };
-    var pdf = function (x) { return wl * gauss(x, m1, s) + (1 - wl) * gauss(x, m2, s); };
-    var maxp = 0; for (var t = xmin; t <= xmax; t += 0.01) maxp = Math.max(maxp, pdf(t));
-    var Y = function (p) { return h - pad - p / maxp * (h - 2 * pad - 16); };
-    c.strokeStyle = css("--rule"); c.lineWidth = 1;
-    c.beginPath(); c.moveTo(pad, h - pad); c.lineTo(w - pad, h - pad); c.stroke();
-    c.fillStyle = css("--accent-soft"); c.strokeStyle = css("--accent"); c.lineWidth = 2;
-    c.beginPath(); c.moveTo(X(xmin), Y(0));
-    for (var x = xmin; x <= xmax; x += 0.01) c.lineTo(X(x), Y(pdf(x)));
-    c.lineTo(X(xmax), Y(0)); c.closePath(); c.fill(); c.stroke();
-    var mean = wl * m1 + (1 - wl) * m2;
-    c.strokeStyle = css("--bad"); c.lineWidth = 2; c.setLineDash([5, 4]);
-    c.beginPath(); c.moveTo(X(mean), h - pad); c.lineTo(X(mean), 14); c.stroke(); c.setLineDash([]);
-    c.fillStyle = css("--bad"); c.textAlign = "center";
-    c.fillText("dự đoán MSE", Math.min(Math.max(X(mean), 50), w - 50), 12);
-    c.fillStyle = css("--muted");
-    c.fillText("từ trái", X(m1), h - 8); c.fillText("từ phải", X(m2), h - 8);
-    var rel = pdf(mean) / maxp;
-    document.getElementById("bimodalRead").textContent =
-      "Mật độ dữ liệu tại điểm dự đoán MSE: " + (rel * 100).toFixed(0) + "% so với đỉnh cao nhất" +
-      (rel < 0.15 ? "  →  gần như không có ví dụ nào làm như vậy." : ".");
+  /* ---------- A2 fit ---------- */
+  var X = [20, 25, 30, 35, 40], Yv = [3, 4, 4.5, 5.5, 6];
+  var wFit = document.getElementById("wFit"), cvF = document.getElementById("cvFit"), cvL = document.getElementById("cvLoss"), path = [], LR = 0.00035;
+  function mse(w) { return X.reduce(function (a, x, i) { var e = w * x - Yv[i]; return a + e * e; }, 0) / X.length; }
+  function grad(w) { return X.reduce(function (a, x, i) { return a + 2 * (w * x - Yv[i]) * x; }, 0) / X.length; }
+  function drawFit() {
+    var w = +wFit.value; document.getElementById("wFitO").textContent = w.toFixed(3);
+    var S = setup(cvF), c = S.c, W = S.w, H = S.h, pl = 36, pb = 28, pt = 12, pr = 12;
+    var sx = function (x) { return pl + (x - 15) / 30 * (W - pl - pr); }, sy = function (y) { return H - pb - y / 8 * (H - pb - pt); };
+    c.strokeStyle = css("--rule"); c.lineWidth = 1; c.beginPath(); c.moveTo(pl, pt); c.lineTo(pl, H - pb); c.lineTo(W - pr, H - pb); c.stroke();
+    c.fillStyle = css("--muted"); c.textAlign = "center";
+    [20, 30, 40].forEach(function (x) { c.fillText(x + " m²", sx(x), H - 10); });
+    c.textAlign = "right"; [0, 4, 8].forEach(function (y) { c.fillText(y + "tr", pl - 5, sy(y) + 4); });
+    c.strokeStyle = css("--bad"); c.lineWidth = 1.5;
+    X.forEach(function (x, i) { c.beginPath(); c.moveTo(sx(x), sy(Yv[i])); c.lineTo(sx(x), sy(w * x)); c.stroke(); });
+    c.strokeStyle = css("--accent"); c.lineWidth = 2.5; c.beginPath(); c.moveTo(sx(15), sy(w * 15)); c.lineTo(sx(45), sy(w * 45)); c.stroke();
+    c.fillStyle = css("--ink"); X.forEach(function (x, i) { c.beginPath(); c.arc(sx(x), sy(Yv[i]), 4.5, 0, 2 * Math.PI); c.fill(); });
+    var S2 = setup(cvL), d = S2.c, W2 = S2.w, H2 = S2.h, lmax = 8;
+    var lx = function (v) { return pl + (v - 0.05) / 0.21 * (W2 - pl - pr); }, ly = function (l) { return H2 - pb - Math.min(l, lmax) / lmax * (H2 - pb - pt); };
+    d.strokeStyle = css("--rule"); d.lineWidth = 1; d.beginPath(); d.moveTo(pl, pt); d.lineTo(pl, H2 - pb); d.lineTo(W2 - pr, H2 - pb); d.stroke();
+    d.fillStyle = css("--muted"); d.textAlign = "center"; d.fillText("w →", W2 - 24, H2 - 10); d.fillText("loss", pl + 16, pt + 8);
+    d.strokeStyle = css("--muted"); d.lineWidth = 1.5; d.beginPath();
+    for (var v = 0.05; v <= 0.2601; v += 0.002) { if (v === 0.05) d.moveTo(lx(v), ly(mse(v))); else d.lineTo(lx(v), ly(mse(v))); }
+    d.stroke();
+    d.fillStyle = css("--amber"); path.forEach(function (p) { d.beginPath(); d.arc(lx(p), ly(mse(p)), 3, 0, 2 * Math.PI); d.fill(); });
+    d.fillStyle = css("--accent"); d.beginPath(); d.arc(lx(w), ly(mse(w)), 6, 0, 2 * Math.PI); d.fill();
+    var g = grad(w), preds = X.map(function (x) { return (w * x).toFixed(2); });
+    document.getElementById("fitCalc").textContent =
+      "Diện tích (m²):   " + X.join("     ") + "\n" +
+      "Giá thật (tr):    " + Yv.map(function (y) { return y.toFixed(1); }).join("    ") + "\n" +
+      "Đoán = w×S:       " + preds.join("   ") + "\n" +
+      "Loss (MSE) = " + mse(w).toFixed(3) + "    Đạo hàm = " + g.toFixed(1) +
+      (Math.abs(g) < 2 ? "   → gần đáy rồi" : g < 0 ? "   → âm: nên TĂNG w" : "   → dương: nên GIẢM w");
   }
-  sepR.addEventListener("input", drawBimodal); wR.addEventListener("input", drawBimodal);
+  wFit.addEventListener("input", function () { path = []; drawFit(); });
+  document.getElementById("gdStep").addEventListener("click", function () {
+    var w = +wFit.value; path.push(w);
+    wFit.value = Math.min(0.26, Math.max(0.05, w - LR * grad(w))); drawFit();
+  });
+  document.getElementById("gdReset").addEventListener("click", function () { path = []; wFit.value = 0.08; drawFit(); });
 
-  /* ---------- A3 gradient descent ---------- */
+  /* ---------- A2 GD parabola ---------- */
   var cvG = document.getElementById("cvGD"), lrR = document.getElementById("lrR"), w0R = document.getElementById("w0R");
   function drawGD() {
-    var S = setup(cvG), c = S.ctx, w = S.w, h = S.h;
+    var S = setup(cvG), c = S.c, w = S.w, h = S.h;
     var lr = +lrR.value, w0 = +w0R.value;
     document.getElementById("lrO").textContent = lr.toFixed(2);
     document.getElementById("w0O").textContent = w0.toFixed(1);
     var L = function (v) { return (v - 3) * (v - 3) + 1; };
     var xmin = -3, xmax = 9, ymax = 40, pad = 26;
-    var X = function (v) { return pad + (v - xmin) / (xmax - xmin) * (w - 2 * pad); };
-    var Y = function (l) { return h - pad - Math.min(l, ymax) / ymax * (h - 2 * pad); };
+    var Xs = function (v) { return pad + (v - xmin) / (xmax - xmin) * (w - 2 * pad); };
+    var Ys = function (l) { return h - pad - Math.min(l, ymax) / ymax * (h - 2 * pad); };
     c.strokeStyle = css("--rule"); c.beginPath(); c.moveTo(pad, h - pad); c.lineTo(w - pad, h - pad); c.stroke();
     c.strokeStyle = css("--muted"); c.lineWidth = 1.5; c.beginPath();
-    for (var v = xmin; v <= xmax; v += 0.02) { var yy = Y(L(v)); if (v === xmin) c.moveTo(X(v), yy); else c.lineTo(X(v), yy); }
+    for (var v = xmin; v <= xmax; v += 0.02) { var yy = Ys(L(v)); if (v === xmin) c.moveTo(Xs(v), yy); else c.lineTo(Xs(v), yy); }
     c.stroke();
-    var path = [w0], cur = w0, diverged = false;
-    for (var i = 0; i < 20; i++) { cur = cur - lr * 2 * (cur - 3); path.push(cur); if (Math.abs(cur) > 1e4) { diverged = true; break; } }
+    var pth = [w0], cur = w0, diverged = false;
+    for (var i = 0; i < 20; i++) { cur = cur - lr * 2 * (cur - 3); pth.push(cur); if (Math.abs(cur) > 1e4) { diverged = true; break; } }
     c.strokeStyle = css("--accent"); c.lineWidth = 1.5; c.beginPath();
-    path.forEach(function (p, i) { var px = X(Math.max(xmin, Math.min(xmax, p))), py = Y(L(p)); if (i === 0) c.moveTo(px, py); else c.lineTo(px, py); });
+    pth.forEach(function (p, i) { var px = Xs(Math.max(xmin, Math.min(xmax, p))), py = Ys(L(p)); if (i === 0) c.moveTo(px, py); else c.lineTo(px, py); });
     c.stroke();
-    path.forEach(function (p, i) {
+    pth.forEach(function (p, i) {
       if (p < xmin || p > xmax) return;
       c.fillStyle = i === 0 ? css("--amber") : css("--accent");
-      c.beginPath(); c.arc(X(p), Y(L(p)), i === 0 ? 5 : 3.5, 0, 2 * Math.PI); c.fill();
+      c.beginPath(); c.arc(Xs(p), Ys(L(p)), i === 0 ? 5 : 3.5, 0, 2 * Math.PI); c.fill();
     });
-    c.fillStyle = css("--muted"); c.textAlign = "center"; c.fillText("đáy w = 3", X(3), h - 8);
-    var last = path[path.length - 1];
-    var msg = diverged || Math.abs(last - 3) > Math.abs(w0 - 3)
-      ? "Phân kỳ: |1 − 2η| = " + Math.abs(1 - 2 * lr).toFixed(2) + " > 1, mỗi bước đi xa đáy hơn."
-      : "Sau 20 bước: w = " + last.toFixed(3) + ", L(w) = " + L(last).toFixed(4) + ". Hệ số co mỗi bước |1 − 2η| = " + Math.abs(1 - 2 * lr).toFixed(2) + ".";
-    document.getElementById("gdRead").textContent = msg;
+    c.fillStyle = css("--muted"); c.textAlign = "center"; c.fillText("đáy", Xs(3), h - 8);
+    var last = pth[pth.length - 1];
+    document.getElementById("gdRead").textContent = diverged || Math.abs(last - 3) > Math.abs(w0 - 3)
+      ? "Phân kỳ: mỗi bước nhảy càng xa đáy hơn. Learning rate quá lớn."
+      : "Sau 20 bước: còn cách đáy " + Math.abs(last - 3).toFixed(3) + (Math.abs(1 - 2 * lr) > 0.8 ? " (đi chậm hoặc nhảy qua lại nhiều)." : " (đến đáy nhanh).");
   }
   lrR.addEventListener("input", drawGD); w0R.addEventListener("input", drawGD);
 
-  /* ---------- A4 Euler ---------- */
+  /* ---------- A3 histogram ---------- */
+  var samples = [], cvH = document.getElementById("cvHist");
+  function randn() { var u = 1 - Math.random(), v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function drawHist() {
+    var S = setup(cvH), c = S.c, W = S.w, H = S.h, pl = 30, pb = 28, pt = 14, pr = 14;
+    var lo = 10, hi = 30, bins = 20, cnt = new Array(bins).fill(0);
+    samples.forEach(function (s) { var b = Math.floor((s - lo) / (hi - lo) * bins); if (b >= 0 && b < bins) cnt[b]++; });
+    var maxc = Math.max(1, Math.max.apply(null, cnt)), bw = (W - pl - pr) / bins;
+    c.strokeStyle = css("--rule"); c.beginPath(); c.moveTo(pl, H - pb); c.lineTo(W - pr, H - pb); c.stroke();
+    c.fillStyle = css("--accent");
+    cnt.forEach(function (n, i) { var bh = n / maxc * (H - pb - pt); c.fillRect(pl + i * bw + 1, H - pb - bh, bw - 2, bh); });
+    if (samples.length >= 50) {
+      c.strokeStyle = css("--amber"); c.lineWidth = 2; c.beginPath();
+      for (var x = lo; x <= hi; x += 0.1) {
+        var dens = Math.exp(-0.5 * Math.pow((x - 20) / 3, 2)) / (3 * Math.sqrt(2 * Math.PI)) * samples.length * ((hi - lo) / bins);
+        var px = pl + (x - lo) / (hi - lo) * (W - pl - pr), py = H - pb - dens / maxc * (H - pb - pt);
+        if (x === lo) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.stroke();
+    }
+    c.fillStyle = css("--muted"); c.textAlign = "center";
+    [10, 15, 20, 25, 30].forEach(function (t) { c.fillText(t + "′", pl + (t - lo) / (hi - lo) * (W - pl - pr), H - 10); });
+    var mean = samples.length ? samples.reduce(function (a, b) { return a + b; }, 0) / samples.length : 0;
+    document.getElementById("histRead").textContent = samples.length
+      ? "Đã ghi " + samples.length + " ngày · Trung bình = " + mean.toFixed(2) + " phút (kỳ vọng thật: 20)" + (samples.length >= 50 ? " · Đường cam: quả chuông N(20, 3²)" : "")
+      : "Chưa có dữ liệu. Bấm một nút để bắt đầu ghi.";
+  }
+  document.querySelectorAll("[data-n]").forEach(function (b) {
+    b.addEventListener("click", function () { for (var i = 0; i < +b.dataset.n; i++) samples.push(20 + 3 * randn()); drawHist(); });
+  });
+  document.getElementById("hReset").addEventListener("click", function () { samples = []; drawHist(); });
+
+  /* ---------- A3 bimodal ---------- */
+  var cvB = document.getElementById("cvBimodal"), sepR = document.getElementById("sepR"), wR = document.getElementById("wR");
+  function gauss(x, m, s) { return Math.exp(-0.5 * ((x - m) / s) * ((x - m) / s)) / (s * Math.sqrt(2 * Math.PI)); }
+  function drawBimodal() {
+    var S = setup(cvB), c = S.c, w = S.w, h = S.h;
+    var sep = +sepR.value, wl = +wR.value, s = 0.35;
+    document.getElementById("sepO").textContent = sep.toFixed(1);
+    document.getElementById("wO").textContent = wl.toFixed(2);
+    var m1 = -sep / 2, m2 = sep / 2, xmin = -3, xmax = 3, pad = 28;
+    var Xs = function (x) { return pad + (x - xmin) / (xmax - xmin) * (w - 2 * pad); };
+    var pdf = function (x) { return wl * gauss(x, m1, s) + (1 - wl) * gauss(x, m2, s); };
+    var maxp = 0; for (var t = xmin; t <= xmax; t += 0.01) maxp = Math.max(maxp, pdf(t));
+    var Ys = function (p) { return h - pad - p / maxp * (h - 2 * pad - 16); };
+    c.strokeStyle = css("--rule"); c.lineWidth = 1;
+    c.beginPath(); c.moveTo(pad, h - pad); c.lineTo(w - pad, h - pad); c.stroke();
+    c.fillStyle = css("--accent-soft"); c.strokeStyle = css("--accent"); c.lineWidth = 2;
+    c.beginPath(); c.moveTo(Xs(xmin), Ys(0));
+    for (var x = xmin; x <= xmax; x += 0.01) c.lineTo(Xs(x), Ys(pdf(x)));
+    c.lineTo(Xs(xmax), Ys(0)); c.closePath(); c.fill(); c.stroke();
+    var mean = wl * m1 + (1 - wl) * m2;
+    c.strokeStyle = css("--bad"); c.lineWidth = 2; c.setLineDash([5, 4]);
+    c.beginPath(); c.moveTo(Xs(mean), h - pad); c.lineTo(Xs(mean), 14); c.stroke(); c.setLineDash([]);
+    c.fillStyle = css("--bad"); c.textAlign = "center";
+    c.fillText("đoán trung bình (MSE)", Math.min(Math.max(Xs(mean), 70), w - 70), 12);
+    c.fillStyle = css("--muted");
+    c.fillText("từ trái", Xs(m1), h - 8); c.fillText("từ phải", Xs(m2), h - 8);
+    var rel = pdf(mean) / maxp;
+    document.getElementById("bimodalRead").textContent =
+      "Mức dữ liệu tại điểm đoán trung bình: " + (rel * 100).toFixed(0) + "% so với đỉnh cao nhất" +
+      (rel < 0.15 ? "  →  gần như chưa ai từng làm như vậy." : ".");
+  }
+  sepR.addEventListener("input", drawBimodal); wR.addEventListener("input", drawBimodal);
+
+  /* ---------- A4 cooling ---------- */
+  var dtVals = [1, 2, 5, 10], dtR = document.getElementById("dtR"), cvC = document.getElementById("cvCool");
+  function drawCool() {
+    var dt = dtVals[+dtR.value]; document.getElementById("dtO").textContent = dt;
+    var S = setup(cvC), c = S.c, W = S.w, H = S.h, pl = 40, pb = 28, pt = 12, pr = 14, Tend = 20;
+    var sx = function (t) { return pl + t / Tend * (W - pl - pr); }, sy = function (T) { return H - pb - (T - 25) / 70 * (H - pb - pt); };
+    c.strokeStyle = css("--rule"); c.lineWidth = 1; c.beginPath(); c.moveTo(pl, pt); c.lineTo(pl, H - pb); c.lineTo(W - pr, H - pb); c.stroke();
+    c.setLineDash([3, 4]); c.beginPath(); c.moveTo(pl, sy(30)); c.lineTo(W - pr, sy(30)); c.stroke(); c.setLineDash([]);
+    c.fillStyle = css("--muted"); c.textAlign = "right"; [30, 60, 90].forEach(function (T) { c.fillText(T + "°", pl - 5, sy(T) + 4); });
+    c.textAlign = "center"; [0, 5, 10, 15, 20].forEach(function (t) { c.fillText(t + "′", sx(t), H - 10); });
+    c.strokeStyle = css("--muted"); c.lineWidth = 2; c.setLineDash([6, 4]); c.beginPath();
+    for (var t = 0; t <= Tend; t += 0.2) { var T = 30 + 60 * Math.exp(-0.1 * t); if (t === 0) c.moveTo(sx(t), sy(T)); else c.lineTo(sx(t), sy(T)); }
+    c.stroke(); c.setLineDash([]);
+    var cur = 90, pts = [[0, cur]], lines = ["Phút   Nhiệt độ   Tốc độ = −0.1×(T−30)   Đổi = bước × tốc độ"];
+    for (var s = 0; s < Tend / dt; s++) {
+      var rate = -0.1 * (cur - 30);
+      if (s < 6) lines.push(String(s * dt).padStart(4) + "   " + cur.toFixed(2).padStart(7) + "°   " + rate.toFixed(2).padStart(10) + " °/phút        " + (dt * rate).toFixed(2));
+      cur = cur + dt * rate; pts.push([(s + 1) * dt, cur]);
+    }
+    if (Tend / dt > 6) lines.push("  …");
+    c.strokeStyle = css("--accent"); c.lineWidth = 2.5; c.beginPath();
+    pts.forEach(function (p, i) { if (i === 0) c.moveTo(sx(p[0]), sy(p[1])); else c.lineTo(sx(p[0]), sy(p[1])); }); c.stroke();
+    c.fillStyle = css("--accent"); pts.forEach(function (p) { c.beginPath(); c.arc(sx(p[0]), sy(p[1]), 3.5, 0, 2 * Math.PI); c.fill(); });
+    var exact = 30 + 60 * Math.exp(-2);
+    lines.push("", "Sau 20 phút · Tính từng bước: " + cur.toFixed(2) + "°   Thật: " + exact.toFixed(2) + "°   Sai: " + Math.abs(cur - exact).toFixed(2) + "°");
+    document.getElementById("coolCalc").textContent = lines.join("\n");
+  }
+  dtR.addEventListener("input", drawCool);
+
+  /* ---------- A4 Euler curve vs line ---------- */
   var cvE = document.getElementById("cvEuler"), nR = document.getElementById("nR");
   var bC = document.getElementById("evCurve"), bL = document.getElementById("evLine"), mode = "curve";
   function setMode(m) { mode = m; bC.setAttribute("aria-pressed", m === "curve"); bL.setAttribute("aria-pressed", m === "line"); drawEuler(); }
   bC.addEventListener("click", function () { setMode("curve"); }); bL.addEventListener("click", function () { setMode("line"); });
   function drawEuler() {
-    var S = setup(cvE), c = S.ctx, w = S.w, h = S.h;
+    var S = setup(cvE), c = S.c, w = S.w, h = S.h;
     var n = +nR.value; document.getElementById("nO").textContent = n;
-    var size = Math.min(w, h * 1.6), cx = w / 2, cy = h / 2, sc = (h - 50) / 2.6;
+    var cx = w / 2, cy = h / 2, sc = (h - 50) / 2.6;
     var P = function (x, y) { return [cx + x * sc, cy - y * sc]; };
     var exact = [], eul = [], start, end;
     if (mode === "curve") {
-      start = [1, 0];
+      start = [1, 0]; end = [0, 1];
       for (var t = 0; t <= 1.0001; t += 0.01) { var a = t * Math.PI / 2; exact.push([Math.cos(a), Math.sin(a)]); }
-      end = [0, 1];
       var x = 1, y = 0, dt = 1 / n; eul.push([x, y]);
       for (var i = 0; i < n; i++) { var vx = -y * Math.PI / 2, vy = x * Math.PI / 2; x += dt * vx; y += dt * vy; eul.push([x, y]); }
     } else {
-      start = [-1.1, -0.9]; end = [1.0, 0.8];
-      exact = [start, end];
+      start = [-1.1, -0.9]; end = [1.0, 0.8]; exact = [start, end];
       var v = [end[0] - start[0], end[1] - start[1]], p = start.slice(), d = 1 / n; eul.push(p.slice());
       for (var j = 0; j < n; j++) { p = [p[0] + d * v[0], p[1] + d * v[1]]; eul.push(p.slice()); }
     }
@@ -1042,45 +1447,43 @@ for epoch in range(epochs):
     c.fillStyle = css("--amber"); c.beginPath(); c.arc(ps[0], ps[1], 6, 0, 2 * Math.PI); c.fill();
     c.strokeStyle = css("--ink"); c.lineWidth = 2; c.beginPath(); c.arc(pe[0], pe[1], 7, 0, 2 * Math.PI); c.stroke();
     c.fillStyle = css("--ink"); c.textAlign = "left";
-    c.fillText(mode === "curve" ? "bắt đầu" : "nhiễu Y₁ (τ = 1)", ps[0] + 10, ps[1] + 16);
-    c.fillText(mode === "curve" ? "đích thật" : "hành động Y₀ (τ = 0)", pe[0] + 12, pe[1] + 4);
+    c.fillText(mode === "curve" ? "bắt đầu" : "nhiễu (τ = 1)", ps[0] + 10, ps[1] + 16);
+    c.fillText(mode === "curve" ? "đích" : "hành động (τ = 0)", pe[0] + 12, pe[1] + 4);
     var lastE = eul[eul.length - 1], err = Math.hypot(lastE[0] - end[0], lastE[1] - end[1]);
-    document.getElementById("eulerRead").textContent = "Nét đứt: quỹ đạo thật · Nét liền: Euler " + n + " bước · Sai số tại đích: " + err.toFixed(3);
+    document.getElementById("eulerRead").textContent = "Nét đứt: đường thật · Nét liền: đi " + n + " bước · Lệch khỏi đích: " + err.toFixed(3) + (mode === "line" ? "  (đường thẳng: 1 bước cũng đúng)" : "");
   }
   nR.addEventListener("input", drawEuler);
 
   /* ---------- C3 LR schedule ---------- */
-  var cvL = document.getElementById("cvLR"), wuR = document.getElementById("wuR"), mnR = document.getElementById("mnR");
+  var cvLR = document.getElementById("cvLR"), wuR = document.getElementById("wuR"), mnR = document.getElementById("mnR");
   function drawLR() {
-    var S = setup(cvL), c = S.ctx, w = S.w, h = S.h;
+    var S = setup(cvLR), c = S.c, w = S.w, h = S.h;
     var wu = +wuR.value / 100, mn = +mnR.value;
     document.getElementById("wuO").textContent = Math.round(wu * 100) + "%";
     document.getElementById("mnO").textContent = mn.toFixed(2);
     var padL = 44, pad = 24, T = 1000, Tw = Math.round(wu * T);
-    var X = function (t) { return padL + t / T * (w - padL - pad); };
-    var Y = function (r) { return h - pad - r * (h - 2 * pad); };
+    var Xs = function (t) { return padL + t / T * (w - padL - pad); };
+    var Ys = function (r) { return h - pad - r * (h - 2 * pad); };
     var lr = function (t) { if (t < Tw) return t / Math.max(1, Tw); return mn + 0.5 * (1 - mn) * (1 + Math.cos(Math.PI * (t - Tw) / Math.max(1, T - Tw))); };
     c.strokeStyle = css("--rule"); c.lineWidth = 1; c.fillStyle = css("--muted"); c.textAlign = "right";
-    [0, 0.5, 1].forEach(function (r) { c.beginPath(); c.moveTo(padL, Y(r)); c.lineTo(w - pad, Y(r)); c.stroke(); c.fillText(r === 1 ? "η_max" : r === 0 ? "0" : "0.5", padL - 6, Y(r) + 4); });
-    c.textAlign = "center"; c.fillText("bước 0", X(0), h - 6); c.fillText("bước cuối", X(T), h - 6);
+    [0, 0.5, 1].forEach(function (r) { c.beginPath(); c.moveTo(padL, Ys(r)); c.lineTo(w - pad, Ys(r)); c.stroke(); c.fillText(r === 1 ? "cao" : r === 0 ? "0" : "0.5", padL - 6, Ys(r) + 4); });
+    c.textAlign = "center"; c.fillText("bước đầu", Xs(0) + 20, h - 6); c.fillText("bước cuối", Xs(T) - 20, h - 6);
     c.strokeStyle = css("--accent"); c.lineWidth = 2.5; c.beginPath();
-    for (var t = 0; t <= T; t += 2) { if (t === 0) c.moveTo(X(t), Y(lr(t))); else c.lineTo(X(t), Y(lr(t))); }
+    for (var t = 0; t <= T; t += 2) { if (t === 0) c.moveTo(Xs(t), Ys(lr(t))); else c.lineTo(Xs(t), Ys(lr(t))); }
     c.stroke();
-    if (Tw > 0) { c.fillStyle = css("--amber"); c.textAlign = "left"; c.fillText("warmup", X(Tw) + 6, Y(1) + 14); c.beginPath(); c.arc(X(Tw), Y(1), 4, 0, 2 * Math.PI); c.fill(); }
+    if (Tw > 0) { c.fillStyle = css("--amber"); c.textAlign = "left"; c.fillText("hết warmup", Xs(Tw) + 6, Ys(1) + 14); c.beginPath(); c.arc(Xs(Tw), Ys(1), 4, 0, 2 * Math.PI); c.fill(); }
   }
   wuR.addEventListener("input", drawLR); mnR.addEventListener("input", drawLR);
 
-  function drawAll() { drawBimodal(); drawGD(); drawEuler(); drawLR(); }
+  function drawAll() { drawFit(); drawGD(); drawHist(); drawBimodal(); drawCool(); drawEuler(); drawLR(); }
   drawAll();
   var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(drawAll, 120); });
   try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll); } catch (e) {}
   new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
 
-  /* ---------- checklist progress ---------- */
-  var KEY = "gd0-checks";
-  var boxes = Array.prototype.slice.call(document.querySelectorAll("#checks input"));
-  var saved = {};
+  /* ---------- checklist ---------- */
+  var KEY = "gd0-checks-v2", boxes = Array.prototype.slice.call(document.querySelectorAll("#checks input")), saved = {};
   try { saved = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { saved = {}; }
   function update() {
     var done = boxes.filter(function (b) { return b.checked; }).length;
@@ -1089,25 +1492,16 @@ for epoch in range(epochs):
   }
   boxes.forEach(function (b) {
     b.checked = !!saved[b.id];
-    b.addEventListener("change", function () {
-      saved[b.id] = b.checked;
-      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
-      update();
-    });
+    b.addEventListener("change", function () { saved[b.id] = b.checked; try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} update(); });
   });
   update();
 
-  /* ---------- TOC active section ---------- */
+  /* ---------- TOC ---------- */
   var links = Array.prototype.slice.call(document.querySelectorAll("nav.toc a"));
   var targets = links.map(function (a) { return document.querySelector(a.getAttribute("href")); });
   if ("IntersectionObserver" in window) {
     var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          var i = targets.indexOf(en.target);
-          links.forEach(function (l, k) { l.classList.toggle("on", k === i); });
-        }
-      });
+      entries.forEach(function (en) { if (en.isIntersecting) { var i = targets.indexOf(en.target); links.forEach(function (l, k) { l.classList.toggle("on", k === i); }); } });
     }, { rootMargin: "-10% 0px -75% 0px" });
     targets.forEach(function (t) { if (t) io.observe(t); });
   }
