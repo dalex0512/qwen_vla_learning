@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lộ trình học VLA và Qwen-VLA</title>
+<meta name="description" content="Lộ trình 10 giai đoạn để hiểu paper Qwen-VLA: từ nền tảng, Transformer, mô hình sinh, robotics đến RL và thực hành.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Cùng bảng màu "sổ tay phòng lab" với các trang giai đoạn */
+:root {
+  --paper: #F3F5F7;
+  --surface: #FFFFFF;
+  --ink: #16212A;
+  --muted: #56636E;
+  --rule: #D6DDE3;
+  --accent: #0D7A72;
+  --accent-soft: #DFF0EE;
+  --amber: #A9600A;
+  --amber-soft: #FBEFDD;
+  --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1418; --surface: #151D22; --ink: #E4EBEF; --muted: #9AA9B3; --rule: #263239;
+    --accent: #4CC3B6; --accent-soft: #12302D; --amber: #E6A553; --amber-soft: #33260F; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1418; --surface: #151D22; --ink: #E4EBEF; --muted: #9AA9B3; --rule: #263239;
+  --accent: #4CC3B6; --accent-soft: #12302D; --amber: #E6A553; --amber-soft: #33260F; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--f-body); font-size: 1rem; line-height: 1.7;
+  padding-inline: 16px;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+
+/* Top bar */
+.top { display: flex; justify-content: space-between; align-items: center; padding-block: 18px; font-size: 0.86rem; }
+.top .mark { font-family: var(--f-mono); font-weight: 600; letter-spacing: 0.04em; }
+.top .mark b { color: var(--accent); }
+.top button { font: 600 0.78rem var(--f-body); background: var(--surface); color: var(--muted); border: 1px solid var(--rule); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+.top button:hover { color: var(--ink); }
+
+/* Hero */
+.hero { padding-block: 32px 36px; border-bottom: 1px solid var(--rule); max-width: 760px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(2.3rem, 6vw, 4rem); line-height: 1.03; letter-spacing: -0.03em; margin: 10px 0 16px; text-wrap: balance; }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 54ch; margin: 0 0 22px; }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 600 0.95rem var(--f-body); text-decoration: none; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn { color: #0E1418; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn { color: #0E1418; } }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--accent-soft); filter: none; }
+
+/* Hero side: goal + stats */
+
+/* Progress */
+.progress { margin-top: 28px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 0.9rem; color: var(--muted); }
+.progress .bar { flex: 1 1 200px; height: 8px; background: var(--rule); border-radius: 4px; overflow: hidden; }
+.progress .bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+
+/* Sections */
+section.block { margin-top: 56px; }
+section.block > h2 { font-family: var(--f-display); font-weight: 800; font-size: 1.9rem; letter-spacing: -0.02em; line-height: 1.15; margin: 6px 0 6px; text-wrap: balance; }
+section.block > p.intro { color: var(--muted); max-width: 66ch; margin: 0 0 22px; }
+
+/* Phase cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.card { position: relative; display: flex; flex-direction: column; gap: 10px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px 16px; text-decoration: none; color: inherit; transition: border-color .15s, transform .15s; }
+a.card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.card .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.card .num { font-family: var(--f-mono); font-weight: 600; font-size: 0.8rem; color: var(--accent); letter-spacing: 0.05em; }
+.badge { font-family: var(--f-mono); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 999px; }
+.badge.ready { background: var(--accent-soft); color: var(--accent); }
+.badge.soon { background: var(--amber-soft); color: var(--amber); }
+.card h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.28rem; line-height: 1.25; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.card p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.card dl { margin: auto 0 0; padding-top: 10px; border-top: 1px dashed var(--rule); display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 0.8rem; }
+.card dt { font-family: var(--f-mono); color: var(--muted); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.05em; padding-top: 2px; }
+.card dd { margin: 0; }
+.card .go { font-weight: 600; font-size: 0.9rem; color: var(--accent); }
+.card.off { opacity: 0.78; border-style: dashed; cursor: default; }
+.done-box { position: absolute; right: 12px; bottom: 12px; }
+.done-box button { font: 600 0.72rem var(--f-body); background: transparent; color: var(--muted); border: 1px solid var(--rule); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.done-box button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.card.has-done { padding-bottom: 46px; }
+
+/* Dependency map */
+.map { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px; overflow-x: auto; }
+.map ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; min-width: 520px; }
+.map li { display: grid; grid-template-columns: 6.5rem 1fr; gap: 14px; align-items: start; }
+.map .lv { font-family: var(--f-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding-top: 6px; }
+.map .nodes { display: flex; flex-wrap: wrap; gap: 8px; }
+.node { font-size: 0.85rem; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--paper); }
+.node b { font-family: var(--f-mono); color: var(--accent); margin-right: 6px; }
+.map .note { margin-top: 14px; font-size: 0.88rem; color: var(--muted); }
+
+/* Legend + method */
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.pane { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; }
+.pane h3 { font-family: var(--f-display); font-size: 1.08rem; margin: 0 0 6px; }
+.pane p, .pane ul { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.pane ul { padding-left: 1.2em; }
+.pane code { font-family: var(--f-mono); font-size: 0.86em; background: var(--accent-soft); color: var(--accent); padding: 1px 6px; border-radius: 4px; }
+
+footer { margin-top: 64px; padding-block: 24px 48px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.85rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <span class="mark">VLA<b>·</b>MODELING</span>
+    <button id="theme" type="button" aria-label="Đổi giao diện sáng/tối">Sáng / Tối</button>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Sổ tay tự học · cập nhật 02/10/2026</div>
+      <h1>Sổ tay học VLA và Qwen-VLA</h1>
+      <p class="lede">Ghi chú của mình khi học từ nền tảng tới đọc hiểu paper Qwen-VLA. Mỗi giai đoạn một trang: công thức, code, bài tập, tự kiểm tra.</p>
+      <div class="cta">
+        <a class="btn" href="Giai%20%C4%91o%E1%BA%A1n%200%20%C2%B7%20N%E1%BB%81n%20t%E1%BA%A3ng%20VLA.html">Bắt đầu từ Giai đoạn 0</a>
+        <a class="btn ghost" href="#phases">Xem 10 giai đoạn</a>
+      </div>
+      <div class="progress" aria-live="polite">
+        <span id="pLabel">Đã hoàn thành 0/2 bài có sẵn</span>
+        <div class="bar"><span id="pBar"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="phases">
+    <div class="eyebrow">Các giai đoạn</div>
+    <h2>Chọn một giai đoạn để học</h2>
+    <p class="intro">Thẻ có viền liền là bài đã làm xong, bấm để mở. Thẻ viền đứt là bài sắp viết. Đánh dấu "Đã học xong" để theo dõi tiến độ, trạng thái lưu ngay trong trình duyệt này.</p>
+
+    <div class="grid" id="cards">
+
+      <a class="card has-done" data-id="g0" href="Giai%20%C4%91o%E1%BA%A1n%200%20%C2%B7%20N%E1%BB%81n%20t%E1%BA%A3ng%20VLA.html">
+        <div class="row"><span class="num">GĐ 0</span><span class="badge ready">Sẵn sàng</span></div>
+        <h3>Nền tảng: Toán, PyTorch, Deep Learning</h3>
+        <p>Ngôn ngữ chung để đọc mọi công thức trong paper: tensor, xác suất, gradient, vòng training, freeze và fine-tune.</p>
+        <dl><dt>Thời lượng</dt><dd>1 tuần</dd><dt>Mở khóa</dt><dd>Công thức (1)–(5), Section 4</dd></dl>
+        <span class="go">Mở bài học →</span>
+      </a>
+
+      <a class="card has-done" data-id="g1" href="Giai%20%C4%91o%E1%BA%A1n%201%20%C2%B7%20Transformer%20v%C3%A0%20LLM.html">
+        <div class="row"><span class="num">GĐ 1</span><span class="badge ready">Sẵn sàng</span></div>
+        <h3>Transformer và LLM</h3>
+        <p>Token, embedding, self-attention, next-token prediction, hidden states. Cả "đại não" lẫn "tiểu não" của Qwen-VLA đều là Transformer.</p>
+        <dl><dt>Thời lượng</dt><dd>1 tuần</dd><dt>Mở khóa</dt><dd>Section 2.2, 2.3, 2.5</dd></dl>
+        <span class="go">Mở bài học →</span>
+      </a>
+
+      <div class="card off" data-id="g2">
+        <div class="row"><span class="num">GĐ 2</span><span class="badge soon">Sắp có</span></div>
+        <h3>Vision và VLM</h3>
+        <p>ViT, CLIP, cấu trúc vision encoder → projector → LLM, và dòng mô hình Qwen-VL tới Qwen3.5.</p>
+        <dl><dt>Thời lượng</dt><dd>1 tuần</dd><dt>Cần trước</dt><dd>GĐ 1</dd><dt>Mở khóa</dt><dd>2.2, 3.2.1, 3.2.5</dd></dl>
+      </div>
+
+      <div class="card off" data-id="g3">
+        <div class="row"><span class="num">GĐ 3</span><span class="badge soon">Sắp có</span></div>
+        <h3>Mô hình sinh: Diffusion, Flow Matching, DiT</h3>
+        <p>Vì sao MSE thất bại với hành động nhiều đỉnh, flow matching, Euler, AdaLN. Có bài tập "hai mặt trăng" đáng giá nhất roadmap.</p>
+        <dl><dt>Thời lượng</dt><dd>1,5 tuần</dd><dt>Cần trước</dt><dd>GĐ 0</dd><dt>Mở khóa</dt><dd>2.2, 2.5, 5.2.1</dd></dl>
+      </div>
+
+      <div class="card off" data-id="g4">
+        <div class="row"><span class="num">GĐ 4</span><span class="badge soon">Sắp có</span></div>
+        <h3>Robotics cơ bản</h3>
+        <p>Embodiment, DoF, joint và EEF, Abs/Delta, action chunk, imitation learning, compounding error.</p>
+        <dl><dt>Thời lượng</dt><dd>1 tuần</dd><dt>Cần trước</dt><dd>GĐ 0</dd><dt>Mở khóa</dt><dd>2.3, 2.4, 3.2</dd></dl>
+      </div>
+
+      <div class="card off" data-id="g5">
+        <div class="row"><span class="num">GĐ 5</span><span class="badge soon">Sắp có</span></div>
+        <h3>Bức tranh các mô hình VLA</h3>
+        <p>RT-2, OpenVLA, π0, π0.5, GR00T. Hai trường phái sinh hành động: rời rạc và liên tục.</p>
+        <dl><dt>Thời lượng</dt><dd>1 tuần</dd><dt>Cần trước</dt><dd>GĐ 2, 3, 4</dd><dt>Mở khóa</dt><dd>Section 1, 5.1</dd></dl>
+      </div>
+
+      <div class="card off" data-id="g6">
+        <div class="row"><span class="num">GĐ 6</span><span class="badge soon">Sắp có</span></div>
+        <h3>Đọc kỹ Qwen-VLA</h3>
+        <p>Đọc ba lượt từng section, từng bảng, với bản đồ "section → kiến thức cần → câu hỏi phải trả lời được".</p>
+        <dl><dt>Thời lượng</dt><dd>1 tuần</dd><dt>Cần trước</dt><dd>GĐ 5, 7</dd><dt>Mở khóa</dt><dd>Toàn bộ paper</dd></dl>
+      </div>
+
+      <div class="card off" data-id="g7">
+        <div class="row"><span class="num">GĐ 7</span><span class="badge soon">Sắp có</span></div>
+        <h3>Reinforcement Learning</h3>
+        <p>Reward, value, advantage, PPO, GAE, và mẹo biến ODE thành SDE để áp RL vào flow matching.</p>
+        <dl><dt>Thời lượng</dt><dd>1 tuần</dd><dt>Cần trước</dt><dd>GĐ 0</dd><dt>Mở khóa</dt><dd>3.1 Stage IV, 4.2, 5.2.3</dd></dl>
+      </div>
+
+      <div class="card off" data-id="g8">
+        <div class="row"><span class="num">GĐ 8</span><span class="badge soon">Sắp có</span></div>
+        <h3>Benchmark và cách đọc kết quả</h3>
+        <p>LIBERO, SimplerEnv, RoboTwin, VLN-CE, ALOHA. Học đọc bảng có phán đoán: cỡ mẫu, baseline, độ nhiễu.</p>
+        <dl><dt>Thời lượng</dt><dd>0,5 tuần</dd><dt>Học cùng</dt><dd>GĐ 6</dd><dt>Mở khóa</dt><dd>5.1, 5.2</dd></dl>
+      </div>
+
+      <div class="card off" data-id="g9">
+        <div class="row"><span class="num">GĐ 9</span><span class="badge soon">Sắp có</span></div>
+        <h3>Thực hành và phản biện</h3>
+        <p>LeRobot, behavior cloning, mini T2A, fine-tune VLA nhỏ, và danh sách câu hỏi phản biện cho mentor.</p>
+        <dl><dt>Thời lượng</dt><dd>Liên tục</dd><dt>Cần trước</dt><dd>GĐ 6</dd><dt>Mở khóa</dt><dd>Toàn bộ paper</dd></dl>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="block" id="map">
+    <div class="eyebrow">Thứ tự học</div>
+    <h2>Giai đoạn nào cần học trước?</h2>
+    <p class="intro">Đọc từ trên xuống: giai đoạn ở hàng dưới cần hàng trên. Các giai đoạn cùng hàng độc lập với nhau, có thể học song song.</p>
+    <div class="map">
+      <ol>
+        <li><span class="lv">Bước 1</span><div class="nodes"><span class="node"><b>GĐ 0</b>Nền tảng</span></div></li>
+        <li><span class="lv">Bước 2 · song song</span><div class="nodes">
+          <span class="node"><b>GĐ 1</b>Transformer</span>
+          <span class="node"><b>GĐ 3</b>Mô hình sinh</span>
+          <span class="node"><b>GĐ 4</b>Robotics</span>
+          <span class="node"><b>GĐ 7</b>RL</span>
+        </div></li>
+        <li><span class="lv">Bước 3</span><div class="nodes"><span class="node"><b>GĐ 2</b>Vision và VLM (cần GĐ 1)</span></div></li>
+        <li><span class="lv">Bước 4</span><div class="nodes"><span class="node"><b>GĐ 5</b>Bức tranh VLA (cần GĐ 2, 3, 4)</span></div></li>
+        <li><span class="lv">Bước 5</span><div class="nodes"><span class="node"><b>GĐ 6 + 8</b>Đọc kỹ Qwen-VLA và các bảng kết quả (cần GĐ 5, 7)</span></div></li>
+        <li><span class="lv">Bước 6</span><div class="nodes"><span class="node"><b>GĐ 9</b>Thực hành và phản biện (xen kẽ suốt quá trình)</span></div></li>
+      </ol>
+      <p class="note">GĐ 7 (RL) chỉ cần cho phần cuối của paper, có thể để sau cùng.</p>
+    </div>
+  </section>
+
+  <section class="block" id="method">
+    <div class="eyebrow">Cách học</div>
+    <h2>Mỗi trang bài học gồm gì</h2>
+    <div class="cols">
+      <div class="pane">
+        <h3>Mức ưu tiên</h3>
+        <ul>
+          <li><code>Bắt buộc</code> thiếu thì không hiểu paper</li>
+          <li><code>Nên</code> hiểu sâu, trả lời được mentor</li>
+          <li><code>Mở rộng</code> kiến thức ngoài paper</li>
+        </ul>
+      </div>
+      <div class="pane">
+        <h3>Với mỗi công thức</h3>
+        <p>Trả lời ba câu: ký hiệu và shape là gì, nói một câu đời thường thì nó làm gì, viết PyTorch khoảng mấy dòng.</p>
+      </div>
+      <div class="pane">
+        <h3>Học xoắn ốc</h3>
+        <p>Đã đọc lướt paper, giờ học nền, rồi quay lại đọc kỹ. Mỗi giai đoạn ghi rõ nó mở khóa phần nào của paper.</p>
+      </div>
+      <div class="pane">
+        <h3>Tài liệu gốc</h3>
+        <p>Toàn bộ nội dung bám theo <a href="roadmap-vla-qwen-vla.md">roadmap-vla-qwen-vla.md</a> và paper <a href="Docs/2605.30280v2.pdf">Qwen-VLA (PDF)</a>. Khi trích số liệu, dùng bản PDF.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Dự án tự học · chỉ HTML, CSS, JS thuần</span>
+    <span>Qwen-VLA · arXiv 2605.30280</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var KEY = 'vla-done', root = document.documentElement;
+
+  function load(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+  function save(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+
+  // Theme toggle
+  var themeBtn = document.getElementById('theme');
+  var savedTheme = null;
+  try { savedTheme = localStorage.getItem('vla-theme'); } catch (e) {}
+  if (savedTheme) root.setAttribute('data-theme', savedTheme);
+  themeBtn.addEventListener('click', function () {
+    var dark = root.getAttribute('data-theme') === 'dark' ||
+      (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    var next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('vla-theme', next); } catch (e) {}
+  });
+
+  // Done toggles on ready cards
+  var done = load(KEY);
+  var ready = document.querySelectorAll('a.card[data-id]');
+  var label = document.getElementById('pLabel'), bar = document.getElementById('pBar');
+
+  function refresh() {
+    var n = 0;
+    ready.forEach(function (c) {
+      var on = !!done[c.dataset.id], b = c.querySelector('.done-box button');
+      if (on) n++;
+      b.setAttribute('aria-pressed', on);
+      b.textContent = on ? '✓ Đã học xong' : 'Đánh dấu đã học';
+    });
+    label.textContent = 'Đã hoàn thành ' + n + '/' + ready.length + ' bài có sẵn';
+    bar.style.width = (ready.length ? n / ready.length * 100 : 0) + '%';
+  }
+
+  ready.forEach(function (c) {
+    var box = document.createElement('span');
+    box.className = 'done-box';
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      done[c.dataset.id] = !done[c.dataset.id];
+      save(KEY, done); refresh();
+    });
+    box.appendChild(b); c.appendChild(box);
+  });
+  refresh();
+})();
+</script>
+</body>
+</html>
