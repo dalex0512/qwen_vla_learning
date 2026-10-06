@@ -1,15 +1,15 @@
 # VLA Modeling · Sổ tay học tập
 
-Web học tập tĩnh (HTML/CSS/JS thuần, không framework, không build) phục vụ theo dõi lộ trình đọc 6 paper và mở nhanh 4 loại tài liệu: trang đọc hiểu, slide trình bày, PDF gốc và PDF bản dịch tiếng Việt.
+Web học tập tĩnh (HTML/CSS/JS thuần, không framework, không build) phục vụ theo dõi lộ trình đọc 6 paper VLA (Vision-Language-Action) và mở nhanh 4 loại tài liệu: trang đọc hiểu, slide trình bày, PDF gốc và PDF bản dịch tiếng Việt.
 
 ---
 
 ## 1. Cách chạy với extension Live Server
 
 1. Trong VS Code, mở thư mục dự án `d:\VLA Modeling`.
-2. Chuột phải vào file `index.html` và chọn **Open with Live Server** (hoặc bấm nút **Go Live** ở thanh trạng thái góc dưới bên phải).
-3. Trình duyệt sẽ tự động mở địa chỉ `http://127.0.0.1:5500/index.html`.
-4. *Lưu ý:* Web cũng có thể mở trực tiếp bằng cách nhấp đúp file `index.html` (giao thức `file://`) do danh sách paper được nạp qua `papers.js`, hoàn toàn không bị chặn CORS.
+2. Chuột phải vào file `index.html` và chọn **Open with Live Server** (hoặc bấm nút **Go Live** ở góc dưới bên phải).
+3. Trình duyệt sẽ tự động mở địa chỉ `http://127.0.0.1:5500/index.html` (hoặc chạy qua python: `python -m http.server 8000`).
+4. Web cũng có thể mở trực tiếp bằng cách nhấp đúp file `index.html` (`file://`).
 
 ---
 
@@ -17,78 +17,74 @@ Web học tập tĩnh (HTML/CSS/JS thuần, không framework, không build) ph�
 
 Mở file `papers.js`, tìm phần tử paper tương ứng và sửa thuộc tính `trangThai`:
 
-- `"chua-doc"`: Paper chưa bắt đầu học.
-- `"dang-doc"`: Paper đang học (sẽ được làm nổi bật nhẹ trên giao diện trang chủ).
-- `"da-present"`: Paper đã đọc và báo cáo xong (tiến độ trên thanh header "Đã xong X/6" sẽ tự động tăng lên).
+- `"chua-doc"`: Paper chưa bắt đầu học (bìa mờ nhẹ, hover sẽ rõ nét).
+- `"dang-doc"`: Paper đang học (nổi bật viền cam, có nhãn "ĐANG HỌC" / "Tiếp theo", trạm trên bản đồ tàu điện nhấp nháy phát sáng).
+- `"da-present"`: Paper đã đọc và báo cáo xong (nút trạm Metro có dấu tích, thanh tiến độ "Đã hoàn thành X/6" tự động tăng lên).
 
-Ví dụ chuyển Qwen-VLA sang trạng thái đang đọc:
+Ví dụ chuyển GR00T N1 sang trạng thái đang đọc:
 ```javascript
 {
-  id: "qwen-vla",
-  ten: "Qwen-VLA",
-  arxiv: "2605.30280",
+  id: "gr00t-n1",
+  ten: "GR00T N1",
+  arxiv: "2503.14734",
   nhom: "Đọc rộng",
-  moTa: "Mô hình VLA của Qwen",
+  bia: "groot",
+  moTa: "Mô hình nền tảng cho robot hình người của NVIDIA",
   trangThai: "dang-doc", // <-- Đổi ở đây
-  files: {
-    docHieu: null,
-    slide: null,
-    pdfGoc: "Docs/QwenVLA.pdf",
-    pdfViet: "Docs/translated/QwenVLA-vi.pdf"
-  }
+  files: { ... }
 }
 ```
 
 ---
 
-## 3. Cách thêm tài liệu hoặc thêm một paper mới
+## 3. Cách thêm Bìa SVG cho Paper mới
 
-### A. Bổ sung file cho paper có sẵn
-Khi bạn có thêm file đọc hiểu, slide hoặc PDF cho một paper:
-1. Đặt file vào thư mục:
-   - File PDF gốc: thư mục `Docs/` (ví dụ: `Docs/GR00T.pdf`)
-   - File PDF bản dịch: thư mục `Docs/translated/` (ví dụ: `Docs/translated/GR00T-vi.pdf`)
-   - File Đọc hiểu / Slide: tạo thư mục tương ứng (ví dụ: `GR00T/GR00T · Đọc hiểu paper.html`)
-2. Mở `papers.js`, thay giá trị `null` thành đường dẫn file:
-   ```javascript
-   files: {
-     docHieu: "GR00T/GR00T · Đọc hiểu paper.html",
-     slide: null,
-     pdfGoc: "Docs/GR00T.pdf",
-     pdfViet: "Docs/translated/GR00T-vi.pdf"
-   }
-   ```
-*(Hệ thống đã tự động dùng `encodeURI`, bạn có thể đặt tên file có dấu cách và tiếng Việt thoải mái).*
+Mỗi bìa paper là một hàm vector SVG độc lập nằm trong `assets/covers.js`.
 
-### B. Thêm paper mới vào danh sách
-Mở `papers.js` và thêm một object mới vào mảng `PAPERS`:
+### Bước 1: Khai báo trường `bia` trong `papers.js`
 ```javascript
 {
-  id: "dinh-danh-duy-nhat",          // Dùng trên URL ?id=... (không dấu, viết thường, gạch nối)
-  ten: "Tên paper",                 // Tên hiển thị
-  arxiv: "YYMM.NNNNN",              // Mã số trên arXiv (để tự tạo link arXiv)
-  nhom: "Đọc rộng",                 // "Đọc rộng" hoặc "Đọc sâu"
-  moTa: "Tóm tắt ngắn gọn 1 câu.",   // Mô tả nội dung chính
-  trangThai: "chua-doc",            // "chua-doc" | "dang-doc" | "da-present"
-  files: {
-    docHieu: null,                  // Đường dẫn file HTML đọc hiểu hoặc null
-    slide: null,                    // Đường dẫn file HTML slide hoặc null
-    pdfGoc: null,                   // Đường dẫn file PDF gốc hoặc null
-    pdfViet: null                   // Đường dẫn file PDF bản dịch hoặc null
-  }
+  id: "ten-paper-moi",
+  ten: "Tên Paper Mới",
+  arxiv: "2601.12345",
+  nhom: "Đọc rộng", // hoặc "Đọc sâu"
+  bia: "ten-bia-moi", // <-- Khai báo tên định danh bìa ở đây
+  moTa: "Mô tả ngắn 1 câu.",
+  trangThai: "chua-doc",
+  files: { ... }
 }
+```
+
+### Bước 2: Thêm `case` vẽ SVG trong `assets/covers.js`
+Mở `assets/covers.js`, tìm lệnh `switch (biaType)` và thêm một case mới:
+```javascript
+case 'ten-bia-moi':
+  keywords = ['từ khoá 1', 'từ khoá 2', 'từ khoá 3'];
+  innerContent = `
+    <!-- Khối đồ hoạ vector SVG của paper mới -->
+    <rect x="30" y="30" width="220" height="130" rx="8" class="cv-plate cv-stroke" />
+    <text x="140" y="95" class="cv-system-text">Minh hoạ ý chính</text>
+  `;
+  break;
 ```
 
 ---
 
-## 4. Các tính năng nổi bật của web
-- **Trang chủ (`index.html`):**
-  - Thanh tiến độ động "Đã xong X/6" tính từ các paper có trạng thái `da-present`.
-  - Dải kết nối dọc (spine 1–6) phân 2 nhóm "Đọc rộng" và "Đọc sâu".
-  - Mỗi thẻ paper có 4 nút tài liệu. Nút chưa có file tự động mờ và hiện nhãn "Sắp có".
-- **Trang xem paper (`paper.html`):**
-  - Chuyển đổi mượt giữa các tab `Đọc hiểu`, `Slide`, `PDF gốc`, `Bản dịch`.
-  - Tab **Song song** tự động bật khi có đủ cả PDF gốc và PDF bản dịch (hiển thị 2 tài liệu cạnh nhau, cuộn độc lập). Trên màn hình nhỏ (< 900px), tự chuyển thành nút gạt 2 chế độ Gốc / Tiếng Việt.
-  - Tự lưu tab vào hash URL (`#doc-hieu`, `#slide`, `#pdf-goc`, `#ban-dich`, `#song-song`) để tải lại trang vẫn đúng tab.
-  - Phím điều hướng nhanh "‹ Paper trước" và "Paper sau ›".
-  - Nút chuyển giao diện **Sáng / Tối**, tự nhận diện theo hệ thống và lưu cấu hình vào `localStorage`.
+## 4. Các tính năng nổi bật của giao diện
+- **Cánh tay Robot Động học nghịch (2-Link IK):**
+  - Cánh tay 2 khớp tính toán góc xoay liên tục bằng công thức giải tích động học nghịch trong `requestAnimationFrame`, gắp khối vật thể từ Bát đặt sang Đĩa chuẩn xác và mượt mà.
+- **Dải bản đồ tàu điện (Subway Line Map):**
+  - Tuyến "Đọc rộng" màu Teal (Ga 1–3) và tuyến "Đọc sâu" màu Chàm `#5B5BD6` (Ga 4–6).
+  - Trạm đang học nhấp nháy phát sáng (Pulse ring).
+  - Đoàn tàu chạy trên ray tới trạm hiện tại.
+  - Hover hiển thị tooltip mô tả; Click vào trạm sẽ cuộn mượt xuống thẻ sách và nháy sáng viền thẻ đó.
+- **Kệ sách (Bookshelf Grid):**
+  - Lưới thẻ dựng đứng 3 cột trên máy tính, 2 cột trên điện thoại.
+  - Bìa SVG tỉ lệ 4:3 tích hợp watermark số thứ tự to mờ, từ khoá kỹ thuật và hoạt ảnh khi hover.
+  - Hiệu ứng nghiêng 3D (3D Mouse Tilt) tối đa 4 độ theo vị trí con trỏ chuột.
+  - Hàng nút tài liệu icon nhỏ tinh tế kèm chú thích.
+- **Trình đọc Paper (`paper.html`):**
+  - Chuyển tab mượt mà kèm thanh gạch chân trượt (`tab-indicator-bar`).
+  - Khung xương tải trang (Skeleton Shimmer).
+  - Chế độ **Song song** (Dual Split View) đối chiếu bản dịch tiếng Việt và PDF gốc tiếng Anh.
+- **Theme Sáng / Tối:** Tự động phát hiện cài đặt hệ thống và lưu vào `localStorage`.
