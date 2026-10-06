@@ -1,0 +1,1310 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LIBERO · Đọc hiểu paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+<style>
+/* Layout: sổ tay phòng lab — mục lục cố định bên trái, một cột nội dung ~68ch, mỗi bài là một "trang" có số hiệu 0.x */
+:root {
+  --paper: #F3F5F7;
+  --surface: #FFFFFF;
+  --ink: #16212A;
+  --muted: #56636E;
+  --rule: #D6DDE3;
+  --accent: #0D7A72;
+  --accent-soft: #DFF0EE;
+  --amber: #A9600A;
+  --amber-soft: #FBEFDD;
+  --code-bg: #EBEFF3;
+  --code-ink: #1D2A33;
+  --kw: #6A3FB5;
+  --cm: #6E7C87;
+  --st: #0D7A72;
+  --bad: #B3362B;
+  --good: #2E7D32;
+  --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --step--1: 0.86rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.5rem;
+  --step-3: 2.1rem;
+  --step-4: clamp(2.2rem, 5vw, 3.3rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1418; --surface: #151D22; --ink: #E4EBEF; --muted: #9AA9B3; --rule: #263239;
+    --accent: #4CC3B6; --accent-soft: #12302D; --amber: #E6A553; --amber-soft: #33260F;
+    --code-bg: #10171B; --code-ink: #DCE6EB; --kw: #B49AF0; --cm: #7F8F99; --st: #6FD3C7;
+    --bad: #F08A80; --good: #7BCB80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1418; --surface: #151D22; --ink: #E4EBEF; --muted: #9AA9B3; --rule: #263239;
+  --accent: #4CC3B6; --accent-soft: #12302D; --amber: #E6A553; --amber-soft: #33260F;
+  --code-bg: #10171B; --code-ink: #DCE6EB; --kw: #B49AF0; --cm: #7F8F99; --st: #6FD3C7;
+  --bad: #F08A80; --good: #7BCB80; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--f-body); font-size: var(--step-0); line-height: 1.7;
+  padding-inline: 16px;
+}
+.shell { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 48px; padding-block: 32px 80px; }
+@media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 20px 60px; } }
+
+/* TOC */
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; max-height: calc(100vh - 40px); overflow-y: auto; font-size: var(--step--1); }
+nav.toc .brand { font-family: var(--f-display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 4px; }
+nav.toc .sub { color: var(--muted); margin-bottom: 18px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.toc .grp { margin-top: 14px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+nav.toc a { display: flex; gap: 8px; color: var(--ink); text-decoration: none; padding: 3px 8px; border-radius: 6px; border-left: 2px solid transparent; }
+nav.toc a .n { font-family: var(--f-mono); color: var(--muted); font-size: 0.78rem; min-width: 2.4em; padding-top: 2px; }
+nav.toc a:hover { background: var(--accent-soft); }
+nav.toc a.on { border-left-color: var(--accent); background: var(--accent-soft); }
+nav.toc .progress { margin-top: 18px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+nav.toc .bar { height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; margin-top: 6px; }
+nav.toc .bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+@media (max-width: 900px) {
+  nav.toc { position: static; max-height: none; border: 1px solid var(--rule); border-radius: 10px; padding: 14px; background: var(--surface); }
+  nav.toc details > ol { margin-top: 8px; }
+}
+nav.toc summary { cursor: pointer; font-weight: 600; list-style: none; }
+nav.toc summary::-webkit-details-marker { display: none; }
+@media (min-width: 901px) { nav.toc summary { display: none; } }
+
+/* Main */
+main { min-width: 0; }
+.hero { padding-block: 8px 28px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: var(--step-4); line-height: 1.05; letter-spacing: -0.025em; margin: 8px 0 14px; text-wrap: balance; }
+.lede { font-size: var(--step-1); color: var(--muted); max-width: 62ch; margin: 0; }
+.part { margin-top: 56px; padding-top: 18px; border-top: 3px double var(--rule); }
+.part > .eyebrow { display: block; }
+.part > h2 { font-family: var(--f-display); font-weight: 800; font-size: var(--step-3); letter-spacing: -0.02em; line-height: 1.15; margin: 6px 0 4px; text-wrap: balance; }
+.part > p.intro { color: var(--muted); max-width: 68ch; margin-top: 4px; }
+section.lesson { margin-top: 40px; scroll-margin-top: 16px; }
+section.lesson > h3 { font-family: var(--f-display); font-weight: 600; font-size: var(--step-2); letter-spacing: -0.01em; line-height: 1.25; margin: 0 0 10px; display: flex; gap: 12px; align-items: baseline; text-wrap: balance; }
+section.lesson > h3 .n { font-family: var(--f-mono); font-size: 0.95rem; color: var(--accent); font-weight: 600; flex: none; }
+h4 { font-size: 1.02rem; margin: 26px 0 6px; font-weight: 700; }
+h4 .tag { font-family: var(--f-mono); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-right: 8px; }
+p, ul, ol.plain { max-width: 70ch; }
+main p { margin: 0 0 12px; }
+main ul, main ol.plain { padding-left: 1.3em; margin: 0 0 12px; }
+main li { margin-bottom: 4px; }
+strong { font-weight: 700; }
+code { font-family: var(--f-mono); font-size: 0.86em; background: var(--code-bg); color: var(--code-ink); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Math */
+.math { overflow-x: auto; overflow-y: hidden; padding: 4px 0; margin: 8px 0 14px; max-width: 70ch; }
+mjx-container { color: var(--ink); }
+
+/* Callouts */
+.paper { background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent); border-radius: 10px; padding: 12px 16px; margin: 16px 0; max-width: 70ch; }
+.paper .lab { font-family: var(--f-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--amber); font-weight: 600; display: block; margin-bottom: 2px; }
+.paper p:last-child { margin-bottom: 0; }
+.trap { border-left: 3px solid var(--bad); padding: 4px 0 4px 14px; margin: 16px 0; max-width: 70ch; }
+.trap .lab { font-family: var(--f-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bad); font-weight: 600; }
+.trap p:last-child { margin-bottom: 0; }
+.keyidea { font-size: 1.08rem; font-weight: 500; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 12px 0; margin: 16px 0; max-width: 70ch; }
+
+/* Code */
+.code { position: relative; margin: 12px 0 18px; max-width: 78ch; }
+.code pre { margin: 0; background: var(--code-bg); color: var(--code-ink); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: 0.82rem; line-height: 1.6; tab-size: 4; }
+.code .kw { color: var(--kw); font-weight: 600; }
+.code .cm { color: var(--cm); font-style: italic; }
+.code .st { color: var(--st); }
+.code button.copy { position: absolute; top: 8px; right: 8px; font: 600 0.72rem var(--f-body); background: var(--surface); color: var(--muted); border: 1px solid var(--rule); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.code button.copy:hover { color: var(--ink); }
+.out { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); margin-top: -10px; margin-bottom: 16px; padding-left: 4px; }
+
+/* Tables */
+.tbl { overflow-x: auto; margin: 12px 0 18px; }
+table { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border-bottom: 2px solid var(--rule); }
+td code { white-space: nowrap; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); font-size: 0.85rem; }
+
+/* Labs (interactive) */
+.lab-box { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px; margin: 18px 0 22px; }
+.lab-box .head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; margin-bottom: 10px; }
+.lab-box .title { font-weight: 700; }
+.lab-box .kind { font-family: var(--f-mono); font-size: 0.72rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; }
+.lab-box canvas { width: 100%; height: 260px; display: block; border-radius: 8px; background: var(--paper); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin-top: 12px; font-size: 0.9rem; }
+.controls label { display: flex; align-items: center; gap: 10px; }
+.controls input[type=range] { width: 170px; accent-color: var(--accent); }
+.controls output { font-family: var(--f-mono); font-variant-numeric: tabular-nums; min-width: 4ch; }
+.readout { font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); margin-top: 10px; min-height: 1.4em; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.seg button { font: 500 0.85rem var(--f-body); padding: 5px 12px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.shape-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.shape-row input { font: 0.9rem var(--f-mono); padding: 6px 10px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); color: var(--ink); width: 9.5em; }
+.shape-res { font-family: var(--f-mono); margin-top: 10px; font-size: 0.9rem; }
+.shape-res.ok { color: var(--good); } .shape-res.bad { color: var(--bad); }
+
+/* Exercises */
+details.ex { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); margin: 10px 0; max-width: 78ch; }
+details.ex > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; display: flex; gap: 10px; }
+details.ex > summary .q { font-weight: 500; }
+details.ex > summary .n { font-family: var(--f-mono); color: var(--accent); flex: none; }
+details.ex > div { padding: 0 16px 14px; border-top: 1px dashed var(--rule); }
+details.ex > div > p:first-child { margin-top: 12px; }
+.qtext { max-width: 78ch; border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; background: var(--surface); margin-top: 10px; }
+.qtext + details.ex { margin-top: -6px; border-top-left-radius: 0; border-top-right-radius: 0; }
+
+/* Checklist */
+.checks { list-style: none; padding: 0 !important; display: grid; gap: 8px; max-width: 78ch; }
+.checks li { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; margin: 0; }
+.checks input { width: 18px; height: 18px; margin-top: 4px; accent-color: var(--accent); flex: none; }
+.checks label { cursor: pointer; }
+
+/* Diagram */
+.diagram { overflow-x: auto; margin: 14px 0 18px; }
+.diagram svg { display: block; min-width: 640px; max-width: 760px; width: 100%; height: auto; }
+
+footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: var(--step--1); }
+</style>
+<style>
+.calc { font-family: var(--f-mono); font-size: 0.86rem; background: var(--code-bg); border-radius: 8px; padding: 10px 14px; margin: 10px 0 14px; overflow-x: auto; max-width: 78ch; white-space: pre; line-height: 1.75; }
+.say { font-style: italic; color: var(--ink); border-left: 3px solid var(--accent); padding-left: 12px; margin: 10px 0 14px; max-width: 70ch; }
+.recap { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin: 18px 0 8px; max-width: 70ch; }
+.recap .lab { font-family: var(--f-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 600; display: block; margin-bottom: 2px; }
+.recap p:last-child { margin-bottom: 0; }
+details.more { max-width: 78ch; margin: 12px 0 16px; border: 1px dashed var(--rule); border-radius: 10px; padding: 0 14px; }
+details.more > summary { cursor: pointer; padding: 10px 0; font-weight: 600; color: var(--muted); }
+details.more[open] > summary { color: var(--ink); }
+.track { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
+.track span { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); background: var(--surface); }
+.track span.now { border-color: var(--accent); color: var(--ink); background: var(--accent-soft); font-weight: 600; }
+.road { list-style: none; padding: 0 !important; display: grid; gap: 8px; max-width: 82ch; }
+.road li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; margin: 0; }
+.road input { width: 18px; height: 18px; margin-top: 4px; accent-color: var(--accent); }
+.road .t { font-weight: 700; }
+.road .d { color: var(--muted); font-size: 0.9rem; }
+.road .time { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); white-space: nowrap; padding-top: 3px; }
+.quote { max-width: 78ch; margin: 14px 0; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.quote .en { background: var(--code-bg); padding: 10px 14px; font-size: 0.92rem; color: var(--ink); font-style: italic; }
+.quote .en::before { content: "Paper viết"; display: block; font: 600 0.7rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-style: normal; margin-bottom: 2px; }
+.quote .vi { padding: 10px 14px; background: var(--surface); font-size: 0.95rem; }
+.quote .vi::before { content: "Nghĩa là"; display: block; font: 600 0.7rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+.quote .vi p:last-child { margin-bottom: 0; }
+.suites { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 14px 0 18px; }
+.suite { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; }
+.suite h5 { margin: 0 0 2px; font-size: 1rem; }
+.suite .cnt { font-family: var(--f-mono); font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+.suite p { margin: 6px 0 0; font-size: 0.9rem; }
+.suite .ex { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); margin-top: 8px; }
+.vary { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.vary b { font: 600 0.72rem var(--f-mono); padding: 2px 7px; border-radius: 5px; background: var(--code-bg); color: var(--muted); }
+.vary b.on { background: var(--amber-soft); color: var(--amber); }
+.cgrid { border-collapse: collapse; min-width: 0; }
+.cgrid th, .cgrid td { padding: 6px 8px; text-align: center; border: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+.cgrid td input { width: 4.2em; font: 0.88rem var(--f-mono); text-align: center; padding: 4px; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); color: var(--ink); }
+.cgrid td.na { background: var(--code-bg); color: var(--muted); }
+.cgrid td.diag input { border-color: var(--accent); }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+.metrics div { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; background: var(--paper); }
+.metrics b { display: block; font-family: var(--f-mono); font-size: 1.3rem; }
+.metrics span { font-size: 0.82rem; color: var(--muted); }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { font: 600 0.85rem var(--f-body); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); cursor: pointer; }
+.btn:hover { background: var(--accent-soft); }
+.btn[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.chart-wrap { overflow-x: auto; }
+.chart-wrap svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--paper); font-size: 0.8rem; padding: 6px 9px; border-radius: 6px; z-index: 10; max-width: 260px; }
+.outline { list-style: none; padding: 0 !important; display: grid; gap: 8px; max-width: 82ch; }
+.outline li { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); padding: 10px 14px; margin: 0; }
+.outline li b { font-family: var(--f-mono); color: var(--accent); margin-right: 8px; }
+.gloss td:first-child { font-weight: 700; white-space: nowrap; }
+td.best { font-weight: 700; color: var(--accent); }
+.pddl { font-family: var(--f-mono); font-size: 0.82rem; background: var(--code-bg); border-radius: 10px; padding: 12px 16px; overflow-x: auto; white-space: pre; line-height: 1.6; max-width: 78ch; margin: 10px 0 14px; }
+.pddl .c { color: var(--accent); }
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="brand">Paper 1 · LIBERO</div>
+    <div class="sub">Lộ trình đọc paper VLA</div>
+    <details id="tocd" open>
+      <summary>Mục lục</summary>
+      <ol>
+        <li><a href="#lotrinh"><span class="n">0</span>Lộ trình học</a></li>
+        <li><a href="#tudien"><span class="n">0.1</span>Từ điển nhanh</a></li>
+        <li><a href="#buctranh"><span class="n">1</span>Bức tranh lớn</a></li>
+        <li class="grp">Đọc paper theo thứ tự</li>
+        <li><a href="#intro"><span class="n">2</span>Abstract, Introduction</a></li>
+        <li><a href="#nen"><span class="n">3</span>Background (§2)</a></li>
+        <li><a href="#topics"><span class="n">4</span>5 câu hỏi (§3)</a></li>
+        <li><a href="#taotask"><span class="n">5</span>Sinh bài tập (§4.1)</a></li>
+        <li><a href="#suites"><span class="n">6</span>Bốn bộ bài (§4.2)</a></li>
+        <li><a href="#thuattoan"><span class="n">7</span>Thuật toán (§4.3)</a></li>
+        <li><a href="#kientruc"><span class="n">8</span>Kiến trúc (§4.4)</a></li>
+        <li><a href="#setup"><span class="n">9</span>Cách làm thí nghiệm</a></li>
+        <li><a href="#metrics"><span class="n">10</span>FWT, NBT, AUC (§5.1)</a></li>
+        <li><a href="#ketqua"><span class="n">11</span>Kết quả (§5.2)</a></li>
+        <li><a href="#phuluc"><span class="n">12</span>Phụ lục đáng đọc</a></li>
+        <li><a href="#ketluan"><span class="n">13</span>Kết luận, hạn chế</a></li>
+        <li class="grp">Dùng cho công việc</li>
+        <li><a href="#vla"><span class="n">14</span>LIBERO trong VLA</a></li>
+        <li><a href="#phanbien"><span class="n">14.1</span>LIBERO-PRO, LIBERO-Plus</a></li>
+        <li><a href="#mentor"><span class="n">15</span>Câu hỏi của mentor</a></li>
+        <li><a href="#present"><span class="n">16</span>Dàn ý present</a></li>
+        <li><a href="#kiemtra"><span class="n">17</span>Tự kiểm tra</a></li>
+      </ol>
+    </details>
+    <div class="progress">
+      <div><span id="progText">0 / 0</span> bước đã xong</div>
+      <div class="bar"><span id="progBar"></span></div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="eyebrow">Paper 1 / 6 · NeurIPS 2023 · arXiv 2306.03310</span>
+      <h1>LIBERO: bộ đề kiểm tra cho robot học suốt đời</h1>
+      <p class="lede">LIBERO là một <strong>benchmark</strong>: bộ 130 bài tập robot trong mô phỏng, kèm dữ liệu mẫu do người điều khiển, dùng để chấm điểm các phương pháp học cho robot. Trang này đọc paper cùng bạn theo đúng thứ tự các mục, giải thích từng đoạn quan trọng bằng tiếng Việt, kể cả phần phụ lục.</p>
+      <div class="track" aria-label="Thứ tự 6 paper">
+        <span class="now">1 · LIBERO</span><span>2 · GR00T N1</span><span>3 · Qwen-VLA</span><span>4 · RTC (inference)</span><span>5 · RTC (training)</span><span>6 · LingBot-VLA 2.0 (MoE)</span>
+      </div>
+    </header>
+
+    <section class="lesson" id="lotrinh">
+      <h3><span class="n">0</span>Lộ trình học paper này</h3>
+      <p>Tổng thời gian khoảng 5–6 giờ, chia thành 8 bước, có thể rải ra 2–3 buổi. Mỗi bước: đọc mục trên trang này trước, rồi mở đúng phần đó trong file PDF để đối chiếu. Số trong ngoặc như §4.2 là số mục trong paper.</p>
+      <ul class="road" id="road">
+        <li><input type="checkbox" id="r1" aria-label="Bước 1"><div><div class="t">Bước 1 · Làm quen từ vựng và bức tranh lớn</div><div class="d">Trang: mục 0.1, 1, 2. Paper: Abstract, Hình 1, §1 Introduction (trang 1–3).</div></div><span class="time">40 phút</span></li>
+        <li><input type="checkbox" id="r2" aria-label="Bước 2"><div><div class="t">Bước 2 · Background: bài toán được mô tả bằng toán thế nào</div><div class="d">Trang: mục 3. Paper: §2, hai công thức (1) và (2), trang 3.</div></div><span class="time">50 phút</span></li>
+        <li><input type="checkbox" id="r3" aria-label="Bước 3"><div><div class="t">Bước 3 · Năm câu hỏi nghiên cứu và cách tạo bài tập</div><div class="d">Trang: mục 4, 5. Paper: §3, §4.1, Hình 2, Phụ lục C.2 (file mô tả bài tập).</div></div><span class="time">40 phút</span></li>
+        <li><input type="checkbox" id="r4" aria-label="Bước 4"><div><div class="t">Bước 4 · Bốn bộ bài</div><div class="d">Trang: mục 6. Paper: §4.2, Phụ lục C.1 (Hình 8–11 xem ảnh các bài).</div></div><span class="time">25 phút</span></li>
+        <li><input type="checkbox" id="r5" aria-label="Bước 5"><div><div class="t">Bước 5 · Thuật toán và kiến trúc</div><div class="d">Trang: mục 7, 8. Paper: §4.3, §4.4, Phụ lục A, B.1.</div></div><span class="time">50 phút</span></li>
+        <li><input type="checkbox" id="r6" aria-label="Bước 6"><div><div class="t">Bước 6 · Cách làm thí nghiệm và cách chấm điểm</div><div class="d">Trang: mục 9, 10, tự chơi hai máy tính. Paper: Phụ lục D, §5.1, Hình 3.</div></div><span class="time">50 phút</span></li>
+        <li><input type="checkbox" id="r7" aria-label="Bước 7"><div><div class="t">Bước 7 · Kết quả, phụ lục, kết luận</div><div class="d">Trang: mục 11–13. Paper: §5.2 (Bảng 1–3, Hình 4–5), Phụ lục E.2, E.4, §7.</div></div><span class="time">50 phút</span></li>
+        <li><input type="checkbox" id="r8" aria-label="Bước 8"><div><div class="t">Bước 8 · Nối với VLA, chuẩn bị present</div><div class="d">Trang: mục 14, 14.1 (LIBERO-PRO, LIBERO-Plus), 15–17. Viết dàn ý, gửi Claude để được hỏi vặn.</div></div><span class="time">60 phút</span></li>
+      </ul>
+      <p>Bạn không cần nhớ mọi con số. Với mục tiêu thực tập VLA, phần quan trọng nhất là <strong>mục 6, 14 và 15</strong>. Các mục còn lại giúp bạn hiểu đủ sâu để trả lời câu hỏi khi present.</p>
+    </section>
+
+    <section class="lesson" id="tudien">
+      <h3><span class="n">0.1</span>Từ điển nhanh</h3>
+      <p>Các từ dưới đây xuất hiện liên tục trong paper. Đọc lướt một lượt, rồi quay lại tra khi gặp.</p>
+      <div class="tbl gloss"><table>
+        <thead><tr><th>Từ</th><th>Nghĩa đơn giản</th></tr></thead>
+        <tbody>
+          <tr><td>Benchmark</td><td>Bộ đề thi chuẩn để so sánh các phương pháp với nhau một cách công bằng.</td></tr>
+          <tr><td>Simulation (mô phỏng)</td><td>Thế giới ảo trên máy tính có vật lý giống thật. Robot thử nghiệm ở đây thay vì robot thật, rẻ và an toàn hơn.</td></tr>
+          <tr><td>robosuite, MuJoCo</td><td>MuJoCo là phần mềm mô phỏng vật lý. robosuite là bộ công cụ dựng sẵn robot và bàn làm việc trên MuJoCo. LIBERO xây trên robosuite.</td></tr>
+          <tr><td>Task (bài tập)</td><td>Một việc cụ thể, ví dụ "mở ngăn kéo trên của tủ".</td></tr>
+          <tr><td>Task suite (bộ bài)</td><td>Một nhóm bài tập được thiết kế cùng mục đích, ví dụ LIBERO-Spatial có 10 bài.</td></tr>
+          <tr><td>Demonstration (làm mẫu)</td><td>Một lần người điều khiển robot làm xong bài, được ghi lại từng bước. Mỗi bài có 50 lần làm mẫu.</td></tr>
+          <tr><td>Teleoperation</td><td>Điều khiển robot từ xa. Ở đây dùng chuột 3D SpaceMouse.</td></tr>
+          <tr><td>Trajectory (quỹ đạo)</td><td>Chuỗi quan sát và hành động từ đầu đến cuối một lần làm bài.</td></tr>
+          <tr><td>Policy (π)</td><td>"Bộ não" robot: nhìn quan sát, quyết định hành động.</td></tr>
+          <tr><td>Behavior cloning (BC)</td><td>Học bằng cách bắt chước dữ liệu làm mẫu, giống supervised learning.</td></tr>
+          <tr><td>Epoch</td><td>Một lượt học qua toàn bộ dữ liệu của bài. Paper học mỗi bài 50 epoch.</td></tr>
+          <tr><td>Rollout (lượt thử)</td><td>Cho robot tự làm bài một lần trong mô phỏng để chấm điểm.</td></tr>
+          <tr><td>Success rate</td><td>Tỉ lệ lượt thử làm xong bài. 0.65 nghĩa là 65%.</td></tr>
+          <tr><td>Checkpoint</td><td>Bản lưu mô hình tại một thời điểm trong lúc học.</td></tr>
+          <tr><td>Seed</td><td>Con số khởi tạo cho phần ngẫu nhiên. Chạy lại với seed khác để xem kết quả có ổn định không.</td></tr>
+          <tr><td>Lifelong learning (LL)</td><td>Học lần lượt nhiều việc trong suốt "cuộc đời" mô hình. Paper gọi riêng cho robot là LLDM (lifelong learning in decision-making).</td></tr>
+          <tr><td>Forward transfer</td><td>Kinh nghiệm việc cũ giúp học việc mới nhanh hơn.</td></tr>
+          <tr><td>Backward transfer</td><td>Học việc mới ảnh hưởng đến việc cũ. Thường là xấu đi, tức là quên.</td></tr>
+          <tr><td>Catastrophic forgetting</td><td>Quên thảm họa: học việc mới làm hỏng hẳn việc cũ.</td></tr>
+          <tr><td>Declarative / Procedural</td><td>Kiến thức "biết cái gì" / kiến thức "biết làm thế nào".</td></tr>
+          <tr><td>ResNet, ViT</td><td>Hai kiểu mạng xử lý ảnh: ResNet là mạng tích chập (CNN) kiểu cũ, ViT là Transformer cho ảnh.</td></tr>
+          <tr><td>RNN, LSTM</td><td>Mạng xử lý chuỗi theo kiểu đọc lần lượt, có bộ nhớ ngắn. Kiểu cũ hơn Transformer.</td></tr>
+          <tr><td>BERT embedding</td><td>Biến câu lệnh thành một dãy số bằng mô hình ngôn ngữ BERT.</td></tr>
+          <tr><td>GMM</td><td>Gaussian Mixture Model: trộn nhiều "quả chuông" để biểu diễn hành động có nhiều cách đúng.</td></tr>
+          <tr><td>PDDL / BDDL</td><td>Ngôn ngữ viết file mô tả bài tập: có đồ vật gì, đặt ở đâu, thế nào là xong.</td></tr>
+          <tr><td>Predicate (mệnh đề)</td><td>Câu chỉ có đúng hoặc sai về đồ vật, ví dụ On(bát, đĩa).</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="lesson" id="buctranh">
+      <h3><span class="n">1</span>Bức tranh lớn trong 3 câu</h3>
+      <ol class="plain">
+        <li><strong>LIBERO là bộ đề thi cho robot.</strong> 130 bài tập trong mô phỏng, mỗi bài là một câu lệnh như "mở ngăn kéo trên của tủ" hay "đặt bát lên bếp", kèm 50 lần làm mẫu do người điều khiển robot.</li>
+        <li><strong>Mục đích gốc của paper là nghiên cứu "học suốt đời".</strong> Robot học lần lượt từng bài: nó có dùng kinh nghiệm bài trước để học bài sau tốt hơn không, và có quên bài cũ không?</li>
+        <li><strong>Ngày nay LIBERO được dùng theo cách khác.</strong> Các paper VLA (OpenVLA, π0, GR00T, Qwen-VLA…) lấy 4 bộ bài của LIBERO làm bài kiểm tra chuẩn: finetune mô hình trên dữ liệu làm mẫu, rồi đo tỉ lệ làm thành công.</li>
+      </ol>
+      <div class="keyidea">Điểm dễ nhầm nhất: <strong>paper nói về học suốt đời</strong>, nhưng <strong>bạn gặp LIBERO trong các paper VLA vì nó là bộ đề chấm điểm</strong>. Khi present, nói rõ cả hai vai trò.</div>
+    </section>
+
+    <!-- ============ READ THE PAPER ============ -->
+    <div class="part">
+      <span class="eyebrow">Đọc paper theo thứ tự</span>
+      <h2>Từng mục của paper, giải thích bằng lời thường</h2>
+      <p class="intro">Mỗi ô "Paper viết / Nghĩa là" trích một câu quan trọng (giữ tiếng Anh để bạn tìm được trong PDF) và giải thích nó.</p>
+    </div>
+
+    <section class="lesson" id="intro">
+      <h3><span class="n">2</span>Abstract và Introduction: vì sao có paper này</h3>
+      <h4><span class="tag">Hình dung</span>Một người giúp việc học dần</h4>
+      <p>Bạn thuê một người giúp việc. Tuần đầu dạy rửa bát, tuần sau dạy nấu cơm, tuần sau nữa dạy lau nhà. Bạn mong hai điều:</p>
+      <ul>
+        <li><strong>Học cái mới nhanh hơn nhờ cái cũ:</strong> đã biết cầm bát thì học xếp bát vào tủ nhanh hơn. Đây là <strong>forward transfer</strong>.</li>
+        <li><strong>Không quên cái cũ</strong>, thậm chí làm cái cũ tốt hơn nhờ cái mới. Đây là <strong>backward transfer</strong>. Nếu quên thì gọi là <strong>catastrophic forgetting</strong>.</li>
+      </ul>
+      <div class="quote">
+        <div class="en">"Lifelong learning offers a promising paradigm of building a generalist agent that learns and adapts over its lifespan."</div>
+        <div class="vi"><p>Muốn có một robot làm được nhiều việc, có hai con đường. Dạy tất cả cùng lúc (multitask learning) tốn rất nhiều tính toán và không thích nghi được khi có việc mới. Học dần dần suốt đời thì thực tế hơn: mỗi lần chỉ học thêm một việc.</p></div>
+      </div>
+      <div class="quote">
+        <div class="en">"Unlike traditional lifelong learning problems in image and text domains, which primarily involve the transfer of declarative knowledge … lifelong learning in decision-making (LLDM) also necessitates the transfer of procedural knowledge."</div>
+        <div class="vi"><p>Nghiên cứu học suốt đời trước đây chủ yếu làm với ảnh và chữ, ví dụ học nhận dạng thêm loài vật mới. Đó là kiến thức "biết cái gì". Robot còn cần kiến thức "biết làm thế nào", và chưa có bộ đề nào đo tốt loại này.</p></div>
+      </div>
+      <h4><span class="tag">Ví dụ của paper</span>Robot lấy nước ép trong tủ lạnh</h4>
+      <p>Paper đưa ra một ví dụ rất đáng nhớ: robot được dạy lấy nước ép trong tủ lạnh, sau đó học thêm vài việc khác, rồi quay lại thì không lấy được nữa. Lý do có thể là:</p>
+      <ul>
+        <li>Quên <em>nước ép trông thế nào</em> hoặc <em>tủ lạnh ở đâu</em>: mất kiến thức <strong>declarative</strong>.</li>
+        <li>Quên <em>cách mở tủ lạnh</em> hoặc <em>cách cầm chai</em>: mất kiến thức <strong>procedural</strong>.</li>
+      </ul>
+      <p>Hiện chưa có cách nào phân biệt hai nguyên nhân này một cách có hệ thống. LIBERO được tạo ra để làm việc đó.</p>
+      <h4><span class="tag">Đóng góp</span>Paper đưa ra những gì</h4>
+      <ol class="plain">
+        <li><strong>Quy trình sinh bài tập tự động</strong>, về lý thuyết tạo được vô hạn bài.</li>
+        <li><strong>Bốn bộ bài, tổng 130 bài</strong>, kèm dữ liệu làm mẫu chất lượng cao cho mọi bài.</li>
+        <li><strong>Năm câu hỏi nghiên cứu</strong> và một loạt thí nghiệm ban đầu trả lời chúng.</li>
+        <li><strong>Bốn phát hiện</strong>, một số khá bất ngờ (xem mục 11).</li>
+      </ol>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Robot cần học lần lượt nhiều việc mà không quên, và cần chuyển giao cả "biết cái gì" lẫn "biết làm thế nào". LIBERO là bộ đề đầu tiên được thiết kế để đo riêng từng loại.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="nen">
+      <h3><span class="n">3</span>Background (§2): bài toán viết bằng toán</h3>
+      <p>Đây là phần nhiều ký hiệu nhất. Ta đọc từng công thức theo 4 bước quen thuộc: dịch ký hiệu → nói thành câu → thay số → để làm gì.</p>
+
+      <h4><span class="tag">§2.1</span>MDP: cách mô tả một bài tập robot</h4>
+      <div class="quote">
+        <div class="en">"A robot learning problem can be formulated as a finite-horizon Markov Decision Process: M = (S, A, T, H, μ₀, R)."</div>
+        <div class="vi"><p>Mọi bài tập robot được mô tả bằng 6 thành phần. Hình dung trò chơi "đặt bát lên đĩa":</p></div>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Ký hiệu</th><th>Tên</th><th>Trong ví dụ "đặt bát lên đĩa"</th></tr></thead>
+        <tbody>
+          <tr><td>\(\mathcal{S}\)</td><td>Tập trạng thái</td><td>Mọi tình huống có thể: bát ở đâu, tay robot ở đâu, kẹp mở hay đóng</td></tr>
+          <tr><td>\(\mathcal{A}\)</td><td>Tập hành động</td><td>Mọi lệnh có thể gửi cho tay robot</td></tr>
+          <tr><td>\(\mathcal{T}\)</td><td>Luật chuyển trạng thái</td><td>Vật lý của thế giới: ra lệnh "đóng kẹp" khi kẹp đang ôm bát thì bát được giữ chặt</td></tr>
+          <tr><td>\(H\)</td><td>Giới hạn số bước</td><td>Tối đa bao nhiêu bước để làm xong. "Finite-horizon" nghĩa là có giới hạn này</td></tr>
+          <tr><td>\(\mu_0\)</td><td>Phân phối trạng thái ban đầu</td><td>Lúc bắt đầu, bát và đĩa được đặt ở đâu, có xê dịch ngẫu nhiên một chút</td></tr>
+          <tr><td>\(R\)</td><td>Hàm thưởng</td><td>Điểm thưởng sau mỗi bước. Paper thay bằng \(g\) ở dưới</td></tr>
+        </tbody>
+      </table></div>
+      <div class="quote">
+        <div class="en">"we assume a sparse-reward setting and replace R with a goal predicate g : S → {0, 1}."</div>
+        <div class="vi"><p><strong>Sparse reward</strong> (thưởng thưa) nghĩa là robot không được chấm điểm từng bước, chỉ biết "xong" hay "chưa xong". Vì vậy paper thay hàm thưởng bằng một hàm \(g\) chỉ trả về 1 (đã xong) hoặc 0 (chưa xong). Giống như thi mà chỉ được biết đậu hay rớt, không có điểm từng câu.</p></div>
+      </div>
+      <p>Mục tiêu của robot:</p>
+      <div class="math">\[ \max_{\pi}\; J(\pi) = \mathbb{E}_{s_t, a_t\sim\pi,\,\mu_0}\Big[\sum_{t=1}^{H} g(s_t)\Big] \]</div>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(\pi\) là bộ não robot; \(\max_\pi\) là "tìm bộ não tốt nhất"; \(s_t, a_t\) là trạng thái và hành động ở bước \(t\); "\(\sim \pi, \mu_0\)" nghĩa là chúng sinh ra khi robot bắt đầu từ \(\mu_0\) và hành động theo \(\pi\); \(\mathbb{E}\) là trung bình qua nhiều lần thử.</li>
+        <li><strong>Nói thành câu:</strong> "Tìm bộ não π sao cho, tính trung bình qua nhiều lần chơi, robot đạt trạng thái hoàn thành càng nhiều càng tốt."</li>
+        <li><strong>Thay số:</strong> cho robot thử 20 lần, làm xong 13 lần. Mục tiêu xấp xỉ bằng 13/20 = 65%.</li>
+        <li><strong>Để làm gì:</strong> nói gọn là <strong>làm cho tỉ lệ thành công cao nhất</strong>. Đó là lý do mọi kết quả trên LIBERO đều báo bằng success rate.</li>
+      </ol>
+
+      <h4><span class="tag">§2.2</span>Học suốt đời: công thức (1)</h4>
+      <div class="quote">
+        <div class="en">"a robot sequentially learns over K tasks {T¹, …, T^K} with a single policy π … conditioned on the task, i.e., π(· | s; T)."</div>
+        <div class="vi"><p>Robot học lần lượt \(K\) bài, nhưng chỉ có <strong>một</strong> bộ não dùng chung. Bộ não nhận thêm thông tin "đang làm bài nào" (\(T\), thực tế là câu lệnh). Mỗi bài \(T^k\) được định nghĩa bằng cách bày đồ ban đầu \(\mu_0^k\) và điều kiện xong \(g^k\). Mọi thứ khác (robot, vật lý, giới hạn bước) giống nhau cho mọi bài.</p></div>
+      </div>
+      <div class="math">\[ \max_{\pi}\; J_{LRL}(\pi) = \frac{1}{k}\sum_{p=1}^{k} \mathbb{E}\Big[\sum_{t=1}^{L} g^p(s_t^p)\Big] \qquad (1) \]</div>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(k\) là số bài đã học đến giờ; \(p\) chạy qua bài 1, 2, …, \(k\); phần trong ngoặc là tỉ lệ thành công trên bài \(p\); \(\frac{1}{k}\sum\) là lấy trung bình.</li>
+        <li><strong>Nói thành câu:</strong> "Khi đã học đến bài k, robot phải làm tốt <em>trung bình mọi bài từ 1 đến k</em>, không chỉ bài vừa học."</li>
+        <li><strong>Thay số:</strong> học đến bài 3, tỉ lệ thành công trên bài 1, 2, 3 lần lượt là 40%, 70%, 90%. Mục tiêu bằng (40 + 70 + 90)/3 ≈ 67%. Muốn tăng con số này thì phải giữ được bài 1, không chỉ giỏi bài 3.</li>
+        <li><strong>Để làm gì:</strong> đây là định nghĩa chính thức của "học suốt đời mà không quên".</li>
+      </ol>
+      <div class="quote">
+        <div class="en">"An important feature of the lifelong setting is that the agent loses access to the previous k − 1 tasks when it learns on task T^k."</div>
+        <div class="vi"><p>Đây là điều làm bài toán khó: <strong>khi học bài mới, robot không còn (hoặc chỉ còn rất ít) dữ liệu bài cũ</strong>. Nếu còn đủ, chỉ cần học lại tất cả cùng lúc là xong. Các thuật toán ở mục 7 là các cách khác nhau để xoay xở trong tình huống này.</p></div>
+      </div>
+
+      <h4><span class="tag">§2.2</span>Học bắt chước: công thức (2)</h4>
+      <p>Chỉ biết "xong hay chưa" ở cuối thì robot rất khó tự mò ra cách làm, giống như học bơi mà chỉ được báo "chưa qua sông". Paper chọn cách thực tế hơn: <strong>cho xem người làm mẫu rồi bắt chước</strong>.</p>
+      <div class="quote">
+        <div class="en">"Denote D^k = {τ_i^k}_{i=1}^N as N demonstrations for task T^k. Each τ_i^k = (o₀, a₀, o₁, a₁, …, o_{l^k}) where l^k ≤ H."</div>
+        <div class="vi"><p>Mỗi bài có \(N\) lần làm mẫu (thực tế \(N = 50\)). Mỗi lần làm mẫu là một chuỗi xen kẽ: quan sát \(o_0\), hành động \(a_0\), quan sát \(o_1\), hành động \(a_1\), … cho đến khi xong. Độ dài \(l^k\) không vượt quá giới hạn \(H\).</p></div>
+      </div>
+      <div class="quote">
+        <div class="en">"In practice, the observation o_t is often non-Markovian. Therefore … we represent s_t by the aggregated history of observations, i.e. s_t ≡ o_{≤t}."</div>
+        <div class="vi"><p>Quan sát \(o_t\) gồm ảnh camera và thông tin khớp tay, kẹp. Vấn đề: một tấm ảnh đơn lẻ không đủ biết tình hình. Ví dụ nhìn một ảnh, bạn không biết ngăn kéo đang được kéo ra hay đẩy vào. Vì vậy robot dùng <strong>cả lịch sử các quan sát gần đây</strong> \(o_{\le t} = (o_0, \ldots, o_t)\), thay vì chỉ ảnh hiện tại. Đây là lý do các kiến trúc ở mục 8 đều có phần xử lý chuỗi thời gian.</p></div>
+      </div>
+      <div class="math">\[ \min_{\pi}\; J_{BC}(\pi) = \frac{1}{k}\sum_{p=1}^{k}\; \mathbb{E}_{o_t, a_t\sim D^p}\Big[\sum_{t=0}^{l^p}\mathcal{L}\big(\pi(o_{\le t}; T^p),\, a_t^p\big)\Big] \qquad (2) \]</div>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(D^p\) là dữ liệu làm mẫu của bài \(p\); \(\pi(o_{\le t}; T^p)\) là hành động robot đoán khi thấy lịch sử quan sát đến bước \(t\) và biết đang làm bài \(p\); \(a_t^p\) là hành động người làm mẫu thực sự đã làm; \(\mathcal{L}\) là hàm phạt (loss).</li>
+        <li><strong>Nói thành câu:</strong> "Với mọi bài, lấy các đoạn làm mẫu, ở từng bước cho robot đoán hành động, phạt khi đoán khác người làm mẫu. Tìm π làm tổng mức phạt nhỏ nhất."</li>
+        <li><strong>Thay số:</strong> người làm mẫu ra lệnh "dịch tay sang phải 2 cm", robot đoán 1.5 cm. Loss đo độ chênh này. Lặp lại trên hàng nghìn bước của 50 lần làm mẫu.</li>
+        <li><strong>Để làm gì:</strong> đây chính là <strong>supervised learning</strong> ở Giai đoạn 0, áp vào robot. Bước finetune của Qwen-VLA hay GR00T cũng chính là công thức này.</li>
+      </ol>
+      <p>Hai chi tiết trong câu ngay sau công thức (2):</p>
+      <ul>
+        <li><strong>"L is … the negative log-likelihood loss, and π is a Gaussian mixture model":</strong> robot không đoán một con số duy nhất, mà đoán một <strong>hỗn hợp nhiều quả chuông</strong> (GMM). Lý do giống bài "hai cách cầm cốc" ở Giai đoạn 0: một tình huống có thể có nhiều cách làm đúng. Loss đo xem hành động thật của người làm mẫu "hợp lý" thế nào dưới phân phối robot đoán.</li>
+        <li><strong>"{D^p : p &lt; k} are not fully available when learning T^k":</strong> nhắc lại rằng dữ liệu bài cũ không còn đầy đủ khi học bài mới.</li>
+      </ul>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Mỗi bài tập = cách bày đồ ban đầu + điều kiện xong. Mục tiêu: tỉ lệ thành công trung bình cao trên mọi bài đã học (1). Cách học: bắt chước 50 lần làm mẫu (2), dùng lịch sử quan sát chứ không chỉ một ảnh. Khó ở chỗ khi học bài mới thì không còn đủ dữ liệu bài cũ.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="topics">
+      <h3><span class="n">4</span>Năm câu hỏi nghiên cứu (§3)</h3>
+      <p>Paper đặt ra 5 câu hỏi. Mỗi câu hỏi giải thích một lựa chọn thiết kế của LIBERO.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Câu hỏi</th><th>Hỏi gì</th><th>Ví dụ hoặc lý do</th></tr></thead>
+        <tbody>
+          <tr><td><strong>T1</strong> · Loại kiến thức</td><td>Chuyển giao kiến thức không gian, đồ vật, hành động khác nhau thế nào?</td><td>Bài "put the ketchup next to the plate in the basket" cần biết tương cà là gì, đĩa và giỏ ở đâu, và cách bỏ vào giỏ. Khi robot làm sai, rất khó biết nó thiếu loại kiến thức nào. Vì vậy cần các bộ bài tách riêng từng loại (mục 6).</td></tr>
+          <tr><td><strong>T2</strong> · Kiến trúc mạng</td><td>Mạng nào xử lý tốt ảnh + chữ + trạng thái robot, và chỉ chuyển giao phần kiến thức có ích?</td><td>Dẫn đến 3 kiến trúc được so sánh (mục 8).</td></tr>
+          <tr><td><strong>T3</strong> · Thuật toán</td><td>Thuật toán học suốt đời nào hợp với robot?</td><td>Với robot, quên một chút ở mỗi bước có thể cộng dồn thành thất bại hoàn toàn khi thực hiện cả chuỗi hành động. Dẫn đến 5 thuật toán (mục 7).</td></tr>
+          <tr><td><strong>T4</strong> · Thứ tự bài</td><td>Học theo thứ tự khác nhau có cho kết quả khác không?</td><td>Robot ngoài đời không được chọn gặp việc nào trước, nên thuật toán tốt phải ít phụ thuộc thứ tự.</td></tr>
+          <tr><td><strong>T5</strong> · Huấn luyện trước</td><td>Pretrain trên nhiều dữ liệu có giúp học suốt đời tốt hơn không?</td><td>Robot thật nhiều khả năng sẽ được pretrain trong nhà máy trước khi giao. Vì vậy LIBERO-90 được tách riêng làm dữ liệu pretrain.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Phần thí nghiệm (§5) chia 5 câu hỏi này thành 6 câu Q1–Q6. Mục 11 trả lời lần lượt từng câu.</p>
+    </section>
+
+    <section class="lesson" id="taotask">
+      <h3><span class="n">5</span>Cách LIBERO sinh bài tập (§4.1)</h3>
+      <p>Viết tay hàng trăm bài tập rất mất công. LIBERO dùng một <strong>quy trình sinh tự động</strong> 3 bước, xem Hình 2 trong paper:</p>
+      <div class="diagram" role="img" aria-label="Ba bước sinh một bài tập LIBERO">
+        <svg viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+          <g font-family="Be Vietnam Pro, system-ui, sans-serif" text-anchor="middle">
+            <rect x="10" y="20" width="220" height="110" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
+            <text x="120" y="46" font-size="13" font-weight="700" fill="var(--ink)">1. Mẫu câu lệnh</text>
+            <text x="120" y="70" font-size="11.5" fill="var(--muted)">Rút từ mô tả video sinh hoạt</text>
+            <text x="120" y="88" font-size="11.5" fill="var(--muted)">của con người (Ego4D)</text>
+            <text x="120" y="112" font-size="11.5" fill="var(--ink)">"Open …" → "Open the drawer"</text>
+            <rect x="270" y="20" width="220" height="110" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
+            <text x="380" y="46" font-size="13" font-weight="700" fill="var(--ink)">2. Bày cảnh ban đầu (μ₀)</text>
+            <text x="380" y="70" font-size="11.5" fill="var(--muted)">Chọn cảnh, đồ vật, vị trí,</text>
+            <text x="380" y="88" font-size="11.5" fill="var(--muted)">trạng thái ban đầu</text>
+            <text x="380" y="112" font-size="11.5" fill="var(--ink)">bếp, tủ 3 ngăn, bát trên bàn</text>
+            <rect x="530" y="20" width="220" height="110" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="640" y="46" font-size="13" font-weight="700" fill="var(--ink)">3. Điều kiện xong (g)</text>
+            <text x="640" y="70" font-size="11.5" fill="var(--muted)">Ghép các mệnh đề đúng/sai</text>
+            <text x="640" y="88" font-size="11.5" fill="var(--muted)">bằng "và"</text>
+            <text x="640" y="112" font-size="11.5" fill="var(--ink)">Open(ngăn trên) ∧ In(bát, ngăn trên)</text>
+            <g stroke="var(--muted)" stroke-width="1.25" fill="none">
+              <path d="M230 75H268" marker-end="url(#arrL)"/><path d="M490 75H528" marker-end="url(#arrL)"/>
+            </g>
+            <text x="380" y="158" font-size="11.5" fill="var(--muted)">Mô phỏng dừng khi mọi mệnh đề trong điều kiện xong đều đúng</text>
+          </g>
+        </svg>
+      </div>
+      <ol class="plain">
+        <li><strong>Mẫu câu lệnh.</strong> Ego4D là bộ dữ liệu khổng lồ video góc nhìn thứ nhất về sinh hoạt hằng ngày, có mô tả bằng chữ. Paper rút các mô tả này thành mẫu câu như "Open …", rồi điền đồ vật có trong mô phỏng để được câu lệnh như "Open the drawer of the cabinet". Nhờ vậy bài tập giống việc người ta làm thật.</li>
+        <li><strong>Bày cảnh ban đầu.</strong> Chọn cảnh phù hợp với câu lệnh (câu về ngăn kéo thì chọn cảnh bếp có tủ), rồi ghi rõ có những đồ vật nào, đặt trong vùng nào, trạng thái ra sao.</li>
+        <li><strong>Điều kiện xong.</strong> Viết bằng các <strong>mệnh đề</strong> chỉ đúng hoặc sai. Mệnh đề một đồ vật nói về trạng thái của nó: \(\mathsf{Open}(X)\), \(\mathsf{TurnOff}(X)\). Mệnh đề hai đồ vật nói về quan hệ vị trí: \(\mathsf{On}(A,B)\) "A trên B", \(\mathsf{In}(A,B)\) "A trong B". Dấu \(\wedge\) đọc là "và".</li>
+      </ol>
+      <h4><span class="tag">File thật</span>Đọc một file mô tả bài tập (Phụ lục C.2)</h4>
+      <p>Đây là file của bài "open the top drawer of the cabinet and put the bowl in it", rút gọn. Chú thích màu xanh là giải thích, không có trong file gốc.</p>
+      <div class="pddl">(define (problem LIBERO_Kitchen_Tabletop_Manipulation)
+  (:language open the top drawer of the cabinet and put the bowl in it)
+                                         <span class="c">; câu lệnh robot nhận được</span>
+  (:regions                              <span class="c">; các VÙNG được phép đặt đồ</span>
+    (akita_black_bowl_init_region
+      (:target kitchen_table)
+      (:ranges ((-0.025 -0.025 0.025 0.025))))
+                                         <span class="c">; bát đặt ngẫu nhiên trong ô vuông 5 cm này</span>
+    (plate_init_region ...)
+    (top_region (:target wooden_cabinet_1)))
+                                         <span class="c">; "ngăn trên" của tủ cũng là một vùng</span>
+  (:fixtures kitchen_table wooden_cabinet_1)
+                                         <span class="c">; đồ cố định: bàn, tủ</span>
+  (:objects akita_black_bowl_1 plate_1)  <span class="c">; đồ di chuyển được: bát, đĩa</span>
+  (:init                                 <span class="c">; = μ₀, trạng thái ban đầu</span>
+    (On akita_black_bowl_1 kitchen_table_akita_black_bowl_init_region)
+    (On plate_1 kitchen_table_plate_init_region))
+  (:goal                                 <span class="c">; = g, điều kiện xong</span>
+    (And (Open wooden_cabinet_1_top_region)
+         (In akita_black_bowl_1 wooden_cabinet_1_top_region))))</div>
+      <p>Hai điểm đáng chú ý:</p>
+      <ul>
+        <li>Vị trí ban đầu không cố định mà là một <strong>vùng</strong>. Mỗi lần bắt đầu, đồ vật được đặt ngẫu nhiên trong vùng đó. Vì vậy robot không thể học thuộc tọa độ mà phải thực sự nhìn.</li>
+        <li>Điều kiện xong được máy tự kiểm tra, không cần người chấm. Nhờ vậy chạy được hàng nghìn lượt thử tự động.</li>
+      </ul>
+      <p>Trong code, mỗi bài là một file đuôi <code>.bddl</code> (BDDL là một biến thể của PDDL). Môi trường đọc file để bày cảnh:</p>
+      <div class="code"><pre><code>from libero.libero.envs import OffScreenRenderEnv
+
+env_args = {
+    "bddl_file_name": task_bddl_file,   # file mô tả bài tập như ở trên
+    "camera_heights": 128,              # ảnh camera 128 × 128 điểm ảnh
+    "camera_widths": 128,
+}
+env = OffScreenRenderEnv(**env_args)    # tạo môi trường mô phỏng</code></pre></div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Câu lệnh rút từ sinh hoạt thật, cảnh bày ngẫu nhiên trong các vùng, điều kiện xong viết bằng mệnh đề như On(A, B). Vì sinh tự động nên dễ mở rộng, và máy tự chấm được.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="suites">
+      <h3><span class="n">6</span>Bốn bộ bài (§4.2): mỗi bộ kiểm tra một thứ</h3>
+      <p>Đây là phần quan trọng nhất, cũng là thứ bạn gặp lại trong mọi paper VLA. Ý tưởng giống một thí nghiệm khoa học: <strong>giữ nguyên mọi thứ, chỉ thay đổi đúng một yếu tố</strong>, để biết robot có học được yếu tố đó không. Ô màu cam là yếu tố thay đổi giữa các bài trong cùng bộ.</p>
+      <div class="suites">
+        <div class="suite">
+          <span class="cnt">10 bài · declarative</span>
+          <h5>LIBERO-Spatial</h5>
+          <div class="vary"><b class="on">vị trí</b><b>đồ vật</b><b>mục tiêu</b></div>
+          <p>Mọi bài đều là "đặt cái bát lên đĩa", cùng một bộ đồ vật. Nhưng trên bàn có <strong>hai cái bát giống hệt nhau</strong>, chỉ khác vị trí. Robot phải hiểu câu lệnh chỉ cái bát nào.</p>
+          <div class="ex">"pick up the black bowl between the plate and the ramekin and place it on the plate"</div>
+        </div>
+        <div class="suite">
+          <span class="cnt">10 bài · declarative</span>
+          <h5>LIBERO-Object</h5>
+          <div class="vary"><b>vị trí</b><b class="on">đồ vật</b><b>mục tiêu</b></div>
+          <p>Mọi bài đều là "nhặt một thứ bỏ vào giỏ", nhưng mỗi bài một <strong>đồ vật khác</strong>. Robot phải nhận ra đúng đồ vật.</p>
+          <div class="ex">"pick up the alphabet soup and place it in the basket"</div>
+        </div>
+        <div class="suite">
+          <span class="cnt">10 bài · procedural</span>
+          <h5>LIBERO-Goal</h5>
+          <div class="vary"><b>vị trí</b><b>đồ vật</b><b class="on">mục tiêu</b></div>
+          <p>Cùng đồ vật, cùng cách bày, chỉ <strong>việc phải làm</strong> khác: mở ngăn kéo, bật bếp, đặt bát lên bếp… Robot phải học thêm kỹ năng hành động.</p>
+          <div class="ex">"open the middle drawer of the cabinet" · "put the bowl on the stove"</div>
+        </div>
+        <div class="suite">
+          <span class="cnt">100 bài = 90 + 10 · trộn lẫn</span>
+          <h5>LIBERO-100</h5>
+          <div class="vary"><b class="on">vị trí</b><b class="on">đồ vật</b><b class="on">mục tiêu</b></div>
+          <p>Mọi thứ đều thay đổi, nhiều cảnh (bếp, phòng khách, phòng học). Chia thành <strong>LIBERO-90</strong> (90 bài ngắn, làm dữ liệu pretrain) và <strong>LIBERO-Long</strong>, còn gọi LIBERO-10 (10 bài dài, gồm nhiều việc liên tiếp).</p>
+          <div class="ex">"turn on the stove and put the moka pot on it" · "put both the alphabet soup and the tomato sauce in the basket"</div>
+        </div>
+      </div>
+      <p>Tổng cộng: 10 + 10 + 10 + 100 = <strong>130 bài</strong>, mỗi bài có <strong>50 lần làm mẫu</strong> do người thật điều khiển bằng chuột 3D SpaceMouse.</p>
+      <div class="quote">
+        <div class="en">"A suite of 10 tasks is enough to observe catastrophic forgetting while maintaining computation efficiency." (chú thích 4)</div>
+        <div class="vi"><p>Vì sao mỗi bộ chỉ có 10 bài? Vì 10 bài đã đủ để thấy rõ hiện tượng quên, mà chi phí chạy thí nghiệm vẫn chấp nhận được. Mỗi thí nghiệm phải học lần lượt 10 bài và kiểm tra lại nhiều lần.</p></div>
+      </div>
+      <h4><span class="tag">Thông số</span>Robot nhìn và điều khiển thế nào</h4>
+      <ul>
+        <li><strong>Robot:</strong> một cánh tay robot (Franka Panda, theo code của LIBERO) đặt cạnh bàn, trong mô phỏng robosuite trên nền MuJoCo.</li>
+        <li><strong>Quan sát \(o_t\):</strong> ảnh camera (một camera nhìn toàn cảnh, một camera gắn ở cổ tay, ảnh 128 × 128 điểm ảnh) cộng thông tin về khớp tay và kẹp.</li>
+        <li><strong>Hành động \(a_t\):</strong> lệnh cho đầu tay robot (end-effector). Trong dữ liệu LIBERO, mỗi bước là 7 số: dịch chuyển theo 3 hướng, xoay theo 3 trục, và mở/đóng kẹp. Đây đúng là "một hàng 7 cột" của bảng hành động ở Giai đoạn 0.</li>
+      </ul>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>Spatial thay vị trí, Object thay đồ vật, Goal thay việc phải làm, Long trộn tất cả và dài hơn. LIBERO-90 dùng để pretrain. Mỗi bài 50 lần làm mẫu.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="thuattoan">
+      <h3><span class="n">7</span>Năm thuật toán học lần lượt (§4.3, Phụ lục B.1)</h3>
+      <p>Paper chọn 3 thuật toán đại diện cho 3 trường phái chống quên, cộng 2 mốc so sánh. Tiếp tục ví dụ người giúp việc:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Tên</th><th>Trường phái</th><th>Cách làm</th><th>Ví dụ đời thường</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SeqL</strong></td><td>Mốc dưới</td><td>Học bài mới bằng dữ liệu bài mới, không làm gì để chống quên</td><td>Học việc mới, kệ việc cũ</td></tr>
+          <tr><td><strong>ER</strong></td><td>Ôn lại (rehearsal)</td><td>Giữ lại một ít dữ liệu bài cũ, trộn vào khi học bài mới</td><td>Thỉnh thoảng làm lại việc cũ</td></tr>
+          <tr><td><strong>EWC</strong></td><td>Ràng buộc (regularization)</td><td>Phạt nếu thay đổi những tham số quan trọng với bài cũ</td><td>Giữ nguyên những thói quen quan trọng</td></tr>
+          <tr><td><strong>PackNet</strong></td><td>Chia mạng (dynamic architecture)</td><td>Mỗi bài dùng một phần mạng riêng rồi khóa lại</td><td>Mỗi việc ghi vào một trang sổ riêng, không viết đè</td></tr>
+          <tr><td><strong>MTL</strong></td><td>Mốc trên</td><td>Học tất cả bài cùng lúc với đủ dữ liệu. Không phải học suốt đời</td><td>Dạy mọi việc cùng lúc ngay từ đầu</td></tr>
+        </tbody>
+      </table></div>
+      <p>SeqL là cách ngây thơ nhất (mốc dưới), MTL là lý tưởng nhưng không thực tế (mốc trên). Paper kỳ vọng ba thuật toán còn lại nằm giữa, càng gần MTL càng tốt.</p>
+
+      <h4><span class="tag">ER</span>Experience Replay: ôn bài cũ</h4>
+      <p>Sau khi học xong mỗi bài, cất một phần dữ liệu vào "kho" (tối đa <strong>1.000 quỹ đạo</strong>). Khi học bài mới, mỗi lượt cập nhật lấy thêm <strong>32 quỹ đạo</strong> ngẫu nhiên từ kho trộn với dữ liệu bài mới. Như vậy dữ liệu học gần giống "dữ liệu của mọi bài". Nhược điểm: phải lưu dữ liệu cũ, tốn bộ nhớ, và đôi khi không được phép lưu vì lý do riêng tư.</p>
+
+      <h4><span class="tag">EWC</span>Elastic Weight Consolidation: giữ núm quan trọng</h4>
+      <p>Nhớ ví dụ "vặn núm radio" ở Giai đoạn 0. Sau mỗi bài, EWC đo xem núm nào quan trọng với bài đó. Khi học bài mới, vặn núm quan trọng sẽ bị phạt nặng. Công thức loss khi học bài \(k\):</p>
+      <div class="math">\[ \mathcal{L}^{EWC}_k(\theta) = \mathcal{L}^{BC}_k(\theta) + \sum_i \frac{\lambda}{2} F_i\,\big(\theta_i - \theta^*_{k-1,i}\big)^2 \]</div>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(\theta_i\) là núm thứ \(i\); \(\theta^*_{k-1,i}\) là vị trí của núm đó sau khi học xong bài trước; \(F_i\) là "độ quan trọng" của núm (tính bằng ma trận Fisher, đo xem núm đó ảnh hưởng tới dự đoán nhiều cỡ nào); \(\lambda\) là mức phạt (paper dùng \(5\times10^4\)).</li>
+        <li><strong>Nói thành câu:</strong> "Loss = loss bắt chước bài mới + tiền phạt cho mỗi núm bị vặn khỏi vị trí cũ, núm càng quan trọng phạt càng nặng."</li>
+        <li><strong>Thay số:</strong> núm A có \(F = 10\), bị vặn lệch 0.1 thì phạt \(\frac{\lambda}{2}\cdot10\cdot0.01\). Núm B có \(F = 0.01\), vặn lệch 0.1 thì phạt nhỏ hơn 1.000 lần. Mô hình sẽ ưu tiên thay đổi núm B.</li>
+        <li><strong>Kết quả:</strong> trên robot, cách này <strong>hoạt động kém nhất</strong> (mục 11).</li>
+      </ol>
+
+      <h4><span class="tag">PackNet</span>Chia mạng thành từng phần</h4>
+      <p>Với mỗi bài, PackNet làm 4 việc:</p>
+      <ol class="plain">
+        <li><strong>Học</strong> bài mới bằng phần mạng còn trống.</li>
+        <li><strong>Giữ lại 25%</strong> tham số quan trọng nhất, <strong>cắt bỏ</strong> (đặt về 0) phần còn lại.</li>
+        <li><strong>Học lại</strong> 50 epoch chỉ với phần đã giữ, để bù cho phần bị cắt.</li>
+        <li><strong>Khóa</strong> phần đó lại. Bài sau chỉ được dùng phần mạng chưa bị khóa.</li>
+      </ol>
+      <p>Về lý thuyết, PackNet <strong>không bao giờ quên</strong>, vì phần mạng của bài cũ không bị đụng tới. Đổi lại, mỗi bài sau có <strong>ít tham số hơn</strong> để học. Giống sổ tay càng về cuối càng ít trang trống. Paper lưu ý: các điểm số được đo trước bước "học lại" thứ 3.</p>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>ER ôn dữ liệu cũ. EWC phạt việc thay đổi tham số quan trọng. PackNet chia mạng cho từng bài rồi khóa lại. SeqL và MTL là mốc dưới và mốc trên.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="kientruc">
+      <h3><span class="n">8</span>Ba kiến trúc mạng (§4.4, Phụ lục A)</h3>
+      <p>Cả ba kiến trúc có chung một khung 4 khối. Chúng chỉ khác nhau ở khối 1 và khối 2:</p>
+      <div class="diagram" role="img" aria-label="Khung chung của ba kiến trúc policy trong LIBERO">
+        <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+          <g font-family="Be Vietnam Pro, system-ui, sans-serif" text-anchor="middle">
+            <rect x="8" y="30" width="130" height="64" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
+            <text x="73" y="56" font-size="13" font-weight="700" fill="var(--ink)">Ảnh mỗi bước</text>
+            <text x="73" y="76" font-size="11.5" fill="var(--muted)">+ câu lệnh (BERT)</text>
+            <rect x="166" y="30" width="150" height="64" rx="8" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="1.5"/>
+            <text x="241" y="56" font-size="13" font-weight="700" fill="var(--ink)">1. Xử lý ảnh</text>
+            <text x="241" y="76" font-size="11.5" fill="var(--muted)">ResNet hoặc ViT</text>
+            <rect x="344" y="30" width="170" height="64" rx="8" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="1.5"/>
+            <text x="429" y="56" font-size="13" font-weight="700" fill="var(--ink)">2. Xử lý chuỗi thời gian</text>
+            <text x="429" y="76" font-size="11.5" fill="var(--muted)">LSTM hoặc Transformer</text>
+            <rect x="542" y="30" width="96" height="64" rx="8" fill="var(--surface)" stroke="var(--rule)"/>
+            <text x="590" y="56" font-size="13" font-weight="700" fill="var(--ink)">3. Đầu GMM</text>
+            <text x="590" y="76" font-size="11.5" fill="var(--muted)">phân phối</text>
+            <rect x="664" y="30" width="88" height="64" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="708" y="56" font-size="13" font-weight="700" fill="var(--ink)">4. Lấy mẫu</text>
+            <text x="708" y="76" font-size="11.5" fill="var(--muted)">→ hành động</text>
+            <g stroke="var(--muted)" stroke-width="1.25" fill="none">
+              <path d="M138 62H164" marker-end="url(#arrK)"/><path d="M316 62H342" marker-end="url(#arrK)"/>
+              <path d="M514 62H540" marker-end="url(#arrK)"/><path d="M638 62H662" marker-end="url(#arrK)"/>
+            </g>
+            <text x="241" y="122" font-size="11.5" fill="var(--muted)">mỗi ảnh → một vector</text>
+            <text x="429" y="122" font-size="11.5" fill="var(--muted)">nhìn lại tối đa 10 bước gần nhất</text>
+            <text x="380" y="168" font-size="12" fill="var(--ink)">Ô màu cam là chỗ ba kiến trúc khác nhau</text>
+          </g>
+        </svg>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Kiến trúc</th><th>1. Xử lý ảnh</th><th>2. Xử lý chuỗi</th><th>Câu lệnh được đưa vào thế nào</th></tr></thead>
+        <tbody>
+          <tr><td><strong>ResNet-RNN</strong></td><td>ResNet (CNN)</td><td>LSTM 2 lớp</td><td>Dùng FiLM để "điều chỉnh" đặc trưng ảnh theo câu lệnh, và cộng vào đầu vào LSTM</td></tr>
+          <tr><td><strong>ResNet-T</strong></td><td>ResNet (CNN)</td><td>Transformer 4 lớp</td><td>Câu lệnh là một token riêng, đứng cạnh các token ảnh</td></tr>
+          <tr><td><strong>ViT-T</strong></td><td>ViT (Transformer cho ảnh) 7 lớp</td><td>Transformer 4 lớp</td><td>Câu lệnh là token riêng trong cả ViT lẫn Transformer thời gian</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li><strong>CNN (ResNet)</strong> quét ảnh bằng các "cửa sổ nhỏ", giỏi bắt chi tiết cục bộ như cạnh, góc.</li>
+        <li><strong>ViT</strong> cắt ảnh thành ô vuông, cho các ô "nhìn nhau" bằng attention. Bạn sẽ gặp lại ViT ở Qwen-VLA và GR00T.</li>
+        <li><strong>LSTM</strong> đọc chuỗi lần lượt từng bước, nhớ bằng một "trạng thái ẩn". <strong>Transformer</strong> cho mọi bước nhìn nhau cùng lúc.</li>
+        <li><strong>FiLM</strong> dùng câu lệnh để nhân và cộng vào đặc trưng ảnh, như "chỉnh âm lượng" từng kênh theo câu lệnh.</li>
+      </ul>
+      <div class="quote">
+        <div class="en">"All policy networks are matched in Floating Point Operations Per Second (FLOPS): all policy architectures have ∼13.5G FLOPS." (Phụ lục D)</div>
+        <div class="vi"><p>Một chi tiết công bằng quan trọng: cả ba kiến trúc được chỉnh để có <strong>lượng tính toán như nhau</strong>. Nếu không, kiến trúc thắng có thể chỉ vì to hơn chứ không phải vì thiết kế tốt hơn. Khi đọc bất kỳ paper nào so sánh kiến trúc, nên hỏi: hai bên có cùng cỡ không?</p></div>
+      </div>
+      <p>Cả ba kiến trúc này đều nhỏ và cũ so với VLA hiện nay. Điều cần nhớ là kết luận ở mục 11: <strong>Transformer xử lý chuỗi thời gian tốt hơn RNN</strong>.</p>
+    </section>
+
+    <section class="lesson" id="setup">
+      <h3><span class="n">9</span>Cách làm thí nghiệm (Phụ lục D)</h3>
+      <p>Hiểu cách làm thí nghiệm giúp bạn biết các con số đáng tin đến đâu. Đây là phần nhiều người đọc paper bỏ qua.</p>
+      <h4><span class="tag">Quy trình</span>Một lần chạy học suốt đời</h4>
+      <ol class="plain">
+        <li>Lấy một bộ 10 bài, xếp theo một thứ tự.</li>
+        <li>Với bài thứ \(k\): học <strong>50 epoch</strong> trên <strong>50 lần làm mẫu</strong>. Optimizer Adam, batch 32, learning rate giảm theo cosine từ \(10^{-4}\) xuống \(10^{-5}\).</li>
+        <li><strong>Cứ mỗi 5 epoch</strong> (epoch 0, 5, 10, …, 50, tức 11 lần), cho robot làm thử bài \(k\) <strong>20 lượt</strong>, mỗi lượt tối đa <strong>600 bước</strong>. Ghi tỉ lệ thành công.</li>
+        <li>Giữ lại checkpoint tốt nhất của bài \(k\).</li>
+        <li>Dùng checkpoint đó làm thử lại <strong>mọi bài đã học trước đó</strong>, mỗi bài 20 lượt. Đây là chỗ đo xem robot có quên không.</li>
+        <li>Sang bài \(k+1\), lặp lại.</li>
+      </ol>
+      <h4><span class="tag">Độ tin cậy</span>Seed, sai số chuẩn, t-test</h4>
+      <ul>
+        <li>Mỗi tổ hợp (thuật toán × kiến trúc × bộ bài) chạy <strong>3 lần với 3 seed</strong> khác nhau (100, 200, 300). Tổng cộng <strong>180 thí nghiệm</strong>, trên một GPU A100 hoặc A40 mỗi thí nghiệm.</li>
+        <li>Con số trong bảng có dạng <strong>0.48 ± 0.02</strong>: 0.48 là trung bình 3 lần chạy, 0.02 là <strong>sai số chuẩn</strong>, cho biết trung bình đó dao động cỡ nào. Hai con số có khoảng ± chồng lên nhau thì chưa chắc khác nhau thật.</li>
+        <li>Paper dùng <strong>t-test với p = 0.05</strong> để kiểm tra khác biệt có ý nghĩa không. Hiểu đơn giản: chỉ kết luận "A tốt hơn B" khi khả năng chênh lệch chỉ do may rủi dưới 5%. Trong PDF, kết quả vượt qua kiểm tra này được tô màu tím.</li>
+      </ul>
+      <div class="trap"><span class="lab">Cần lưu ý</span>
+        <p>Mỗi lần kiểm tra chỉ có 20 lượt, nên tỉ lệ thành công nhảy theo bậc 5% (0%, 5%, 10%…). Và chỉ có 3 seed. Vì vậy những chênh lệch nhỏ cỡ vài phần trăm trong bảng nên được đọc thận trọng.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="metrics">
+      <h3><span class="n">10</span>Ba thước đo: FWT, NBT, AUC (§5.1)</h3>
+      <div class="quote">
+        <div class="en">"All metrics are computed in terms of success rate, as previous literature has shown that the success rate is a more reliable metric than training loss for manipulation policies."</div>
+        <div class="vi"><p>Mọi thước đo đều tính từ <strong>tỉ lệ thành công</strong>, không phải từ loss. Lý do: với robot, loss thấp chưa chắc làm bài tốt. Phụ lục E.2 có ví dụ rõ ràng, xem mục 12.</p></div>
+      </div>
+      <h4><span class="tag">Bước 1</span>Hiểu ký hiệu \(c_{i,j,e}\)</h4>
+      <p>\(c_{i,j,e}\) là <strong>tỉ lệ thành công trên bài \(j\)</strong>, đo khi robot <strong>đang học bài \(i\)</strong> và đã học bài \(i\) được <strong>\(e\) epoch</strong>. Từ đó paper định nghĩa:</p>
+      <ul>
+        <li>\(c_{i,i} = \max_e c_{i,i,e}\): điểm <strong>tốt nhất</strong> của bài \(i\) trong lúc học nó.</li>
+        <li>\(e^*_i\): epoch <strong>sớm nhất</strong> đạt điểm tốt nhất đó. Paper giả định sau \(e^*_i\), điểm giữ nguyên ở mức tốt nhất (như thể robot dừng học ở checkpoint tốt nhất).</li>
+        <li>\(c_{i,j}\) với \(j \ne i\): điểm bài \(j\) đo bằng checkpoint tốt nhất đó.</li>
+      </ul>
+      <p>Dễ nhớ hơn: hình dung một bảng, hàng là "vừa học xong bài nào", cột là "làm thử bài nào". Đường chéo là điểm bài vừa học. Các ô dưới đường chéo là điểm bài cũ.</p>
+
+      <h4><span class="tag">FWT</span>Học bài mới nhanh và tốt cỡ nào (càng cao càng tốt)</h4>
+      <div class="math">\[ \text{FWT}_k = \frac{1}{11}\sum_{e\in\{0,5,\ldots,50\}} c_{k,k,e}, \qquad \text{FWT} = \frac{1}{K}\sum_{k=1}^{K}\text{FWT}_k \]</div>
+      <p class="say">"Điểm học bài mới của bài k là trung bình điểm của bài đó qua 11 lần kiểm tra trong lúc học. FWT là trung bình con số này qua mọi bài."</p>
+      <p><strong>Vì sao lấy trung bình qua lúc học, không lấy điểm cuối?</strong> Để thưởng cho việc <em>học nhanh</em>. Hai robot cùng đạt 80% cuối cùng, nhưng robot đạt 80% ngay ở epoch 10 sẽ có FWT cao hơn robot đến epoch 50 mới đạt. Học nhanh nhờ kinh nghiệm cũ chính là forward transfer. Thử so sánh:</p>
+      <div class="lab-box">
+        <div class="head"><span class="title">FWT của một bài: học nhanh và học chậm</span><span class="kind">Thử nghiệm</span></div>
+        <div class="btnrow">
+          <button type="button" class="btn" id="fwFast" aria-pressed="true">Robot học nhanh</button>
+          <button type="button" class="btn" id="fwSlow" aria-pressed="false">Robot học chậm</button>
+        </div>
+        <div class="calc" id="fwCalc"></div>
+      </div>
+
+      <h4><span class="tag">NBT</span>Quên bài cũ bao nhiêu (càng thấp càng tốt)</h4>
+      <div class="math">\[ \text{NBT}_k = \frac{1}{K-k}\sum_{\tau=k+1}^{K}\big(c_{k,k} - c_{\tau,k}\big) \]</div>
+      <ol class="plain">
+        <li><strong>Dịch:</strong> \(c_{k,k}\) là điểm tốt nhất của bài \(k\) khi vừa học; \(c_{\tau,k}\) là điểm bài \(k\) sau khi học thêm đến bài \(\tau\); \(K-k\) là số bài học sau bài \(k\).</li>
+        <li><strong>Nói thành câu:</strong> "Mức quên của bài k là trung bình điểm bị tụt so với lúc vừa học, tính qua mọi lần học bài mới sau đó."</li>
+        <li><strong>Thay số:</strong> bài 1 vừa học được 90%; sau bài 2 còn 60%, sau bài 3 còn 40%. Mức tụt là 30 và 50, nên \(\text{NBT}_1 = 40\%\).</li>
+        <li><strong>Lưu ý:</strong> NBT có thể âm nếu học bài mới lại giúp bài cũ tốt lên (backward transfer tích cực). Bài cuối cùng không có bài nào học sau nên không có gì để quên.</li>
+      </ol>
+
+      <h4><span class="tag">AUC</span>Điểm tổng thể (càng cao càng tốt)</h4>
+      <div class="math">\[ \text{AUC}_k = \frac{1}{K-k+1}\Big(\text{FWT}_k + \sum_{\tau=k+1}^{K} c_{\tau,k}\Big) \]</div>
+      <p class="say">"Điểm tổng thể của bài k là trung bình của: điểm lúc học nó, và tất cả các điểm của nó về sau."</p>
+      <p>AUC gộp "học tốt" và "nhớ lâu" vào một con số. Tên AUC (diện tích dưới đường cong) đến từ việc nếu vẽ điểm của bài \(k\) theo thời gian, con số này tỉ lệ với diện tích dưới đường đó (Hình 3 trong paper).</p>
+
+      <h4><span class="tag">Thử tay</span>Máy tính FWT, NBT, AUC cho 3 bài</h4>
+      <p>Sửa các con số (tính bằng %) hoặc bấm một ví dụ. Để đơn giản, mỗi bài chỉ có một điểm \(c_{k,k}\) thay cho 11 lần kiểm tra.</p>
+      <div class="lab-box">
+        <div class="head"><span class="title">Bảng \(c_{\tau,k}\) cho 3 bài học lần lượt</span><span class="kind">Thử nghiệm</span></div>
+        <div class="btnrow" style="margin-bottom:12px">
+          <button type="button" class="btn" data-preset="seql">Kiểu SeqL: học tốt, quên nhiều</button>
+          <button type="button" class="btn" data-preset="packnet">Kiểu PackNet: học kém hơn, ít quên</button>
+          <button type="button" class="btn" data-preset="ideal">Lý tưởng</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="cgrid" id="cgrid">
+            <thead><tr><th>Sau khi học</th><th>Điểm bài 1</th><th>Điểm bài 2</th><th>Điểm bài 3</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="metrics">
+          <div><b id="mF">–</b><span>FWT ↑ học bài mới</span></div>
+          <div><b id="mN">–</b><span>NBT ↓ mức quên</span></div>
+          <div><b id="mA">–</b><span>AUC ↑ tổng thể</span></div>
+        </div>
+        <div class="calc" id="mCalc"></div>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>FWT: học bài mới nhanh và tốt cỡ nào. NBT: quên bài cũ bao nhiêu. AUC: gộp cả hai. Một phương pháp học rất giỏi nhưng quên sạch sẽ có FWT cao, NBT cao, AUC thấp.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="ketqua">
+      <h3><span class="n">11</span>Kết quả (§5.2): trả lời từng câu hỏi</h3>
+      <p>Các con số là tỉ lệ từ 0 đến 1. Số đậm màu xanh là tốt nhất trong cột.</p>
+
+      <h4><span class="tag">Q1, Q2</span>Kiến trúc nào tốt hơn? (Bảng 1)</h4>
+      <p>Bảng 1 dùng thuật toán ER và PackNet vì đây là hai thuật toán tốt nhất. Trích chỉ số AUC (tổng thể):</p>
+      <div class="tbl"><table>
+        <thead><tr><th rowspan="2">Kiến trúc</th><th colspan="4">AUC với ER</th><th colspan="4">AUC với PackNet</th></tr>
+        <tr><th>Long</th><th>Spatial</th><th>Object</th><th>Goal</th><th>Long</th><th>Spatial</th><th>Object</th><th>Goal</th></tr></thead>
+        <tbody>
+          <tr><td>ResNet-RNN</td><td class="num">0.08</td><td class="num">0.29</td><td class="num">0.17</td><td class="num">0.26</td><td class="num">0.03</td><td class="num">0.06</td><td class="num">0.13</td><td class="num">0.11</td></tr>
+          <tr><td>ResNet-T</td><td class="num best">0.32</td><td class="num best">0.56</td><td class="num">0.44</td><td class="num best">0.49</td><td class="num">0.25</td><td class="num best">0.63</td><td class="num best">0.60</td><td class="num">0.75</td></tr>
+          <tr><td>ViT-T</td><td class="num">0.25</td><td class="num">0.50</td><td class="num best">0.57</td><td class="num">0.38</td><td class="num best">0.34</td><td class="num">0.59</td><td class="num">0.56</td><td class="num best">0.76</td></tr>
+        </tbody>
+      </table></div>
+      <p>Paper rút ra:</p>
+      <ul>
+        <li><strong>Transformer hơn RNN rõ rệt.</strong> ResNet-RNN thấp nhất ở mọi ô. Dùng Transformer cho phần chuỗi thời gian là lựa chọn tốt hơn LSTM. Đây là một lý do mọi VLA hiện nay đều dùng Transformer.</li>
+        <li><strong>Kiến trúc tốt nhất phụ thuộc thuật toán.</strong> Với ER, ResNet-T thắng ở mọi bộ trừ Object. Với PackNet, ResNet-T và ViT-T ngang nhau trừ Long (ViT-T hơn hẳn).</li>
+        <li><strong>ViT giỏi khi đồ vật đa dạng</strong> (bộ Object), với điều kiện mạng đủ lớn. Bằng chứng thêm: với MTL trên Object, ViT-T đạt 0.78 còn ResNet-T chỉ 0.54 (Bảng 8, phụ lục).</li>
+      </ul>
+
+      <h4><span class="tag">Q1, Q3</span>Thuật toán nào tốt hơn? (Bảng 2, kiến trúc ResNet-T)</h4>
+      <div class="tbl"><table>
+        <thead><tr><th rowspan="2">Thuật toán</th><th colspan="3">LIBERO-Long</th><th colspan="3">LIBERO-Spatial</th></tr>
+        <tr><th>FWT ↑</th><th>NBT ↓</th><th>AUC ↑</th><th>FWT ↑</th><th>NBT ↓</th><th>AUC ↑</th></tr></thead>
+        <tbody>
+          <tr><td>SeqL</td><td class="num best">0.54</td><td class="num">0.63</td><td class="num">0.15</td><td class="num best">0.72</td><td class="num">0.81</td><td class="num">0.20</td></tr>
+          <tr><td>ER</td><td class="num">0.48</td><td class="num">0.32</td><td class="num best">0.32</td><td class="num">0.65</td><td class="num">0.27</td><td class="num">0.56</td></tr>
+          <tr><td>EWC</td><td class="num">0.13</td><td class="num">0.22</td><td class="num">0.02</td><td class="num">0.23</td><td class="num">0.33</td><td class="num">0.06</td></tr>
+          <tr><td>PackNet</td><td class="num">0.22</td><td class="num best">0.08</td><td class="num">0.25</td><td class="num">0.55</td><td class="num best">0.07</td><td class="num best">0.63</td></tr>
+          <tr><td>MTL (mốc trên)</td><td colspan="2"></td><td class="num">0.48</td><td colspan="2"></td><td class="num">0.83</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tbl"><table>
+        <thead><tr><th rowspan="2">Thuật toán</th><th colspan="3">LIBERO-Object</th><th colspan="3">LIBERO-Goal</th></tr>
+        <tr><th>FWT ↑</th><th>NBT ↓</th><th>AUC ↑</th><th>FWT ↑</th><th>NBT ↓</th><th>AUC ↑</th></tr></thead>
+        <tbody>
+          <tr><td>SeqL</td><td class="num best">0.78</td><td class="num">0.76</td><td class="num">0.26</td><td class="num best">0.77</td><td class="num">0.82</td><td class="num">0.22</td></tr>
+          <tr><td>ER</td><td class="num">0.67</td><td class="num">0.43</td><td class="num">0.44</td><td class="num">0.64</td><td class="num">0.34</td><td class="num">0.49</td></tr>
+          <tr><td>EWC</td><td class="num">0.56</td><td class="num">0.69</td><td class="num">0.16</td><td class="num">0.32</td><td class="num">0.48</td><td class="num">0.06</td></tr>
+          <tr><td>PackNet</td><td class="num">0.60</td><td class="num best">0.17</td><td class="num best">0.60</td><td class="num">0.63</td><td class="num best">0.06</td><td class="num best">0.75</td></tr>
+          <tr><td>MTL (mốc trên)</td><td colspan="2"></td><td class="num">0.54</td><td colspan="2"></td><td class="num">0.80</td></tr>
+        </tbody>
+      </table></div>
+      <p class="readout">Các giá trị ± được bỏ để bảng gọn; xem đầy đủ trong Bảng 2 của PDF. MTL chỉ có AUC vì nó học mọi bài cùng lúc, không có khái niệm "bài trước, bài sau".</p>
+      <p>Bốn phát hiện của paper, đọc kèm bảng:</p>
+      <ol class="plain">
+        <li><strong>SeqL có FWT cao nhất ở cả 4 bộ.</strong> Đây là điều bất ngờ nhất: cách đơn giản nhất lại học bài mới tốt nhất. Nghĩa là các thuật toán chống quên <em>làm hại</em> khả năng học bài mới. Nhưng SeqL quên rất nặng (NBT 0.63–0.82), nên AUC thấp.</li>
+        <li><strong>PackNet tốt nhất ở 3 bộ 10 bài nhỏ, nhưng thua ER trên Long.</strong> Trên Goal, PackNet (0.75) đã gần bằng mốc trên MTL (0.80); trên Object còn nhỉnh hơn MTL dùng cùng kiến trúc (0.60 so với 0.54). Trên Long thì thua ER, vì FWT rất thấp (0.22). Paper giải thích: PackNet chia nhỏ mạng, mỗi bài chỉ còn một phần nhỏ dung lượng, không đủ cho các bài dài và khó của Long.</li>
+        <li><strong>EWC còn kém hơn cả SeqL.</strong> Cách "phạt khi vặn núm quan trọng" cản trở việc học trên robot.</li>
+        <li><strong>ER ổn định ở mọi bộ.</strong> Không bao giờ tốt nhất tuyệt đối, nhưng không bao giờ tệ.</li>
+      </ol>
+
+      <h4><span class="tag">Q4</span>Câu lệnh ngôn ngữ có giúp không? (Bảng 3)</h4>
+      <p>Thử 4 cách mã hóa câu lệnh trên LIBERO-Long (ResNet-T + ER). Riêng "Task-ID" là đưa chuỗi "Task 5" vào BERT, tức không chứa nghĩa gì về bài tập:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Cách mã hóa</th><th>Số chiều</th><th>FWT ↑</th><th>NBT ↓</th><th>AUC ↑</th></tr></thead>
+        <tbody>
+          <tr><td>BERT</td><td class="num">768</td><td class="num">0.48 ± 0.02</td><td class="num">0.32 ± 0.04</td><td class="num">0.32 ± 0.01</td></tr>
+          <tr><td>CLIP</td><td class="num">512</td><td class="num">0.52 ± 0.00</td><td class="num">0.34 ± 0.01</td><td class="num">0.35 ± 0.01</td></tr>
+          <tr><td>GPT-2</td><td class="num">768</td><td class="num">0.46 ± 0.01</td><td class="num">0.34 ± 0.02</td><td class="num">0.30 ± 0.01</td></tr>
+          <tr><td>Task-ID</td><td class="num">768</td><td class="num">0.50 ± 0.01</td><td class="num">0.37 ± 0.01</td><td class="num">0.33 ± 0.01</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Không khác biệt có ý nghĩa thống kê.</strong> Câu lệnh đầy đủ nghĩa không giúp hơn một con số thứ tự. Paper giải thích: câu lệnh ở đây chỉ hoạt động như một "nhãn" để phân biệt bài này với bài kia, giống một túi từ (bag-of-words), robot chưa thực sự dùng ý nghĩa của câu.</p>
+      <div class="paper"><span class="lab">Liên hệ với VLA</span>
+        <p>Đây chính là khoảng trống mà VLA lấp vào. VLA dùng một mô hình ngôn ngữ lớn làm "bộ não", nên câu lệnh được hiểu thật sự, chứ không chỉ là nhãn. Qwen-VLA còn dùng câu lệnh để mô tả loại robot (embodiment prompt).</p>
+      </div>
+
+      <h4><span class="tag">Q5</span>Thứ tự học có quan trọng không? (Hình 4)</h4>
+      <p>Thử 5 thứ tự học khác nhau với ResNet-T, cho ER và PackNet. Kết quả thay đổi theo thứ tự, và với PackNet sự khác biệt có ý nghĩa thống kê. Nghĩa là cùng một thuật toán, gặp bài theo thứ tự "xui" có thể cho kết quả kém hẳn. Hướng nghiên cứu tương lai là thuật toán ít phụ thuộc thứ tự.</p>
+
+      <h4><span class="tag">Q6</span>Pretrain có giúp không? (Hình 5)</h4>
+      <p>Cách làm: pretrain mỗi kiến trúc bằng behavior cloning trên 90 bài của LIBERO-90 trong 50 epoch, chọn checkpoint tốt nhất, rồi dùng nó làm điểm xuất phát để học lần lượt 10 bài LIBERO-Long. So với học từ đầu.</p>
+      <p><strong>Kết quả: pretrain kiểu đơn giản này làm kết quả tệ hơn.</strong> Kết hợp với phát hiện SeqL có FWT tốt nhất, paper kết luận cần những kỹ thuật pretrain tốt hơn.</p>
+      <div class="paper"><span class="lab">Liên hệ với VLA</span>
+        <p>Đặt cạnh Qwen-VLA thì thú vị: ở đó pretrain là nguồn sức mạnh chính (robot ALOHA thật đạt 83.6% khi có pretrain so với 48.5% khi không có). Một cách giải thích hợp lý là quy mô: LIBERO-90 chỉ có 90 bài × 50 lần làm mẫu với mô hình nhỏ, còn VLA hiện đại pretrain trên dữ liệu và mô hình lớn hơn hàng nghìn lần, với backbone đã học ảnh và chữ trên dữ liệu web. Đây là câu hỏi hay để thảo luận khi present.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>(1) Transformer hơn RNN; ViT giỏi với đồ vật đa dạng. (2) SeqL học bài mới tốt nhất nhưng quên nặng; PackNet giỏi chống quên nhưng hụt dung lượng ở bài khó; EWC kém; ER ổn định. (3) Câu lệnh chưa giúp hơn task ID. (4) Thứ tự học ảnh hưởng kết quả. (5) Pretrain đơn giản có thể làm hại.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="phuluc">
+      <h3><span class="n">12</span>Phụ lục đáng đọc</h3>
+      <p>Phụ lục dài 28 trang, phần lớn là bảng và hình. Ba phần sau có ý nghĩa vượt ra ngoài paper này, rất đáng biết.</p>
+      <h4><span class="tag">E.2</span>Loss thấp không có nghĩa là robot làm tốt</h4>
+      <div class="quote">
+        <div class="en">"behavioral cloning loss can be a misleading indicator of task success rate … errors can compound until failures during executing a robot."</div>
+        <div class="vi"><p>Với bài toán phân loại ảnh, loss thấp thường đồng nghĩa đúng nhiều. Với robot thì không. Robot làm nhiều bước liên tiếp: lệch một chút ở bước đầu dẫn nó vào tình huống chưa từng thấy trong dữ liệu làm mẫu, ở đó nó lại lệch thêm, cứ thế <strong>sai số cộng dồn</strong> (compounding error) đến khi thất bại. Paper thấy EWC đôi khi có loss thấp nhất nhưng tỉ lệ thành công lại kém, còn ER có loss cao nhất nhưng làm tốt hơn.</p>
+        <p><strong>Bài học cho công việc của bạn:</strong> khi huấn luyện VLA, đừng chọn checkpoint chỉ dựa vào loss. Phải cho robot chạy thử (trong mô phỏng như LIBERO) để đo tỉ lệ thành công. Đây cũng là lý do Qwen-VLA cần bước RL sau SFT.</p></div>
+      </div>
+      <h4><span class="tag">E.3</span>Mô hình năm 2023 làm LIBERO-90 kém thế nào</h4>
+      <p>Bảng E.3 cho tỉ lệ thành công khi học cả 90 bài cùng lúc (MTL). Kết quả rất thấp, nhiều bài 0%. Vài ví dụ:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Bài (LIBERO-90)</th><th>ResNet-RNN</th><th>ResNet-T</th><th>ViT-T</th></tr></thead>
+        <tbody>
+          <tr><td>turn on the stove (bếp, cảnh 3)</td><td class="num">0.60</td><td class="num">0.70</td><td class="num">1.00</td></tr>
+          <tr><td>put the black bowl on top of the cabinet (cảnh 4)</td><td class="num">0.80</td><td class="num">0.60</td><td class="num">0.85</td></tr>
+          <tr><td>open the top drawer of the cabinet and put the bowl in it</td><td class="num">0.05</td><td class="num">0.00</td><td class="num">0.00</td></tr>
+          <tr><td>pick up the alphabet soup and put it in the basket (phòng khách 1)</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td></tr>
+        </tbody>
+      </table></div>
+      <p>Hãy giữ con số này trong đầu khi sang mục 14: chỉ vài năm sau, các VLA đạt 97–99% trên 4 bộ LIBERO. Khoảng cách đó cho thấy VLA đã tiến xa thế nào.</p>
+      <h4><span class="tag">E.4</span>Robot "nhìn" vào đâu?</h4>
+      <p>Paper làm mờ từng vùng nhỏ của ảnh và xem đầu ra của mạng thay đổi bao nhiêu. Vùng làm mờ mà đầu ra đổi nhiều nghĩa là robot đang "chú ý" vào đó. Phát hiện:</p>
+      <ul>
+        <li>Robot chú ý vào <strong>cánh tay của nó và chỗ cần đặt đồ</strong> nhiều hơn là vào đồ vật cần nhặt.</li>
+        <li>Đôi khi nó chú ý vào <strong>vùng không liên quan</strong>, như mảng bàn trống. Paper cho rằng robot học mối liên hệ giả giữa các chi tiết không liên quan và hành động, một lý do khiến nó học thuộc bài và không tổng quát được.</li>
+        <li>Bản đồ chú ý "đẹp" chưa chắc đi kèm kết quả tốt: EWC có bản đồ chú ý giống ER nhưng kết quả kém hơn nhiều. Vì vậy chỉ nên dùng bản đồ chú ý để phân tích, không dùng để dự đoán chất lượng.</li>
+      </ul>
+    </section>
+
+    <section class="lesson" id="ketluan">
+      <h3><span class="n">13</span>Kết luận và hạn chế (§7)</h3>
+      <p>Paper đề xuất 3 hướng nghiên cứu tiếp:</p>
+      <ol class="plain">
+        <li>Kiến trúc mạng xử lý thông tin không gian và thời gian tốt hơn.</li>
+        <li>Thuật toán cải thiện được forward transfer (hiện SeqL vẫn thắng).</li>
+        <li>Cách pretrain thực sự giúp ích cho học suốt đời.</li>
+      </ol>
+      <p>Paper cũng nhắc: vì robot học từ con người, về lâu dài cần quan tâm đến quyền riêng tư của người dùng.</p>
+      <h4><span class="tag">Góc nhìn phản biện</span>Những điểm bạn có thể nêu khi present</h4>
+      <p>Các điểm dưới đây là nhận xét khi đọc, không phải paper tự nêu. Bạn nên tự kiểm chứng trước khi dùng:</p>
+      <ul>
+        <li><strong>Chỉ 3 seed và 20 lượt thử mỗi lần đo.</strong> Nhiều chênh lệch nhỏ trong bảng có thể nằm trong độ dao động ngẫu nhiên.</li>
+        <li><strong>Chỉ trong mô phỏng, một loại robot.</strong> Chưa biết kết luận có đúng với robot thật hay nhiều loại robot không.</li>
+        <li><strong>Mô hình nhỏ, chỉ học bằng behavior cloning.</strong> Phát hiện "pretrain làm hại" có thể không đúng khi mô hình và dữ liệu lớn hơn nhiều, như VLA ngày nay cho thấy.</li>
+        <li><strong>Chỉ 3 thuật toán học suốt đời</strong> từ trước năm 2019, chưa có các phương pháp mới hơn.</li>
+      </ul>
+    </section>
+
+    <!-- ============ VLA ============ -->
+    <div class="part">
+      <span class="eyebrow">Dùng cho công việc</span>
+      <h2>LIBERO trong thế giới VLA</h2>
+      <p class="intro">Phần này không có trong paper LIBERO, nhưng là lý do bạn cần đọc nó.</p>
+    </div>
+
+    <section class="lesson" id="vla">
+      <h3><span class="n">14</span>LIBERO trong VLA ngày nay</h3>
+      <p>Từ năm 2024, các paper VLA dùng LIBERO theo một quy trình gần như chuẩn:</p>
+      <ol class="plain">
+        <li><strong>Pretrain</strong> mô hình VLA trên dữ liệu robot lớn (không phải dữ liệu LIBERO).</li>
+        <li><strong>Finetune</strong> trên dữ liệu làm mẫu của 4 bộ LIBERO-Spatial, Object, Goal và Long. OpenVLA còn làm sạch dữ liệu này (bỏ các lần làm mẫu thất bại, bỏ các bước đứng yên, tăng ảnh lên 256 × 256), và bản đã làm sạch được nhiều nhóm dùng lại.</li>
+        <li><strong>Đánh giá</strong> trong mô phỏng: mỗi bộ 10 bài × 50 lần thử = <strong>500 lần thử</strong>, đo tỉ lệ thành công. Báo điểm từng bộ và trung bình 4 bộ.</li>
+      </ol>
+      <p>Lưu ý: cách dùng này <strong>không phải học suốt đời</strong>. Mô hình được finetune với đủ dữ liệu của mọi bài cùng lúc, gần với MTL ở mục 7. Không ai đo FWT, NBT hay AUC nữa, chỉ đo tỉ lệ thành công. LIBERO-90 cũng thường không được dùng.</p>
+      <h4><span class="tag">Biểu đồ</span>Điểm LIBERO trung bình của các mô hình</h4>
+      <p>Di chuột (hoặc chạm) vào từng thanh để xem nguồn số liệu.</p>
+      <div class="lab-box">
+        <div class="head"><span class="title">Điểm LIBERO tăng từ 72% lên gần 99% trong khoảng hai năm</span><span class="kind">Tỉ lệ thành công trung bình 4 bộ, %</span></div>
+        <div class="chart-wrap"><svg id="chartLib" viewBox="0 0 760 400" role="img" aria-label="Biểu đồ thanh ngang điểm LIBERO trung bình của 11 mô hình"></svg></div>
+        <div class="readout">Số liệu lấy từ hai nguồn khác nhau (repo OpenVLA và Bảng 4 của Qwen-VLA), có thể khác nhau nhỏ về cách đánh giá. Thanh màu cam là Qwen-VLA, paper bạn sẽ đọc ở bước 3.</div>
+      </div>
+      <details class="more"><summary>Xem bảng số liệu của biểu đồ</summary>
+        <div class="tbl"><table>
+          <thead><tr><th>Mô hình</th><th>Spatial</th><th>Object</th><th>Goal</th><th>Long</th><th>Trung bình</th><th>Nguồn</th></tr></thead>
+          <tbody>
+            <tr><td>Diffusion Policy</td><td class="num">78.3</td><td class="num">92.5</td><td class="num">68.3</td><td class="num">50.5</td><td class="num">72.4</td><td>Repo OpenVLA</td></tr>
+            <tr><td>Octo (finetune)</td><td class="num">78.9</td><td class="num">85.7</td><td class="num">84.6</td><td class="num">51.1</td><td class="num">75.1</td><td>Repo OpenVLA</td></tr>
+            <tr><td>OpenVLA (finetune)</td><td class="num">84.7</td><td class="num">88.4</td><td class="num">79.2</td><td class="num">53.7</td><td class="num">76.5</td><td>Repo OpenVLA</td></tr>
+            <tr><td>Qwen-VLA-Base</td><td colspan="4">chỉ báo trung bình</td><td class="num">90.8</td><td>Qwen-VLA, Bảng 4</td></tr>
+            <tr><td>π0</td><td colspan="4">chỉ báo trung bình</td><td class="num">94.4</td><td>Qwen-VLA, Bảng 4</td></tr>
+            <tr><td>StarVLA-OFT</td><td colspan="4">chỉ báo trung bình</td><td class="num">96.6</td><td>Qwen-VLA, Bảng 4</td></tr>
+            <tr><td>GR00T N1.6</td><td colspan="4">chỉ báo trung bình</td><td class="num">97.2</td><td>Qwen-VLA, Bảng 4</td></tr>
+            <tr><td>π0.5</td><td colspan="4">chỉ báo trung bình</td><td class="num">97.6</td><td>Qwen-VLA, Bảng 4</td></tr>
+            <tr><td>Being-H0.5</td><td colspan="4">chỉ báo trung bình</td><td class="num">97.6</td><td>Qwen-VLA, Bảng 4</td></tr>
+            <tr><td>Qwen-VLA-Instruct</td><td colspan="4">chỉ báo trung bình</td><td class="num">97.9</td><td>Qwen-VLA, Bảng 4</td></tr>
+            <tr><td>ABot-M0</td><td colspan="4">chỉ báo trung bình</td><td class="num">98.6</td><td>Qwen-VLA, Bảng 4</td></tr>
+          </tbody>
+        </table></div>
+      </details>
+      <h4><span class="tag">Nhận xét</span>LIBERO đang "bão hòa"</h4>
+      <p>Các mô hình mạnh nhất đều đạt khoảng 97–99%, chênh nhau chỉ 1–2 điểm. Với 500 lần thử mỗi bộ, chênh 1 điểm chỉ là khoảng 5 lần thử, rất dễ do ngẫu nhiên. Vì vậy LIBERO ngày nay giống một <strong>bài kiểm tra đầu vào</strong>: mô hình mới phải đạt điểm cao trên LIBERO, nhưng điểm cao trên LIBERO không còn đủ để chứng minh vượt trội. Đó là lý do các paper mới thêm các bộ khó hơn như RoboCasa, RoboTwin, SimplerEnv, và thử trên robot thật.</p>
+    </section>
+
+    <section class="lesson" id="phanbien">
+      <h3><span class="n">14.1</span>Điểm 97% có nghĩa là robot hiểu? LIBERO-PRO và LIBERO-Plus</h3>
+      <p>Cuối năm 2025, hai nhóm nghiên cứu độc lập đặt đúng câu hỏi này và đưa ra câu trả lời giống nhau: <strong>chưa chắc</strong>. Phần này rất đáng đưa vào present vì nó cho thấy bạn hiểu giới hạn của benchmark, không chỉ đọc con số.</p>
+
+      <h4><span class="tag">Vấn đề gốc</span>Đề thi gần giống hệt bài tập về nhà</h4>
+      <p>Nhớ lại mục 5: vị trí ban đầu của đồ vật chỉ được xê dịch ngẫu nhiên trong một vùng nhỏ, ví dụ ô vuông 5 cm. Khi VLA được đánh giá trên LIBERO:</p>
+      <ul>
+        <li>Câu lệnh, đồ vật, cảnh bày lúc thi <strong>giống hệt</strong> lúc học (finetune).</li>
+        <li>Chỉ có vị trí ban đầu khác đi một chút, nhỏ đến mức gần như không nhìn thấy.</li>
+      </ul>
+      <p>Giống như đi thi mà đề <strong>trùng 100% với bài tập về nhà</strong>, chỉ đổi thứ tự câu. Học sinh học thuộc đáp án vẫn được 10 điểm. Điểm cao như vậy không cho biết em ấy có hiểu bài hay không.</p>
+
+      <h4><span class="tag">Cách kiểm tra</span>Đổi đề đi một chút</h4>
+      <p>Cả hai paper làm cùng một ý: giữ nguyên robot và mô hình đã finetune, nhưng <strong>thay đổi điều kiện lúc thi</strong> để xem điểm còn giữ được không.</p>
+      <div class="tbl"><table>
+        <thead><tr><th></th><th>LIBERO-PRO</th><th>LIBERO-Plus</th></tr></thead>
+        <tbody>
+          <tr><td>Số yếu tố thay đổi</td><td>4</td><td>7</td></tr>
+          <tr><td>Đồ vật</td><td>Đổi màu, kết cấu, kích cỡ (vẫn là cùng loại đồ)</td><td>Thêm đồ gây nhiễu, dời vị trí đồ cần lấy</td></tr>
+          <tr><td>Vị trí ban đầu</td><td>Dời vị trí tuyệt đối và tương đối của đồ vật</td><td>Đổi tư thế ban đầu của cánh tay robot</td></tr>
+          <tr><td>Câu lệnh</td><td>Diễn đạt lại cùng ý; thay bằng câu vô nghĩa</td><td>Viết lại phức tạp hơn; bỏ trống; đổi đồ vật mục tiêu</td></tr>
+          <tr><td>Môi trường</td><td>Đổi nền, ánh sáng, kết cấu</td><td>Ánh sáng, nền bàn, nhiễu ảnh, <strong>góc camera</strong></td></tr>
+          <tr><td>Kết quả chính</td><td>Trên 90% ở LIBERO gốc → <strong>khoảng 0%</strong> khi dời vị trí đồ vật</td><td>Khoảng 95% → <strong>dưới 30%</strong> khi đổi nhẹ góc camera hoặc tư thế ban đầu của robot</td></tr>
+        </tbody>
+      </table></div>
+
+      <h4><span class="tag">Phát hiện đáng chú ý nhất</span>Robot gần như không đọc câu lệnh</h4>
+      <ul>
+        <li><strong>LIBERO-PRO</strong> thay câu lệnh bằng chuỗi ký tự vô nghĩa như "xxx". Mô hình <strong>vẫn thực hiện gần như y nguyên</strong> chuỗi hành động cũ. Khi đồ vật cần lấy bị thay bằng một thứ không liên quan, mô hình vẫn đưa tay ra gắp như thường.</li>
+        <li><strong>LIBERO-Plus</strong> bỏ trống câu lệnh: với OpenVLA-OFT trên bộ Object, điểm <strong>gần như không đổi</strong>, chỉ bộ Long bị giảm rõ. Khi đổi đồ vật mục tiêu trong câu lệnh, tỉ lệ thành công rơi gần về 0, vì robot vẫn làm theo mục tiêu cũ thay vì làm theo câu lệnh mới.</li>
+      </ul>
+      <p>Nói cách khác, mô hình nhìn cảnh là "nhớ ra" phải làm gì, chứ không thực sự đọc câu lệnh. Trên các bộ như Object, mỗi cảnh gần như chỉ đi với một bài, nên nhìn cảnh là đủ đoán.</p>
+
+      <h4><span class="tag">Nối lại với paper LIBERO gốc</span>Dấu hiệu đã có từ năm 2023</h4>
+      <div class="tbl"><table>
+        <thead><tr><th>Paper LIBERO gốc (2023)</th><th>LIBERO-PRO, LIBERO-Plus (2025)</th></tr></thead>
+        <tbody>
+          <tr><td>Câu lệnh BERT không giúp hơn task ID: câu lệnh chỉ đóng vai nhãn (Bảng 3, mục 11)</td><td>VLA gần như bỏ qua câu lệnh, kể cả khi câu lệnh vô nghĩa hoặc bỏ trống</td></tr>
+          <tr><td>Robot chú ý vào vùng không liên quan, học mối liên hệ giả, học thuộc bài (Phụ lục E.4, mục 12)</td><td>Dời đồ vật hoặc đổi góc camera là điểm sụp mạnh: mô hình đã học thuộc cảnh</td></tr>
+          <tr><td>Loss thấp chưa chắc làm tốt (Phụ lục E.2)</td><td>Điểm benchmark cao chưa chắc là hiểu thật</td></tr>
+        </tbody>
+      </table></div>
+      <p>Mô hình mạnh hơn rất nhiều sau hai năm, nhưng cùng một kiểu điểm yếu vẫn còn. Đây là một câu chuyện liền mạch, rất hợp làm slide kết.</p>
+
+      <h4><span class="tag">Hướng khắc phục</span>Học trên dữ liệu đa dạng hơn</h4>
+      <p>LIBERO-Plus thử finetune trên hơn 20.000 quỹ đạo đã được làm đa dạng theo 7 yếu tố trên. Mô hình đạt điểm tổng thể cao nhất trong các mô hình được so sánh (79.6%), và đặc biệt bền với thay đổi góc camera (92.8%). Bài học: muốn robot thật sự tổng quát thì dữ liệu học phải đa dạng. Đây cũng chính là lý do các VLA như Qwen-VLA pretrain trên dữ liệu khổng lồ, nhiều loại robot, nhiều cảnh.</p>
+
+      <div class="trap"><span class="lab">Ý nghĩa với công việc của bạn</span>
+        <p>Khi thấy một mô hình đạt 97–98% trên LIBERO, hãy hiểu đó là <strong>điều kiện cần</strong>: mô hình học được các bài đã cho. Nó <strong>chưa chứng minh</strong> mô hình hiểu câu lệnh hay tổng quát sang tình huống mới. Muốn kiểm chứng điều đó, cần các bộ đánh giá có thay đổi điều kiện như LIBERO-PRO, LIBERO-Plus, hoặc thử trên robot thật.</p>
+      </div>
+      <div class="recap"><span class="lab">Tóm lại</span>
+        <p>LIBERO thi gần như trên đúng dữ liệu đã học, nên điểm cao có thể chỉ là học thuộc. Đổi nhẹ vị trí đồ vật, góc camera hay tư thế robot thì điểm sụp mạnh; câu lệnh gần như bị bỏ qua. Paper LIBERO gốc đã có dấu hiệu này từ đầu.</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="mentor">
+      <h3><span class="n">15</span>Trả lời ba câu hỏi của mentor (phần LIBERO)</h3>
+      <p>Anh mentor muốn bạn nắm: hai bước pretraining và finetuning, hai môi trường kiểm tra LIBERO và RoboCasa, và dataset dùng để finetune. Sau paper này, bạn trả lời được phần LIBERO. Phần RoboCasa sẽ có ở paper GR00T N1.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Câu hỏi</th><th>Câu trả lời từ LIBERO</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Pretraining và finetuning</strong></td><td>Trong paper gốc: LIBERO-90 dùng để pretrain, LIBERO-Long để học tiếp; phát hiện pretrain kiểu đơn giản trên dữ liệu nhỏ có thể làm hại. Trong VLA ngày nay: pretrain trên dữ liệu robot lớn bên ngoài, rồi finetune trên dữ liệu LIBERO.</td></tr>
+          <tr><td><strong>Môi trường kiểm tra LIBERO</strong></td><td>Mô phỏng robosuite trên MuJoCo, một cánh tay robot trên bàn, camera toàn cảnh và camera cổ tay, mỗi bước 7 số điều khiển. 4 bộ bài: Spatial, Object, Goal, Long, mỗi bộ 10 bài. Mô phỏng tự chấm bằng điều kiện xong viết bằng mệnh đề. VLA ngày nay báo tỉ lệ thành công trên 500 lần thử mỗi bộ.</td></tr>
+          <tr><td><strong>Dataset để finetune</strong></td><td>50 lần làm mẫu cho mỗi bài, do người điều khiển bằng chuột 3D SpaceMouse. Bản thường dùng cho VLA là bản OpenVLA đã làm sạch, định dạng RLDS, ảnh 256 × 256, trên Hugging Face.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="lesson" id="present">
+      <h3><span class="n">16</span>Dàn ý gợi ý để bạn tự present</h3>
+      <p>Khung anh mentor yêu cầu là <strong>motivation → method (formula) → intuition</strong>. Dưới đây là gợi ý khoảng 12 slide. Hãy tự viết nội dung từng slide bằng lời của bạn.</p>
+      <ol class="outline">
+        <li><b>1</b>Tiêu đề, tác giả (UT Austin, Sony AI, Tsinghua), NeurIPS 2023. Một câu: LIBERO là gì.</li>
+        <li><b>2</b><strong>Motivation:</strong> robot cần học suốt đời. Ví dụ robot lấy nước ép: quên vì thiếu "biết cái gì" hay "biết làm thế nào"? Chưa có bộ đề đo riêng từng loại.</li>
+        <li><b>3</b>Năm câu hỏi nghiên cứu T1–T5.</li>
+        <li><b>4</b><strong>Method, bài toán:</strong> MDP với \(\mu_0\) và \(g\); công thức (1) học suốt đời; điểm khó là mất dữ liệu bài cũ.</li>
+        <li><b>5</b><strong>Method, cách học:</strong> behavior cloning, công thức (2); quan sát dùng lịch sử; đầu ra GMM.</li>
+        <li><b>6</b>Quy trình sinh bài tập 3 bước, kèm một đoạn file mô tả (init, goal).</li>
+        <li><b>7</b>Bốn bộ bài: mỗi bộ thay đổi yếu tố nào.</li>
+        <li><b>8</b>Thuật toán (SeqL, ER, EWC, PackNet, MTL) và kiến trúc (ResNet-RNN, ResNet-T, ViT-T), mỗi cái một dòng.</li>
+        <li><b>9</b><strong>Formula:</strong> FWT, NBT, AUC, kèm một bảng nhỏ tính tay.</li>
+        <li><b>10</b>Kết quả: 5 phát hiện, mỗi phát hiện một con số.</li>
+        <li><b>11</b><strong>Intuition và ý nghĩa ngày nay:</strong> loss không phản ánh thành công; LIBERO thành benchmark chuẩn cho VLA; điểm đã bão hòa.</li>
+        <li><b>12</b><strong>Điểm cao có nghĩa là hiểu?</strong> LIBERO-PRO và LIBERO-Plus: điểm sụp khi đổi nhẹ điều kiện, câu lệnh bị bỏ qua; nối với Bảng 3 và Phụ lục E.4 của paper gốc.</li>
+        <li><b>13</b>Hạn chế và câu hỏi thảo luận.</li>
+      </ol>
+      <p><strong>Bước tiếp theo:</strong> viết dàn ý của bạn (vài dòng mỗi slide là đủ) rồi gửi cho Claude. Claude sẽ đóng vai mentor: hỏi vặn, chỉ chỗ chưa chính xác. Khi dàn ý ổn, sẽ dựng thành bộ slide tiếng Việt.</p>
+    </section>
+
+    <section class="lesson" id="kiemtra">
+      <h3><span class="n">17</span>Tự kiểm tra</h3>
+      <p>Tự trả lời trước, rồi mới mở đáp án.</p>
+      <details class="ex"><summary><span class="n">1</span><span class="q">Giải thích declarative và procedural knowledge bằng ví dụ robot lấy nước ép của paper.</span></summary>
+        <div><p>Declarative là "biết cái gì": nước ép trông thế nào, tủ lạnh ở đâu. Procedural là "biết làm thế nào": cách mở tủ lạnh, cách cầm chai. Robot quên có thể vì mất một trong hai loại.</p></div></details>
+      <details class="ex"><summary><span class="n">2</span><span class="q">Vì sao paper thay hàm thưởng R bằng điều kiện xong g? "Sparse reward" nghĩa là gì?</span></summary>
+        <div><p>Sparse reward nghĩa là robot không được chấm từng bước, chỉ biết xong hay chưa ở cuối. Vì vậy chỉ cần một hàm g trả về 1 hoặc 0. Học chỉ từ tín hiệu thưa như vậy rất khó, nên paper dùng behavior cloning.</p></div></details>
+      <details class="ex"><summary><span class="n">3</span><span class="q">Vì sao robot dùng lịch sử quan sát \(o_{\le t}\) thay vì chỉ ảnh hiện tại?</span></summary>
+        <div><p>Một ảnh không đủ biết tình hình, ví dụ không biết ngăn kéo đang kéo ra hay đẩy vào. Lịch sử các bước gần đây bổ sung thông tin đó. Vì vậy các kiến trúc đều có phần xử lý chuỗi thời gian (LSTM hoặc Transformer).</p></div></details>
+      <details class="ex"><summary><span class="n">4</span><span class="q">LIBERO-Spatial: vì sao phải có hai cái bát giống hệt nhau trên bàn?</span></summary>
+        <div><p>Để robot không thể dựa vào hình dạng đồ vật. Cách duy nhất để chọn đúng là hiểu quan hệ vị trí trong câu lệnh ("cái bát giữa đĩa và ramekin"). Như vậy bộ này đo đúng kiến thức không gian.</p></div></details>
+      <details class="ex"><summary><span class="n">5</span><span class="q">Một bài có điểm qua 11 lần kiểm tra là 0, 20, 50, 70, 70, 70, 70, 70, 70, 70, 70 (%). Tính FWT của bài đó.</span></summary>
+        <div><p>Tổng = 0 + 20 + 50 + 70 × 8 = 630. FWT = 630 / 11 ≈ 57.3%. Robot đạt điểm tốt nhất 70% từ lần kiểm tra thứ 4, nên FWT gần 70% nhưng bị kéo xuống bởi các lần đầu.</p></div></details>
+      <details class="ex"><summary><span class="n">6</span><span class="q">Bài 1 vừa học xong được 80%, sau bài 2 còn 70%, sau bài 3 còn 50%. Tính NBT của bài 1.</span></summary>
+        <div><p>Mức tụt: 80 − 70 = 10 và 80 − 50 = 30. \(\text{NBT}_1 = (10 + 30)/2 = 20\%\). Có thể nhập vào máy tính ở mục 10 để kiểm tra.</p></div></details>
+      <details class="ex"><summary><span class="n">7</span><span class="q">Vì sao PackNet gần như không quên nhưng lại thua ER trên LIBERO-Long?</span></summary>
+        <div><p>PackNet khóa phần mạng của mỗi bài nên bài cũ không bị đụng tới (NBT rất thấp). Nhưng mỗi bài sau chỉ còn một phần mạng nhỏ để học. Các bài của Long dài và khó, không đủ dung lượng nên học kém (FWT 0.22), kéo AUC xuống.</p></div></details>
+      <details class="ex"><summary><span class="n">8</span><span class="q">Vì sao câu lệnh BERT không giúp hơn Task-ID? Điều này liên quan gì đến VLA?</span></summary>
+        <div><p>Câu lệnh chỉ đóng vai trò nhãn phân biệt bài, robot không dùng ý nghĩa của nó. VLA dùng mô hình ngôn ngữ lớn làm bộ não nên hiểu câu lệnh thật sự, lấp đúng khoảng trống này.</p></div></details>
+      <details class="ex"><summary><span class="n">9</span><span class="q">Vì sao không nên chọn checkpoint robot chỉ dựa vào loss?</span></summary>
+        <div><p>Vì sai số cộng dồn qua nhiều bước: lệch nhỏ đưa robot vào tình huống lạ rồi lệch thêm. Loss thấp trên dữ liệu làm mẫu chưa chắc làm bài tốt khi tự chạy. Phải đo tỉ lệ thành công bằng cách cho robot chạy thử.</p></div></details>
+      <details class="ex"><summary><span class="n">10</span><span class="q">Các paper VLA đánh giá trên LIBERO thế nào? Có phải học suốt đời không?</span></summary>
+        <div><p>Finetune trên dữ liệu 4 bộ, mỗi bộ đánh giá 10 bài × 50 lần thử = 500 lần, báo tỉ lệ thành công từng bộ và trung bình. Không phải học suốt đời, vì mô hình có đủ dữ liệu mọi bài khi finetune, gần với MTL.</p></div></details>
+      <details class="ex"><summary><span class="n">11</span><span class="q">Câu hỏi thảo luận: LIBERO thấy pretrain làm hại, Qwen-VLA thấy pretrain là sức mạnh chính. Giải thích thế nào?</span></summary>
+        <div><p>Không có đáp án duy nhất. Các hướng giải thích: quy mô và độ đa dạng dữ liệu pretrain khác rất xa; kích thước mô hình khác; cách pretrain khác (LIBERO pretrain behavior cloning đơn giản trên 90 bài, VLA có backbone đã học ảnh và chữ trên dữ liệu web, cộng dữ liệu nhiều loại robot). Có thể nói: pretrain cần đủ lớn và đủ đa dạng mới giúp được.</p></div></details>
+      <details class="ex"><summary><span class="n">12</span><span class="q">Vì sao một VLA đạt 97% trên LIBERO vẫn có thể chưa "hiểu" câu lệnh? Nêu một bằng chứng.</span></summary>
+        <div><p>Vì lúc đánh giá, câu lệnh, đồ vật và cảnh giống hệt lúc finetune, chỉ vị trí xê dịch rất nhỏ, nên mô hình có thể đạt điểm cao bằng cách học thuộc. Bằng chứng: LIBERO-PRO thay câu lệnh bằng chuỗi vô nghĩa mà mô hình vẫn làm y như cũ; LIBERO-Plus bỏ trống câu lệnh mà điểm bộ Object gần như không đổi. Dấu hiệu tương tự đã có ở paper gốc: câu lệnh BERT không giúp hơn task ID.</p></div></details>
+    </section>
+
+    <section class="lesson">
+      <h3><span class="n">→</span>Nguồn</h3>
+      <ul>
+        <li>Liu et al., <a href="https://arxiv.org/abs/2306.03310">LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning</a>, NeurIPS 2023 Datasets and Benchmarks. Mọi số liệu ở mục 2–13 lấy từ bản PDF (v2).</li>
+        <li><a href="https://github.com/Lifelong-Robot-Learning/LIBERO">Repo LIBERO</a>: code môi trường, cách tải dữ liệu.</li>
+        <li><a href="https://github.com/openvla/openvla">Repo OpenVLA</a>: quy trình finetune và đánh giá LIBERO cho VLA (500 lần thử mỗi bộ), bảng điểm Diffusion Policy, Octo, OpenVLA.</li>
+        <li><a href="https://huggingface.co/datasets/openvla/modified_libero_rlds">Dữ liệu LIBERO đã làm sạch của OpenVLA</a> trên Hugging Face.</li>
+        <li>Qwen-VLA (arXiv 2605.30280), Bảng 4: điểm LIBERO của các VLA gần đây.</li>
+        <li><a href="https://arxiv.org/abs/2510.03827">LIBERO-PRO: Towards Robust and Fair Evaluation of Vision-Language-Action Models Beyond Memorization</a> (arXiv 2510.03827) · <a href="https://github.com/Zxy-MLlab/LIBERO-PRO">repo</a>.</li>
+        <li><a href="https://arxiv.org/abs/2510.13626">LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models</a> (arXiv 2510.13626) · <a href="https://github.com/sylvestf/LIBERO-plus">repo</a>.</li>
+      </ul>
+    </section>
+
+    <footer>Paper 1 / 6 · Lộ trình đọc paper VLA. Số liệu từ PDF LIBERO v2 (Bảng 1–3, 8, Phụ lục D, E), repo OpenVLA và bản PDF Qwen-VLA. Ví dụ đời thường và số trong các máy tính là minh họa.</footer>
+  </main>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  var css = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
+
+  /* ---------- code highlight + copy ---------- */
+  var KW = /\b(def|class|for|in|return|import|from|as|if|else|with|lambda|None|True|False|not|and|or)\b/g;
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll(".code pre code").forEach(function (el) {
+    var raw = el.textContent;
+    el.innerHTML = raw.split("\n").map(function (line) {
+      var code = line, comment = "", idx = line.indexOf("#");
+      if (idx >= 0) { code = line.slice(0, idx); comment = line.slice(idx); }
+      var parts = code.split(/("[^"]*")/g).map(function (p, i) {
+        if (i % 2 === 1) return '<span class="st">' + esc(p) + "</span>";
+        return esc(p).replace(KW, '<span class="kw">$1</span>');
+      }).join("");
+      return parts + (comment ? '<span class="cm">' + esc(comment) + "</span>" : "");
+    }).join("\n");
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "copy"; b.textContent = "Sao chép";
+    b.addEventListener("click", function () {
+      var done = function () { b.textContent = "Đã chép"; setTimeout(function () { b.textContent = "Sao chép"; }, 1400); };
+      var fallback = function () { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "Đã chọn, nhấn Ctrl+C"; };
+      try { navigator.clipboard.writeText(raw).then(done, fallback); } catch (e) { fallback(); }
+    });
+    el.closest(".code").appendChild(b);
+  });
+
+  /* ---------- FWT over epochs ---------- */
+  var curves = {
+    fast: [0, 40, 70, 80, 75, 80, 80, 70, 80, 75, 80],
+    slow: [0, 5, 10, 20, 30, 40, 50, 60, 70, 75, 80]
+  };
+  var fwFast = document.getElementById("fwFast"), fwSlow = document.getElementById("fwSlow");
+  function showFWT(name) {
+    fwFast.setAttribute("aria-pressed", name === "fast"); fwSlow.setAttribute("aria-pressed", name === "slow");
+    var raw = curves[name], best = Math.max.apply(null, raw), estar = raw.indexOf(best);
+    var used = raw.map(function (v, i) { return i >= estar ? best : v; });
+    var sum = used.reduce(function (a, b) { return a + b; }, 0);
+    var ep = raw.map(function (_, i) { return String(i * 5).padStart(4); }).join("");
+    var r1 = raw.map(function (v) { return String(v).padStart(4); }).join("");
+    var r2 = used.map(function (v) { return String(v).padStart(4); }).join("");
+    document.getElementById("fwCalc").textContent =
+      "Epoch e:          " + ep + "\n" +
+      "Điểm đo được (%): " + r1 + "\n" +
+      "Điểm dùng tính:   " + r2 + "\n\n" +
+      "Điểm tốt nhất c_k,k = " + best + "%, đạt lần đầu ở epoch e* = " + (estar * 5) + "\n" +
+      "Từ e* trở đi, paper coi như điểm giữ ở mức tốt nhất (dòng thứ ba).\n" +
+      "FWT = (" + used.join(" + ") + ") / 11 = " + (sum / 11).toFixed(1) + "%";
+  }
+  fwFast.addEventListener("click", function () { showFWT("fast"); });
+  fwSlow.addEventListener("click", function () { showFWT("slow"); });
+  showFWT("fast");
+
+  /* ---------- metrics calculator ---------- */
+  var presets = {
+    seql:    [[90], [40, 92], [20, 35, 95]],
+    packnet: [[70], [68, 66], [67, 64, 62]],
+    ideal:   [[90], [90, 92], [90, 92, 95]]
+  };
+  var tbody = document.querySelector("#cgrid tbody"), inputs = [];
+  for (var t = 0; t < 3; t++) {
+    var tr = document.createElement("tr");
+    var th = document.createElement("th"); th.textContent = "bài " + (t + 1); tr.appendChild(th);
+    inputs.push([]);
+    for (var k = 0; k < 3; k++) {
+      var td = document.createElement("td");
+      if (k > t) { td.className = "na"; td.textContent = "chưa học"; inputs[t].push(null); }
+      else {
+        if (k === t) td.className = "diag";
+        var inp = document.createElement("input");
+        inp.type = "number"; inp.min = "0"; inp.max = "100"; inp.step = "1";
+        inp.id = "c" + (t + 1) + (k + 1);
+        inp.setAttribute("aria-label", "Điểm bài " + (k + 1) + " sau khi học bài " + (t + 1));
+        inp.addEventListener("input", compute);
+        td.appendChild(inp); inputs[t].push(inp);
+      }
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  function setPreset(name) {
+    var p = presets[name];
+    for (var t = 0; t < 3; t++) for (var k = 0; k <= t; k++) inputs[t][k].value = p[t][k];
+    compute();
+  }
+  function val(t, k) { var v = parseFloat(inputs[t][k].value); return isNaN(v) ? 0 : Math.max(0, Math.min(100, v)); }
+  function f1(x) { return (Math.round(x * 10) / 10).toString(); }
+  function compute() {
+    var K = 3, fwt = [], nbt = [], auc = [], lines = [];
+    for (var k = 0; k < K; k++) {
+      fwt.push(val(k, k));
+      if (k < K - 1) {
+        var drops = [];
+        for (var t = k + 1; t < K; t++) drops.push(val(k, k) - val(t, k));
+        nbt.push(drops.reduce(function (a, b) { return a + b; }, 0) / drops.length);
+        lines.push("NBT bài " + (k + 1) + " = trung bình(" + drops.map(f1).join(", ") + ") = " + f1(nbt[nbt.length - 1]));
+      }
+      var later = [];
+      for (var t2 = k + 1; t2 < K; t2++) later.push(val(t2, k));
+      var a = (fwt[k] + later.reduce(function (x, y) { return x + y; }, 0)) / (K - k);
+      auc.push(a);
+      lines.push("AUC bài " + (k + 1) + " = trung bình(" + [fwt[k]].concat(later).map(f1).join(", ") + ") = " + f1(a));
+    }
+    var mean = function (arr) { return arr.reduce(function (x, y) { return x + y; }, 0) / arr.length; };
+    lines.unshift("FWT = trung bình đường chéo (" + fwt.map(f1).join(", ") + ") = " + f1(mean(fwt)));
+    lines.push("(Bài 3 là bài cuối, không có gì để quên nên không tính NBT.)");
+    document.getElementById("mF").textContent = f1(mean(fwt)) + "%";
+    document.getElementById("mN").textContent = f1(mean(nbt)) + "%";
+    document.getElementById("mA").textContent = f1(mean(auc)) + "%";
+    document.getElementById("mCalc").textContent = lines.join("\n");
+  }
+  document.querySelectorAll("[data-preset]").forEach(function (b) { b.addEventListener("click", function () { setPreset(b.dataset.preset); }); });
+  setPreset("seql");
+
+  /* ---------- LIBERO chart ---------- */
+  var data = [
+    { m: "Diffusion Policy", v: 72.4, src: "Repo OpenVLA" },
+    { m: "Octo (finetune)", v: 75.1, src: "Repo OpenVLA" },
+    { m: "OpenVLA (finetune)", v: 76.5, src: "Repo OpenVLA" },
+    { m: "Qwen-VLA-Base", v: 90.8, src: "Qwen-VLA, Bảng 4", hi: true },
+    { m: "π0", v: 94.4, src: "Qwen-VLA, Bảng 4" },
+    { m: "StarVLA-OFT", v: 96.6, src: "Qwen-VLA, Bảng 4" },
+    { m: "GR00T N1.6", v: 97.2, src: "Qwen-VLA, Bảng 4" },
+    { m: "π0.5", v: 97.6, src: "Qwen-VLA, Bảng 4" },
+    { m: "Being-H0.5", v: 97.6, src: "Qwen-VLA, Bảng 4" },
+    { m: "Qwen-VLA-Instruct", v: 97.9, src: "Qwen-VLA, Bảng 4", hi: true },
+    { m: "ABot-M0", v: 98.6, src: "Qwen-VLA, Bảng 4" }
+  ];
+  var svg = document.getElementById("chartLib"), tip = document.getElementById("tip");
+  var NS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function drawChart() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var L = 160, R = 56, T = 14, rowH = 32, W = 760, H = T + data.length * rowH + 30;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    var X = function (v) { return L + v / 100 * (W - L - R); };
+    var g = el("g", {});
+    [0, 25, 50, 75, 100].forEach(function (v) {
+      g.appendChild(el("line", { x1: X(v), x2: X(v), y1: T - 4, y2: T + data.length * rowH, stroke: css("--rule"), "stroke-width": 1 }));
+      g.appendChild(el("text", { x: X(v), y: T + data.length * rowH + 18, "text-anchor": "middle", "font-size": 12, fill: css("--muted"), "font-family": css("--f-body") }, v + "%"));
+    });
+    svg.appendChild(g);
+    data.forEach(function (d, i) {
+      var y = T + i * rowH, bh = 16, by = y + (rowH - bh) / 2;
+      var col = d.hi ? css("--amber") : css("--accent");
+      svg.appendChild(el("text", { x: L - 10, y: by + bh / 2 + 4, "text-anchor": "end", "font-size": 12.5, fill: css("--ink"), "font-family": css("--f-body"), "font-weight": d.hi ? 700 : 400 }, d.m));
+      var w = X(d.v) - X(0);
+      svg.appendChild(el("path", { d: "M" + X(0) + " " + by + "h" + (w - 4) + "a4 4 0 0 1 4 4v" + (bh - 8) + "a4 4 0 0 1 -4 4h" + (-(w - 4)) + "z", fill: col }));
+      svg.appendChild(el("text", { x: X(d.v) + 6, y: by + bh / 2 + 4, "font-size": 12, fill: css("--ink"), "font-family": css("--f-mono") }, d.v.toFixed(1)));
+      var hit = el("rect", { x: 0, y: y, width: W, height: rowH, fill: "transparent", tabindex: 0 });
+      hit.setAttribute("aria-label", d.m + ": " + d.v + "%, nguồn " + d.src);
+      var show = function (ev) {
+        tip.textContent = d.m + ": " + d.v.toFixed(1) + "% · Nguồn: " + d.src;
+        tip.hidden = false;
+        var x = ev.clientX !== undefined ? ev.clientX : hit.getBoundingClientRect().left + 40;
+        var yy = ev.clientY !== undefined ? ev.clientY : hit.getBoundingClientRect().top;
+        tip.style.left = Math.min(x + 12, window.innerWidth - 270) + "px"; tip.style.top = (yy + 12) + "px";
+      };
+      hit.addEventListener("mousemove", show); hit.addEventListener("focus", show);
+      hit.addEventListener("mouseleave", function () { tip.hidden = true; }); hit.addEventListener("blur", function () { tip.hidden = true; });
+      hit.addEventListener("touchstart", function (e) { var t0 = e.touches[0]; show({ clientX: t0.clientX, clientY: t0.clientY }); }, { passive: true });
+      svg.appendChild(hit);
+    });
+  }
+  drawChart();
+  try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawChart); } catch (e) {}
+  new MutationObserver(drawChart).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawChart);
+
+  /* ---------- roadmap progress ---------- */
+  var KEY = "libero-road-v2", boxes = Array.prototype.slice.call(document.querySelectorAll("#road input")), saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { saved = {}; }
+  function update() {
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    document.getElementById("progText").textContent = done + " / " + boxes.length;
+    document.getElementById("progBar").style.width = (done / boxes.length * 100) + "%";
+  }
+  boxes.forEach(function (b) {
+    b.checked = !!saved[b.id];
+    b.addEventListener("change", function () { saved[b.id] = b.checked; try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} update(); });
+  });
+  update();
+
+  /* ---------- TOC ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.toc a"));
+  var targets = links.map(function (a) { return document.querySelector(a.getAttribute("href")); });
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { var i = targets.indexOf(en.target); links.forEach(function (l, k) { l.classList.toggle("on", k === i); }); } });
+    }, { rootMargin: "-10% 0px -75% 0px" });
+    targets.forEach(function (t) { if (t) io.observe(t); });
+  }
+  if (window.matchMedia("(max-width: 900px)").matches) document.getElementById("tocd").open = false;
+})();
+</script>
+
+</body></html>

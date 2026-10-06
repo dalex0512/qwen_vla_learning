@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GR00T N1 · Đọc hiểu paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+
+/* layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+
+/* paper viết / nghĩa là */
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+
+/* callouts */
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+
+/* tables */
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+
+/* misc */
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* checklist */
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+
+/* steps */
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* details */
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+
+/* arch svg */
+.n{cursor:pointer}
+.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.n.emb rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.frz rect.b0{fill:var(--blue-soft);stroke:var(--blue)}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.n text{fill:var(--text);font-size:13px;text-anchor:middle;pointer-events:none}
+.n text.s{fill:var(--muted);font-size:11.5px}
+.ar{stroke:var(--grey);stroke-width:1.8;fill:none}
+.lbl{fill:var(--muted);font-size:11.5px}
+#archInfo{min-height:96px}
+
+/* bars */
+.bars .row{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{display:flex;flex-direction:column;gap:2px}
+.bars .bar{height:11px;border-radius:4px;position:relative;min-width:2px}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-4px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .dp{background:var(--grey)}
+.bars .gr{background:var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:120px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cells{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.cells span{width:26px;height:26px;border-radius:5px;background:var(--pri-soft);border:1px solid var(--pri);font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cells span.used{background:var(--accent);border-color:var(--accent);color:#fff}
+.cells span.over{background:var(--red);border-color:var(--red);color:#fff}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>GR00T N1 · Đọc hiểu paper</h1>
+  <p><b>GR00T N1: An Open Foundation Model for Generalist Humanoid Robots</b> — NVIDIA, 03/2025 · arXiv 2503.14734</p>
+  <p>Trang đọc hiểu cho người mới. Paper thứ 2 trong lộ trình: LIBERO → <b>GR00T N1</b> → Qwen-VLA → RTC → MoE.</p>
+  <div class="meta">
+    <span class="pill">VLA 2,2 tỷ tham số</span><span class="pill">VLM + Action expert (DiT)</span><span class="pill">Flow matching</span><span class="pill">Action chunk H = 16</span><span class="pill">RoboCasa · DexMG · GR-1</span>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#tldr">0. Tóm tắt 1 phút</a>
+  <a href="#roadmap">1. Lộ trình & checklist</a>
+  <a href="#glossary">2. Bảng thuật ngữ</a>
+  <a href="#motiv">3. Động lực (Sec 1)</a>
+  <a href="#arch">4. Kiến trúc tổng thể</a>
+  <a class="sub" href="#vlm">4.1 System 2: VLM</a>
+  <a class="sub" href="#enc">4.2 Encoder riêng từng robot</a>
+  <a class="sub" href="#dit">4.3 System 1: DiT</a>
+  <a class="sub" href="#chunk">4.4 Action chunk</a>
+  <a class="sub" href="#flow">4.5 Flow matching</a>
+  <a class="sub" href="#run">4.6 Ghép lại: một lần chạy</a>
+  <a href="#data">5. Dữ liệu: kim tự tháp</a>
+  <a href="#train">6. Huấn luyện</a>
+  <a href="#robocasa">7. RoboCasa & benchmark</a>
+  <a href="#results">8. Kết quả</a>
+  <a href="#critique">9. Hạn chế & phản biện</a>
+  <a href="#links">10. Liên hệ các paper khác</a>
+  <a href="#quiz">11. Câu hỏi tự kiểm tra</a>
+  <a href="#sources">12. Nguồn</a>
+</nav>
+
+<main>
+
+<!-- ============ 0 ============ -->
+<section class="sec" id="tldr">
+<h2>0. Tóm tắt 1 phút</h2>
+<p>GR00T N1 là một mô hình <b>VLA</b> (nhìn ảnh + đọc câu lệnh → xuất hành động robot) của NVIDIA, nhắm tới robot hình người nhưng chạy được trên nhiều loại robot. Nếu chỉ nhớ năm ý, hãy nhớ năm ý này:</p>
+<div class="tldr">
+  <div><b>① Hai hệ thống</b>"System 2" là một VLM (Eagle-2) hiểu ảnh và câu lệnh, chạy chậm (~10 Hz). "System 1" là một DiT sinh hành động nhanh. Hai khối được huấn luyện chung.</div>
+  <div><b>② Flow matching</b>Hành động được "nặn" từ nhiễu qua K = 4 bước khử nhiễu, thay vì đoán thẳng. Nhờ vậy mô hình chọn được một trong nhiều cách làm đúng.</div>
+  <div><b>③ Action chunk</b>Mỗi lần chạy sinh luôn H = 16 hành động liên tiếp, mất 63,9 ms trên GPU L40.</div>
+  <div><b>④ Kim tự tháp dữ liệu</b>Video người (đáy) → dữ liệu tổng hợp từ mô phỏng và mô hình sinh video (giữa) → dữ liệu robot thật (đỉnh). Video không có nhãn hành động được gán "latent action".</div>
+  <div><b>⑤ Kết quả</b>Sau post-training, thắng Diffusion Policy và BC-Transformer trên 3 benchmark mô phỏng (trong đó có RoboCasa) và trên robot GR-1 thật, đặc biệt khi ít dữ liệu.</div>
+</div>
+<div class="co link"><b class="t">Vì sao mentor xếp paper này trước RTC và MoE?</b>
+Cả RTC và MoE đều "mổ xẻ" đúng phần action expert: RTC bàn chuyện nối các action chunk khi suy luận, còn MoE thay lớp FFN bên trong action expert. GR00T N1 là ví dụ rõ ràng nhất về kiểu kiến trúc <i>VLM + action expert dùng flow matching</i>, nên hiểu kỹ phần 4 của trang này là nền cho cả hai paper sau.</div>
+</section>
+
+<!-- ============ 1 ============ -->
+<section class="sec" id="roadmap">
+<h2>1. Lộ trình đọc & checklist</h2>
+<p>Tổng thời gian gợi ý: khoảng 4–5 giờ, chia 2–3 buổi. Phần 4 (kiến trúc) và phần 7 (RoboCasa) là trọng tâm mentor yêu cầu, nên dành nhiều thời gian nhất.</p>
+<div class="tw"><table class="t">
+<tr><th>Bước</th><th>Đọc phần nào trên trang</th><th>Ứng với paper</th><th class="num">Thời gian</th></tr>
+<tr><td>1</td><td>0. Tóm tắt, 3. Động lực, sơ đồ kiến trúc ở mục 4</td><td>Abstract, Sec 1, Hình 1–2</td><td class="num">20 phút</td></tr>
+<tr><td>2</td><td>4.1 → 4.4: VLM, encoder, DiT, action chunk</td><td>Sec 2, 2.1, Hình 3</td><td class="num">60 phút</td></tr>
+<tr><td>3</td><td>4.5 Flow matching + chơi hai widget</td><td>Công thức (1), p(τ), Euler</td><td class="num">60 phút</td></tr>
+<tr><td>4</td><td>4.6 Ghép lại thành code giả</td><td>Toàn bộ Sec 2.1</td><td class="num">20 phút</td></tr>
+<tr><td>5</td><td>5. Dữ liệu, 6. Huấn luyện</td><td>Sec 2.2, 2.3, 3, Bảng 1, 6, 7</td><td class="num">45 phút</td></tr>
+<tr><td>6</td><td>7. RoboCasa & benchmark</td><td>Sec 4.1–4.3, Bảng 4</td><td class="num">40 phút</td></tr>
+<tr><td>7</td><td>8. Kết quả, 9. Phản biện, 11. Tự kiểm tra</td><td>Sec 4.4–4.6, Bảng 2, 3, 5, Hình 9</td><td class="num">45 phút</td></tr>
+</table></div>
+
+<h3>Checklist "mình đã hiểu GR00T N1"</h3>
+<div class="prog"><i id="progBar"></i></div>
+<div class="chk" id="chk">
+  <label><input type="checkbox" data-k="c1"><span>Giải thích được System 1 / System 2 là gì, mỗi khối là mạng gì, chạy ở tần số nào.</span></label>
+  <label><input type="checkbox" data-k="c2"><span>Vẽ lại được Hình 3: ảnh + chữ → Eagle-2 → φ<sub>t</sub>; trạng thái + hành động nhiễu → encoder → DiT → decoder.</span></label>
+  <label><input type="checkbox" data-k="c3"><span>Giải thích vì sao lấy đặc trưng ở lớp 12 của LLM chứ không phải lớp cuối.</span></label>
+  <label><input type="checkbox" data-k="c4"><span>Giải thích cross-attention và self-attention trong DiT mỗi cái "nhìn" vào đâu.</span></label>
+  <label><input type="checkbox" data-k="c5"><span>Giải thích encoder/decoder "riêng từng embodiment" giải quyết bài toán số chiều khác nhau ra sao.</span></label>
+  <label><input type="checkbox" data-k="c6"><span>Viết được công thức trộn nhiễu \(A_t^\tau = \tau A_t + (1-\tau)\epsilon\) và nói đúng τ = 0 là gì, τ = 1 là gì.</span></label>
+  <label><input type="checkbox" data-k="c7"><span>Giải thích vì sao cần mô hình sinh (ví dụ vòng trái / vòng phải) và vì sao K = 1 bước thì hỏng.</span></label>
+  <label><input type="checkbox" data-k="c8"><span>Giải thích action chunk H = 16 và tính được bao nhiêu bước điều khiển trôi qua trong 63,9 ms.</span></label>
+  <label><input type="checkbox" data-k="c9"><span>Kể được 4 tầng dữ liệu và loại nhãn hành động của mỗi tầng (thật, latent, IDM).</span></label>
+  <label><input type="checkbox" data-k="c10"><span>Phân biệt pre-training và post-training: dữ liệu gì, đóng băng gì, batch size bao nhiêu.</span></label>
+  <label><input type="checkbox" data-k="c11"><span>Mô tả RoboCasa: robot gì, camera nào, không gian hành động, 24 tác vụ, cách chấm điểm.</span></label>
+  <label><input type="checkbox" data-k="c12"><span>Đọc Bảng 2, 3 và chỉ ra ít nhất 3 điểm cần dè dặt khi diễn giải.</span></label>
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="sec" id="glossary">
+<h2>2. Bảng thuật ngữ</h2>
+<p>Không cần thuộc hết trước khi đọc. Gặp từ lạ ở phần sau thì quay lại đây tra.</p>
+<div class="tw"><table class="t">
+<tr><th>Thuật ngữ</th><th>Nghĩa ngắn gọn</th><th>Gặp ở</th></tr>
+<tr><td>VLA</td><td>Vision-Language-Action: nhận ảnh + câu lệnh, xuất hành động robot</td><td>Toàn bài</td></tr>
+<tr><td>VLM</td><td>Vision-Language Model: nhận ảnh + chữ, xuất chữ (hoặc đặc trưng)</td><td>2.1</td></tr>
+<tr><td>System 2 / System 1</td><td>"Nghĩ chậm" (VLM hiểu tình huống) / "phản xạ nhanh" (DiT sinh động tác). Mượn từ sách <i>Thinking, Fast and Slow</i> của Kahneman</td><td>1, 2</td></tr>
+<tr><td>Eagle-2</td><td>VLM của NVIDIA, ghép từ bộ mã hóa ảnh SigLIP-2 và mô hình ngôn ngữ SmolLM2</td><td>2.1</td></tr>
+<tr><td>Token / embedding</td><td>Một "mẩu" đầu vào (một ô ảnh, một từ) và vector số đại diện cho nó</td><td>2.1</td></tr>
+<tr><td>Pixel shuffle</td><td>Gộp các ô ảnh kề nhau thành một token để giảm số token</td><td>2.1</td></tr>
+<tr><td>Hidden state / lớp giữa</td><td>Vector đầu ra của một lớp Transformer bên trong; GR00T lấy ở lớp thứ 12</td><td>2.1</td></tr>
+<tr><td>Action expert / action head</td><td>Mạng con chuyên sinh hành động; ở đây là DiT</td><td>2.1</td></tr>
+<tr><td>DiT</td><td>Diffusion Transformer: Transformer dùng làm mạng khử nhiễu</td><td>2.1</td></tr>
+<tr><td>AdaLN</td><td>Adaptive LayerNorm: đưa mức nhiễu τ vào mạng bằng cách chỉnh scale/shift của LayerNorm</td><td>2.1</td></tr>
+<tr><td>Self-attention / Cross-attention</td><td>Token nhìn các token cùng chuỗi / token nhìn sang một chuỗi khác (ở đây: nhìn sang token ảnh-chữ)</td><td>2.1</td></tr>
+<tr><td>Flow matching</td><td>Học "trường vận tốc" đẩy nhiễu dần thành dữ liệu thật</td><td>2.1</td></tr>
+<tr><td>Timestep τ (flow)</td><td>Mức trộn nhiễu. Trong GR00T: τ = 0 là nhiễu thuần, τ = 1 là hành động sạch</td><td>2.1</td></tr>
+<tr><td>Euler integration</td><td>Đi từng bước nhỏ theo vận tốc: x ← x + bước × vận tốc</td><td>2.1</td></tr>
+<tr><td>Action chunk, horizon H</td><td>Một lần dự đoán H hành động liên tiếp (H = 16)</td><td>2.1</td></tr>
+<tr><td>State / proprioception q<sub>t</sub></td><td>Robot tự cảm nhận: góc khớp, vị trí đầu tay, độ mở kẹp…</td><td>2.1</td></tr>
+<tr><td>Embodiment</td><td>"Thân thể" robot: một tay, hai tay, hình người, hay bàn tay người</td><td>Toàn bài</td></tr>
+<tr><td>EEF (end-effector)</td><td>Đầu cuối cánh tay: kẹp hoặc bàn tay</td><td>4.1, E.2</td></tr>
+<tr><td>Joint</td><td>Góc của từng khớp</td><td>4.1</td></tr>
+<tr><td>Teleoperation</td><td>Người điều khiển robot từ xa để thu dữ liệu mẫu</td><td>3.1</td></tr>
+<tr><td>Retargeting / IK</td><td>Chuyển chuyển động tay người sang khớp robot (Inverse Kinematics)</td><td>3.1</td></tr>
+<tr><td>Latent action</td><td>"Hành động ẩn": vector mô tả chuyển động giữa hai khung hình, học từ video, không phải lệnh khớp thật</td><td>2.2</td></tr>
+<tr><td>VQ-VAE / codebook</td><td>Mô hình nén dữ liệu thành mã rời rạc lấy từ một "từ điển" vector</td><td>2.2</td></tr>
+<tr><td>LAPA</td><td>Latent Action Pretraining (Ye et al.): phương pháp gán latent action cho video. GR00T coi nó như một embodiment riêng</td><td>2.2</td></tr>
+<tr><td>IDM</td><td>Inverse Dynamics Model: nhìn 2 khung hình, đoán hành động đã làm</td><td>2.3, F</td></tr>
+<tr><td>Pseudo-action</td><td>Nhãn hành động "giả" do mô hình đoán (latent hoặc IDM)</td><td>2.3</td></tr>
+<tr><td>Neural trajectory</td><td>Video robot do mô hình sinh video tạo ra, rồi gán nhãn hành động giả</td><td>2.2</td></tr>
+<tr><td>MimicGen / DexMimicGen</td><td>Hệ thống nhân bản vài demo người thành hàng nghìn demo trong mô phỏng</td><td>2.2</td></tr>
+<tr><td>RoboCasa</td><td>Bộ mô phỏng nhà bếp quy mô lớn, vừa làm benchmark vừa làm khung dựng tác vụ</td><td>3.2, 4.1</td></tr>
+<tr><td>Pre-training / Post-training</td><td>Huấn luyện chung trên dữ liệu khổng lồ / tinh chỉnh cho một robot, một bộ tác vụ</td><td>2.3</td></tr>
+<tr><td>Co-training</td><td>Trộn nhiều nguồn dữ liệu trong cùng một batch</td><td>1, 2.3</td></tr>
+<tr><td>Frozen (đóng băng)</td><td>Không cập nhật trọng số phần đó khi huấn luyện</td><td>2.3, Bảng 6</td></tr>
+<tr><td>Success rate (SR)</td><td>Tỉ lệ lần thử thành công</td><td>4</td></tr>
+<tr><td>Diffusion Policy (DP)</td><td>Baseline: policy diffusion với U-Net, huấn luyện từ đầu, không có VLM</td><td>4.3</td></tr>
+<tr><td>BC-Transformer</td><td>Baseline: Transformer bắt chước + GMM (hỗn hợp Gaussian) cho hành động</td><td>4.3</td></tr>
+<tr><td>bf16</td><td>Kiểu số thực 16-bit dùng khi chạy suy luận cho nhanh</td><td>2</td></tr>
+<tr><td>6D rotation / axis-angle</td><td>Hai cách biểu diễn hướng xoay: 6 số (tránh điểm kỳ dị) / trục + góc (3 số)</td><td>E.2</td></tr>
+<tr><td>Min-max normalization</td><td>Co giãn mỗi chiều về một khoảng cố định theo giá trị nhỏ nhất/lớn nhất</td><td>E.2</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="sec" id="motiv">
+<h2>3. Động lực: vì sao cần GR00T N1? (Section 1)</h2>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Ba thành phần cần có: <i>hardware, models, and data</i>. Robot hình người là "hình dạng" hợp lý vì thế giới được xây cho người.</div>
+<div class="n"><span class="lab">Nghĩa là</span>NVIDIA nhìn bài toán ở mức "full-stack": thân robot giỏi (humanoid) + một mô hình tổng quát + một chiến lược dữ liệu. Paper này lo hai phần sau.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Không có "Internet" dữ liệu robot hình người; dữ liệu của mỗi loại robot là các <i>"data islands"</i> rời rạc.</div>
+<div class="n"><span class="lab">Nghĩa là</span>LLM học từ cả Internet chữ. Robot thì không có kho tương đương: mỗi hãng robot có vài trăm giờ, định dạng khác nhau, số khớp khác nhau. Gộp chung lại cũng khó vì "không cùng ngôn ngữ hành động". Đây là vấn đề trung tâm mà cả paper tìm cách giải.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Tổ chức dữ liệu thành một <i>data pyramid</i> và huấn luyện kiểu <i>co-training</i> qua cả kim tự tháp.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Hai lời giải: (1) dùng thêm dữ liệu rẻ (video người, mô phỏng, video do AI sinh) và (2) "gán nhãn hành động giả" cho dữ liệu không có nhãn, để mọi nguồn đều có dạng chung: <i>(trạng thái, ảnh, câu lệnh) → hành động</i>.</div></div>
+
+<h3>Ba đóng góp chính paper tự nêu</h3>
+<ol class="steps">
+<li><b>Kiến trúc hai hệ thống ghép chặt:</b> VLM (System 2) + DiT (System 1), huấn luyện end-to-end.</li>
+<li><b>Chiến lược pre-training</b> trên hỗn hợp video người, dữ liệu mô phỏng, dữ liệu sinh bằng mạng nơ-ron và demo robot thật.</li>
+<li><b>Một policy đa nhiệm, theo câu lệnh</b>, chạy trên nhiều loại robot và thích nghi nhanh với tác vụ mới khi post-train ít dữ liệu. Mô hình GR00T-N1-2B, dữ liệu và benchmark mô phỏng được công bố mở.</li>
+</ol>
+<div class="co note"><b class="t">Liên hệ với LIBERO (paper trước)</b>
+LIBERO là một <i>benchmark</i>: nó hỏi "robot học suốt đời được không, kiến thức nào chuyển giao được". GR00T N1 là một <i>mô hình</i>: nó trả lời câu hỏi "làm sao có một bộ não dùng chung cho nhiều robot". Paper GR00T N1 không đánh giá trên LIBERO, nhưng các phiên bản và paper VLA sau (như Qwen-VLA) đều báo cáo LIBERO.</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="sec" id="arch">
+<h2>4. Kiến trúc tổng thể (Section 2, 2.1)</h2>
+<p>Đây là phần quan trọng nhất. Trước hết nhìn toàn cảnh, rồi đi vào từng khối ở 4.1–4.5.</p>
+
+<div class="stat">
+  <div><div class="v">2,2 tỷ</div><div class="k">tổng tham số GR00T-N1-2B</div></div>
+  <div><div class="v">1,34 tỷ</div><div class="k">nằm trong VLM (Eagle-2)</div></div>
+  <div><div class="v">~0,86 tỷ</div><div class="k">phần còn lại: DiT + encoder/decoder (tự tính: 2,2 − 1,34)</div></div>
+  <div><div class="v">63,9 ms</div><div class="k">sinh 1 chunk 16 hành động, GPU L40, bf16</div></div>
+  <div><div class="v">10 Hz / 120 Hz</div><div class="k">tần số System 2 / System 1 paper nêu</div></div>
+</div>
+
+<div class="widget">
+<h4>Sơ đồ kiến trúc (Hình 3 vẽ lại)</h4>
+<p style="margin:0 0 6px;font-size:.92rem;color:var(--muted)">Bấm vào từng khối để xem giải thích. Khối màu xanh ngọc là <b>riêng cho từng loại robot</b>, khối màu xanh dương là <b>đóng băng</b>.</p>
+<svg class="svgbox" viewBox="0 0 920 470" id="archSvg" role="img" aria-label="Sơ đồ kiến trúc GR00T N1">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<!-- arrows -->
+<path class="ar" d="M170,48 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M170,138 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M355,48 H388" marker-end="url(#ah)"/>
+<path class="ar" d="M355,138 H388" marker-end="url(#ah)"/>
+<path class="ar" d="M550,88 H583" marker-end="url(#ah)"/>
+<path class="ar" d="M650,116 V218" marker-end="url(#ah)"/>
+<text class="lbl" x="658" y="170">vào cross-attention</text>
+<path class="ar" d="M170,263 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M355,263 H388" marker-end="url(#ah)"/>
+<path class="ar" d="M170,363 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M355,363 H388" marker-end="url(#ah)"/>
+<path class="ar" d="M715,308 H748" marker-end="url(#ah)"/>
+<path class="ar" d="M825,280 V128" marker-end="url(#ah)"/>
+<text class="lbl" x="832" y="210">sau</text><text class="lbl" x="832" y="225">K = 4</text><text class="lbl" x="832" y="240">bước</text>
+<path class="ar" d="M825,336 V440 H95 V398" marker-end="url(#ah)" style="stroke-dasharray:6 4"/>
+<text class="lbl" x="460" y="460" text-anchor="middle">vận tốc V<tspan baseline-shift="sub" font-size="9">θ</tspan> → một bước Euler → hành động bớt nhiễu hơn, đưa lại vào (lặp K = 4 lần)</text>
+<!-- legend -->
+<rect x="390" y="182" width="14" height="14" rx="3" fill="var(--pri-soft)" stroke="var(--pri)"/><text class="lbl" x="410" y="194">riêng từng robot</text>
+<rect x="520" y="182" width="14" height="14" rx="3" fill="var(--blue-soft)" stroke="var(--blue)"/><text class="lbl" x="540" y="194">đóng băng</text>
+<!-- nodes -->
+<g class="n" data-k="img"><rect class="b0" x="20" y="20" width="150" height="56" rx="10"/><text x="95" y="44">Ảnh camera</text><text class="s" x="95" y="62">224 × 224</text></g>
+<g class="n" data-k="txt"><rect class="b0" x="20" y="110" width="150" height="56" rx="10"/><text x="95" y="134">Câu lệnh</text><text class="s" x="95" y="152">"pick up the apple…"</text></g>
+<g class="n" data-k="vis"><rect class="b0" x="205" y="20" width="150" height="56" rx="10"/><text x="280" y="44">Vision encoder</text><text class="s" x="280" y="62">SigLIP-2</text></g>
+<g class="n" data-k="tok"><rect class="b0" x="205" y="110" width="150" height="56" rx="10"/><text x="280" y="134">Text tokenizer</text><text class="s" x="280" y="152">cắt chữ thành token</text></g>
+<g class="n frz" data-k="llm"><rect class="b0" x="390" y="20" width="160" height="146" rx="10"/><text x="470" y="70">LLM của Eagle-2</text><text class="s" x="470" y="90">(SmolLM2)</text><text class="s" x="470" y="112">❄ đóng băng</text><text class="s" x="470" y="132">lấy ra ở lớp 12</text></g>
+<g class="n" data-k="phi"><rect class="b0" x="585" y="60" width="130" height="56" rx="10"/><text x="650" y="84">φ<tspan baseline-shift="sub" font-size="10">t</tspan></text><text class="s" x="650" y="102">token ảnh + chữ</text></g>
+<g class="n" data-k="state"><rect class="b0" x="20" y="235" width="150" height="56" rx="10"/><text x="95" y="259">Trạng thái q<tspan baseline-shift="sub" font-size="10">t</tspan></text><text class="s" x="95" y="277">góc khớp, EEF…</text></g>
+<g class="n emb" data-k="senc"><rect class="b0" x="205" y="235" width="150" height="56" rx="10"/><text x="280" y="259">State encoder</text><text class="s" x="280" y="277">MLP riêng/robot</text></g>
+<g class="n" data-k="act"><rect class="b0" x="20" y="330" width="150" height="66" rx="10"/><text x="95" y="354">Hành động nhiễu</text><text class="s" x="95" y="372">A<tspan baseline-shift="sub" font-size="9">t</tspan><tspan baseline-shift="super" font-size="9">τ</tspan>: 16 bước, kèm τ</text></g>
+<g class="n emb" data-k="aenc"><rect class="b0" x="205" y="335" width="150" height="56" rx="10"/><text x="280" y="359">Action encoder</text><text class="s" x="280" y="377">MLP riêng/robot</text></g>
+<g class="n" data-k="dit"><rect class="b0" x="390" y="220" width="325" height="176" rx="12"/>
+  <rect x="405" y="250" width="56" height="110" rx="6" style="fill:var(--accent-soft);stroke:var(--accent)"/><text x="433" y="310" style="font-size:11px">Cross</text>
+  <rect x="468" y="250" width="56" height="110" rx="6" style="fill:var(--code-bg);stroke:var(--grey)"/><text x="496" y="310" style="font-size:11px">Self</text>
+  <text x="552" y="310">· · ·</text>
+  <rect x="580" y="250" width="56" height="110" rx="6" style="fill:var(--accent-soft);stroke:var(--accent)"/><text x="608" y="310" style="font-size:11px">Cross</text>
+  <rect x="643" y="250" width="56" height="110" rx="6" style="fill:var(--code-bg);stroke:var(--grey)"/><text x="671" y="310" style="font-size:11px">Self</text>
+  <text x="552" y="242">DiT × N khối</text><text class="s" x="552" y="384">τ đưa vào qua AdaLN</text></g>
+<g class="n emb" data-k="adec"><rect class="b0" x="750" y="280" width="150" height="56" rx="10"/><text x="825" y="304">Action decoder</text><text class="s" x="825" y="322">MLP riêng/robot</text></g>
+<g class="n" data-k="out"><rect class="b0" x="750" y="60" width="150" height="66" rx="10"/><text x="825" y="86">Chunk hành động</text><text class="s" x="825" y="106">16 hành động → robot</text></g>
+</svg>
+<div class="out" id="archInfo">Bấm vào một khối bất kỳ trong sơ đồ.</div>
+</div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>System 2 là VLM chạy 10 Hz trên GPU L40; System 1 là Diffusion Transformer học bằng <i>action flow-matching</i>, sinh hành động vòng kín ở 120 Hz. Hai khối được <i>jointly optimized</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Phân công lao động: VLM to, chậm, lo phần "hiểu" (đây là cái gì, câu lệnh muốn gì). DiT nhỏ hơn, nhanh, lo phần "làm" (tay đi đường nào, khớp quay bao nhiêu). Khác với các hệ thống cũ kiểu "LLM lập kế hoạch rồi gọi một policy có sẵn", ở đây gradient chảy xuyên qua cả hai khối khi huấn luyện, nên VLM học ra đặc trưng có ích cho hành động.</div></div>
+
+<!-- 4.1 -->
+<h3 id="vlm">4.1 System 2: VLM Eagle-2</h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Eagle-2 được fine-tune từ LLM SmolLM2 và bộ mã hóa ảnh SigLIP-2. Ảnh 224 × 224, qua pixel shuffle, ra <i>64 image token embeddings per frame</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Mỗi ảnh camera biến thành đúng 64 token. Chuỗi token ảnh được đặt cạnh token chữ của câu lệnh, rồi cả chuỗi chạy qua LLM. Ít token mỗi ảnh = chạy nhanh, rất quan trọng với robot.</div></div>
+
+<h4>Ví dụ số: vì sao ra 64 token?</h4>
+<p>Paper chỉ ghi kết quả 64. Một cách tính khớp với con số này, <i>giả định</i> SigLIP-2 cắt ảnh thành ô 14 × 14 pixel và pixel shuffle gộp mỗi cụm 2 × 2 ô thành 1 token:</p>
+\[ \frac{224}{14} = 16 \;\Rightarrow\; 16 \times 16 = 256 \text{ ô} \;\xrightarrow{\text{gộp } 2\times 2}\; \frac{256}{4} = 64 \text{ token} \]
+<p>So với Qwen-VLA (paper thứ 3), nơi ảnh có độ phân giải động và số token thay đổi, GR00T N1 chọn cách cố định và rẻ.</p>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Dùng embedding ở <i>middle-layer instead of final-layer</i> cho cả tốc độ nhanh hơn lẫn tỉ lệ thành công cao hơn. Với GR00T-N1-2B: lớp thứ 12.</div>
+<div class="n"><span class="lab">Nghĩa là</span>
+<b>Nhanh hơn:</b> chỉ cần chạy 12 lớp đầu của LLM, bỏ các lớp sau.<br>
+<b>Tốt hơn:</b> paper không giải thích lý do, chỉ báo kết quả. Cách hiểu thường gặp: các lớp cuối của LLM bị "uốn" để đoán từ tiếp theo, còn lớp giữa giữ thông tin tổng quát hơn về ảnh và câu. Đây là trực giác, không phải điều paper chứng minh.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Khi huấn luyện policy, câu lệnh và ảnh được đưa vào VLM <i>in the chat format</i> giống lúc huấn luyện VLM. Đặc trưng lấy ra có shape (batch × sequence length × hidden dimension).</div>
+<div class="n"><span class="lab">Nghĩa là</span>Không "đổi cách nói chuyện" với VLM: dùng đúng định dạng hội thoại nó đã quen, để tận dụng tối đa kiến thức có sẵn. Kết quả là ma trận \(\varphi_t\): mỗi token (ảnh hoặc chữ) là một vector.</div></div>
+
+<div class="co warn"><b class="t">Cái gì bị đóng băng?</b>
+Hình 3 vẽ cả VLM với biểu tượng ❄. Nhưng Bảng 6 ghi rõ hơn: <b>vision encoder được huấn luyện</b> (unfrozen), phần ngôn ngữ (text tokenizer, LLM) đóng băng, DiT được huấn luyện. Section 2.3 cũng nói giữ "language component" đóng băng ở cả pre-training lẫn post-training. Khi trình bày, nên nói chính xác: <i>LLM đóng băng, bộ mã hóa ảnh và toàn bộ action expert được học</i>.</div>
+
+<!-- 4.2 -->
+<h3 id="enc">4.2 Encoder và decoder riêng cho từng robot</h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Để xử lý state và action có số chiều khác nhau giữa các robot, dùng <i>an MLP per embodiment</i> chiếu chúng về cùng một số chiều embedding.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Robot Franka một tay có thể có ~7 số hành động, robot GR-1 hai tay khéo léo có nhiều hơn hẳn. DiT thì muốn mọi token có cùng kích thước d. Giải pháp: mỗi loại robot có một MLP nhỏ riêng làm "phiên dịch viên" vào và ra. Phần lõi DiT dùng chung cho mọi robot.</div></div>
+
+<p>Có ba loại "phiên dịch viên" riêng cho mỗi embodiment:</p>
+<ul>
+<li><b>State encoder</b>: \(q_t\) (trạng thái hiện tại) → 1 token kích thước d.</li>
+<li><b>Action encoder</b>: chunk hành động nhiễu \(A_t^\tau\) <i>cùng với mức nhiễu τ</i> → 16 token kích thước d (mỗi bước thời gian một token).</li>
+<li><b>Action decoder</b>: 16 token cuối của DiT → 16 vector kích thước bằng số chiều hành động của robot đó.</li>
+</ul>
+
+<div class="co note"><b class="t">"Embodiment" không nhất thiết là robot thật</b>
+Video người được gán latent action và được coi là một embodiment tên "LAPA". Dữ liệu sinh bằng video AI gán nhãn IDM cũng được coi là embodiment riêng. Nghĩa là cùng một DiT, nhưng mỗi "kiểu nhãn" có cặp encoder/decoder riêng. Đây là mẹo gọn để trộn dữ liệu không đồng nhất.</div>
+
+<h4>Chuẩn hóa không gian hành động (Phụ lục E.2)</h4>
+<p>Để các robot "nói gần cùng một ngôn ngữ", paper làm thêm bốn việc:</p>
+<ol>
+<li>Hướng xoay của đầu tay trong <b>state</b> đổi sang <b>biểu diễn 6D</b> (tránh điểm kỳ dị, bước nhảy của góc Euler).</li>
+<li>Hướng xoay trong <b>action</b> dùng <b>axis-angle</b> (trục + góc, 3 số).</li>
+<li><b>Min-max normalization</b> cho khớp, vị trí và xoay, để mọi robot có cùng khoảng giá trị.</li>
+<li><b>Thứ tự cố định</b>: xoay EEF → vị trí EEF → độ đóng kẹp, từ tay trái sang tay phải.</li>
+</ol>
+<p>Định dạng dữ liệu dựa trên <b>LeRobot</b> (Hugging Face) và thêm file <code>meta/modality.json</code> mô tả ý nghĩa từng chiều của vector state/action. Khi vào codebase, file này là chỗ đầu tiên nên mở để biết "chiều thứ 5 là gì".</p>
+
+<!-- 4.3 -->
+<h3 id="dit">4.3 System 1: Diffusion Transformer (DiT)</h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>\(V_\theta\) là một biến thể DiT, điều kiện theo bước khử nhiễu qua <i>adaptive layer normalization</i>, gồm các khối <i>alternating cross-attention and self-attention</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Bên trong DiT có hai kiểu khối xen kẽ, mỗi kiểu trả lời một câu hỏi khác nhau.</div></div>
+
+<div class="two">
+<div class="co note" style="margin:0"><b class="t">Self-attention: "các bước hành động bàn với nhau"</b>
+Chuỗi gồm 1 token trạng thái + 16 token hành động nhiễu. Mỗi token nhìn các token còn lại, nhờ đó bước 5 biết bước 4 và bước 6 đang ra sao, giữ cho quỹ đạo mượt và nhất quán với trạng thái hiện tại.</div>
+<div class="co" style="margin:0;background:var(--accent-soft);border-color:transparent"><b class="t">Cross-attention: "nhìn sang ảnh và câu lệnh"</b>
+Token hành động đặt câu hỏi (query), token \(\varphi_t\) của VLM trả lời (key, value). Đây là cách duy nhất thông tin "quả táo nằm ở đâu, câu lệnh bảo bỏ vào đâu" đi vào action expert.</div>
+</div>
+
+<p style="margin-top:14px">Sau khối DiT cuối, <b>action decoder</b> chỉ đọc <b>16 token cuối</b> (bỏ token trạng thái) để ra 16 vector vận tốc. Mức nhiễu τ đi vào mạng ở hai chỗ: action encoder (mã hóa τ cùng hành động nhiễu) và AdaLN trong từng khối DiT.</p>
+
+<div class="co link"><b class="t">So sánh cách "nối" VLM với action expert</b>
+Phần Related Work của paper nói π0 dùng một kiến trúc kiểu <i>mixture-of-experts</i> để nối VLM và action expert, còn GR00T chọn <b>cross-attention đơn giản</b> vì linh hoạt: thay VLM khác hay đổi DiT khác đều dễ. Lưu ý chữ "mixture-of-experts" ở π0 nghĩa là <i>tách trọng số theo loại token</i> (token ảnh-chữ đi qua trọng số của VLM, token hành động đi qua trọng số của expert, nhưng cùng chung attention). Nó khác MoE "có router chọn chuyên gia" thay cho lớp FFN mà bạn sẽ gặp ở LingBot-VLA 2.0. Ghi nhớ sự khác biệt này để khỏi nhầm khi đọc paper MoE.</div>
+
+<div class="tw"><table class="t">
+<tr><th>Điểm so sánh</th><th>GR00T N1</th><th>π0</th><th>Qwen-VLA (paper sau)</th></tr>
+<tr><td>VLM</td><td>Eagle-2 (SigLIP-2 + SmolLM2), 1,34B</td><td>PaliGemma ~3B</td><td>Qwen3.5-4B</td></tr>
+<tr><td>Action expert</td><td>DiT, cross-attn xen self-attn</td><td>Expert dùng chung attention với VLM, trọng số tách riêng</td><td>DiT 1,15B, nối hidden states của VLM với hành động nhiễu rồi self-attention chung</td></tr>
+<tr><td>Lấy đặc trưng VLM ở</td><td>Lớp 12 (lớp giữa)</td><td>Mọi lớp (chung attention)</td><td>Hidden states của VLM</td></tr>
+<tr><td>Xử lý nhiều loại robot</td><td>MLP encoder/decoder riêng mỗi embodiment</td><td>Đệm 0 tới số chiều lớn nhất</td><td>Câu prompt mô tả robot + đệm 0 + mask</td></tr>
+<tr><td>Chunk H / số bước suy luận</td><td>16 / K = 4</td><td>50 / 10</td><td>16 / vài bước Euler</td></tr>
+</table></div>
+<p style="font-size:.85rem;color:var(--muted)">Cột π0 lấy theo paper π0 (không phải từ GR00T N1); nên kiểm tra lại khi đọc π0.</p>
+
+<!-- 4.4 -->
+<h3 id="chunk">4.4 Action chunk</h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Hành động xử lý theo chunk như Zhao et al. (2023, paper ACT): tại thời điểm t mô hình dùng \(A_t = [a_t, a_{t+1}, \dots, a_{t+H-1}]\), với <i>H = 16</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Thay vì mỗi lần chỉ trả lời "bước tiếp theo làm gì", mô hình vẽ luôn kế hoạch cho 16 bước tới. \(a_t\) là một vector (ví dụ 7 số: 3 vị trí, 3 xoay, 1 kẹp), nên \(A_t\) là một ma trận 16 × D.</div></div>
+
+<p><b>Vì sao chunk có lợi?</b></p>
+<ul>
+<li><b>Mượt:</b> 16 bước được sinh cùng lúc, bàn bạc với nhau qua self-attention, nên ít giật cục hơn đoán từng bước rời.</li>
+<li><b>Rẻ:</b> gọi mô hình nặng một lần, dùng được nhiều bước điều khiển.</li>
+<li><b>Ổn định khi bắt chước:</b> người thu demo hay dừng, lưỡng lự. Dự đoán cả đoạn giúp mô hình ít bị kẹt ở các khoảnh khắc mơ hồ đó (lập luận gốc của paper ACT).</li>
+</ul>
+<p><b>Cái giá:</b> trong lúc chạy hết chunk, robot "ít nhìn lại" thế giới; và trong lúc mô hình đang tính chunk mới, robot vẫn phải tiếp tục cử động. Đây chính là bài toán của RTC.</p>
+
+<div class="widget">
+<h4>Một chunk kéo dài bao lâu, và bao nhiêu bước trôi qua khi đang tính?</h4>
+<div class="ctrl">
+  <span>Tần số điều khiển: <b id="hzV">20</b> Hz</span><input type="range" id="hz" min="5" max="120" step="1" value="20">
+  <button class="b o" type="button" data-hz="20">20 Hz (dữ liệu teleop GR-1)</button>
+  <button class="b o" type="button" data-hz="120">120 Hz (con số paper nêu)</button>
+</div>
+<div class="ctrl">
+  <span>H = <b id="hV">16</b></span><input type="range" id="hh" min="4" max="32" step="1" value="16">
+  <span>Thời gian suy luận: <input type="number" id="ms" value="63.9" step="0.1" min="1" style="width:80px;font:inherit"> ms</span>
+</div>
+<div class="cells" id="cells"></div>
+<div class="out" id="chunkOut"></div>
+</div>
+<div class="co warn"><b class="t">Một câu hỏi mở để hỏi mentor</b>
+Paper nói System 1 sinh hành động ở 120 Hz, nhưng dữ liệu teleop GR-1 thu ở 20 Hz (Sec 3.1) và Bảng 7 ghi FPS của từng dataset từ 3 đến 30. Paper không giải thích rõ 120 Hz được tính thế nào (thời gian giữa các bước trong một chunk là bao nhiêu). Khi vào codebase, hãy tìm xem mỗi embodiment cấu hình tần số và horizon ra sao.</div>
+
+<!-- 4.5 -->
+<h3 id="flow">4.5 Flow matching: nặn hành động từ nhiễu</h3>
+
+<h4>Bước 1. Vì sao không đoán thẳng bằng hồi quy MSE?</h4>
+<p>Giả sử tay robot cần đi vòng qua một cái bình để tới đích, và trong dữ liệu có người vòng bên trái, có người vòng bên phải. Nếu dạy mô hình bằng MSE (bình phương sai số), câu trả lời "tốt nhất" về mặt toán là <b>trung bình hai cách</b>: đi thẳng vào giữa, đâm vào bình. Phân phối hành động có nhiều đỉnh (multimodal), nên cần một mô hình <b>sinh</b>: mỗi lần lấy mẫu, nó chọn hẳn một cách đúng. Widget ở bước 4 cho bạn tận mắt thấy điều này.</p>
+
+<h4>Bước 2. Lúc huấn luyện: trộn nhiễu rồi dạy đoán vận tốc</h4>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Với chunk thật \(A_t\), mức τ ∈ [0, 1] và nhiễu \(\epsilon \sim \mathcal N(0, I)\), chunk nhiễu là \(A_t^\tau = \tau A_t + (1-\tau)\epsilon\). Mô hình học bằng loss (1).</div>
+<div class="n"><span class="lab">Nghĩa là</span>Nối nhiễu và hành động thật bằng một <b>đường thẳng</b>. τ là "đã đi được bao nhiêu phần đường": τ = 0 đứng ở nhiễu, τ = 1 tới hành động thật. Mạng được hỏi: "đang đứng ở điểm này, nên đi theo hướng nào, nhanh bao nhiêu?"</div></div>
+
+\[ A_t^\tau = \tau\,A_t + (1-\tau)\,\epsilon, \qquad \epsilon \sim \mathcal{N}(0, I) \]
+\[ \mathcal{L}_{fm}(\theta) = \mathbb{E}_\tau\Big[\big\|\, V_\theta(\varphi_t, A_t^\tau, q_t) - (\epsilon - A_t) \,\big\|^2\Big] \qquad (1) \]
+
+<div class="tw"><table class="t">
+<tr><th>Ký hiệu</th><th>Là gì</th><th>Shape / giá trị</th></tr>
+<tr><td>\(A_t\)</td><td>Chunk hành động thật (từ dữ liệu)</td><td>16 × D</td></tr>
+<tr><td>\(\epsilon\)</td><td>Nhiễu Gaussian chuẩn, cùng shape với \(A_t\)</td><td>16 × D</td></tr>
+<tr><td>\(\tau\)</td><td>Mức "sạch": 0 = nhiễu thuần, 1 = sạch</td><td>một số trong [0, 1]</td></tr>
+<tr><td>\(A_t^\tau\)</td><td>Chunk đã trộn nhiễu, là đầu vào của DiT</td><td>16 × D</td></tr>
+<tr><td>\(\varphi_t\)</td><td>Token ảnh + chữ lấy từ lớp 12 của VLM</td><td>(số token) × d<sub>VLM</sub></td></tr>
+<tr><td>\(q_t\)</td><td>Trạng thái robot hiện tại</td><td>D<sub>s</sub></td></tr>
+<tr><td>\(V_\theta\)</td><td>Toàn bộ action expert (encoder + DiT + decoder) đoán vận tốc</td><td>đầu ra 16 × D</td></tr>
+<tr><td>\(\mathbb{E}_\tau[\cdot]\)</td><td>Lấy trung bình qua nhiều τ ngẫu nhiên (và nhiều mẫu, nhiều nhiễu)</td><td>—</td></tr>
+</table></div>
+
+<p><b>Ví dụ số với một con số duy nhất.</b> Giả sử một chiều hành động (đã chuẩn hóa) có giá trị thật a = 0,6, nhiễu bốc được ε = −1,2, và τ = 0,25:</p>
+\[ A^{0.25} = 0.25 \times 0.6 + 0.75 \times (-1.2) = 0.15 - 0.9 = -0.75 \]
+<p>Theo đường thẳng, vận tốc từ nhiễu về hành động thật là a − ε = 0,6 − (−1,2) = <b>1,8</b> (không đổi trên cả đoạn). Mạng được dạy đoán ra con số này.</p>
+
+<div class="co crit"><b class="t">Chú ý dấu: paper ghi ε − A, nhưng phép toán cần A − ε</b>
+Nếu \(A^\tau = \tau A + (1-\tau)\epsilon\) thì đạo hàm theo τ là \(A - \epsilon\). Và bước Euler bên dưới <i>cộng</i> vận tốc để đi từ τ = 0 (nhiễu) tới τ = 1 (sạch), nên \(V_\theta\) phải xấp xỉ \(A - \epsilon\) thì mới đúng hướng. Paper viết mục tiêu là \(\epsilon - A_t\) — nhiều khả năng là lỗi ký hiệu, vì cách viết y hệt xuất hiện trong paper π0 mà GR00T dẫn theo ("As in Black et al."). Khi vào codebase Isaac-GR00T, hãy tự tìm dòng tính <code>velocity</code> trong action head để xác nhận (theo những gì mình biết là <code>actions − noise</code>, nhưng bạn nên tự kiểm tra). Đây là một câu hỏi hay để mang lên buổi trình bày.</div>
+
+<div class="widget">
+<h4>Huấn luyện: kéo τ để xem chunk bị trộn nhiễu</h4>
+<p style="margin:0 0 6px;font-size:.92rem">Đường chấm mờ là chunk thật (16 điểm, mỗi điểm là vị trí tay (x, y)). Đường xanh là \(A_t^\tau\). Mũi tên cam là <b>vận tốc mục tiêu</b> \(A_t - \epsilon\) mà mạng phải đoán tại mỗi điểm.</p>
+<div class="ctrl">
+  <span>τ = <b id="tauV">0.25</b></span><input type="range" id="tau" min="0" max="1" step="0.01" value="0.25">
+  <label><input type="radio" name="tm" value="0" checked> chunk vòng trái</label>
+  <label><input type="radio" name="tm" value="1"> chunk vòng phải</label>
+  <button class="b o" type="button" id="tNoise">Bốc nhiễu khác</button>
+</div>
+<svg class="svgbox" viewBox="0 0 600 420" id="trainSvg" style="max-width:600px;margin:auto"></svg>
+<div class="out" id="trainOut"></div>
+</div>
+
+<h4>Bước 3. Chọn τ nào để học nhiều? Phân phối p(τ)</h4>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Như Black et al. (π0): \(p(\tau) = \mathrm{Beta}\big(\tfrac{s-\tau}{s};\, 1.5,\, 1\big)\), với s = 0,999.</div>
+<div class="n"><span class="lab">Nghĩa là</span>τ không được bốc đều. Đổi biến \(u = (s-\tau)/s\), rồi bốc u theo Beta(1,5; 1), mật độ tỉ lệ với \(\sqrt{u}\). u lớn ↔ τ nhỏ ↔ nhiều nhiễu. Vậy mô hình <b>được luyện nhiều hơn ở các mức nhiều nhiễu</b>, nơi việc đoán đúng hướng phụ thuộc nhiều nhất vào ảnh và câu lệnh. Còn s = 0,999 khiến τ không bao giờ chạm đúng 1 (đoạn quá gần "sạch" gần như bị bỏ qua vì quá dễ).</div></div>
+\[ p(\tau) = \frac{1.5}{s}\left(\frac{s-\tau}{s}\right)^{0.5}, \qquad 0 \le \tau \le s \]
+<svg class="svgbox" viewBox="0 0 620 230" id="betaSvg" style="max-width:620px;margin:auto"></svg>
+<p class="out" id="betaOut" style="text-align:center"></p>
+<div class="co link"><b class="t">Đọc trước cho Qwen-VLA</b>
+Qwen-VLA dùng quy ước <b>ngược lại</b>: τ = 0 là sạch, τ = 1 là nhiễu, công thức \(Y_\tau = (1-\tau)Y_0 + \tau Y_1\), và suy luận đi từ τ = 1 về 0. Cùng một ý tưởng, chỉ đảo nhãn. Đừng để chuyện này làm bạn rối khi so hai paper.</div>
+
+<h4>Bước 4. Lúc suy luận: đi K = 4 bước Euler từ nhiễu</h4>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Bốc \(A_t^0 \sim \mathcal N(0, I)\), rồi dùng <i>forward Euler integration</i>: \(A_t^{\tau + 1/K} = A_t^\tau + \tfrac{1}{K} V_\theta(\varphi_t, A_t^\tau, q_t)\). K = 4 dùng tốt cho mọi embodiment.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Xuất phát từ một chunk toàn nhiễu. Hỏi mạng "đi hướng nào", bước một đoạn 1/4, hỏi lại, bước tiếp… sau 4 lần là tới τ = 1, ra chunk hành động. VLM chỉ chạy <b>một lần</b> cho mỗi chunk (\(\varphi_t\) dùng lại cho cả 4 bước); chỉ DiT chạy 4 lần.</div></div>
+<p><b>Ví dụ số tiếp nối:</b> bắt đầu ở ε = −1,2, vận tốc đúng là 1,8, mỗi bước cộng 1,8/4 = 0,45:
+−1,2 → −0,75 → −0,3 → 0,15 → <b>0,6</b>. Để ý điểm sau bước 1 là −0,75, đúng bằng \(A^{0.25}\) đã tính ở bước 2.</p>
+<p>Ví dụ trên quá "đẹp" vì chỉ có một đáp án. Khi có nhiều đáp án (trái/phải), vận tốc mà mạng học được là <i>trung bình có trọng số</i> của các hướng, và trọng số thay đổi theo vị trí hiện tại. Lúc đó số bước K mới thật sự quan trọng:</p>
+
+<div class="widget">
+<h4>Suy luận: vòng trái, vòng phải, hay đâm thẳng vào bình?</h4>
+<p style="margin:0 0 6px;font-size:.92rem">Dữ liệu chỉ có 2 chunk mẫu: vòng trái và vòng phải quanh cái bình (hình tròn). Widget dùng <b>vận tốc lý tưởng</b> tính đúng công thức cho 2 chunk này (không phải mạng thật) rồi chạy K bước Euler từ nhiễu. Đường đỏ đứt nét là "đáp án trung bình" mà hồi quy MSE sẽ học.</p>
+<div class="ctrl">
+  <span>K = <b id="kV">4</b> bước</span><input type="range" id="kk" min="1" max="10" step="1" value="4">
+  <button class="b" type="button" id="fNoise">Lấy mẫu mới</button>
+  <button class="b o" type="button" id="fMany">Chạy 200 lần và đếm</button>
+  <label><input type="checkbox" id="fInter" checked> hiện các bước trung gian</label>
+</div>
+<svg class="svgbox" viewBox="0 0 600 480" id="flowSvg" style="max-width:600px;margin:auto"></svg>
+<div class="out" id="flowOut"></div>
+</div>
+<div class="co note"><b class="t">Điều widget cho thấy</b>
+Với <b>K = 1</b>, kết quả luôn là đường trung bình đâm thẳng vào bình: bước đầu tiên ở τ = 0 chưa có thông tin gì để chọn bên, nên mạng chỉ biết hướng về "trung bình". Với <b>K ≥ 2</b>, sau bước đầu điểm hiện tại đã lệch nhẹ về một phía (do nhiễu ngẫu nhiên), mạng "cam kết" với phía đó, và kết quả là một quỹ đạo hợp lệ, khoảng một nửa số lần mỗi bên. Đây là lý do paper chọn vài bước (K = 4) chứ không phải 1: đủ để chọn đúng một cách làm, mà vẫn đủ nhanh cho điều khiển thời gian thực.</div>
+
+<!-- 4.6 -->
+<h3 id="run">4.6 Ghép lại: một bước huấn luyện và một lần suy luận</h3>
+<p>Code giả kiểu PyTorch, chỉ để thấy luồng dữ liệu và shape. <code>emb</code> là tên embodiment (ví dụ "gr1", "franka", "lapa"). Không phải code thật của NVIDIA.</p>
+<pre><code># ===== Một bước huấn luyện (giản lược) =====
+phi   = vlm(images, text, take_layer=12)       # [B, n_vl, d_vlm]  64 token/ảnh + token chữ; LLM đóng băng
+A     = batch["actions"]                        # [B, 16, D_a]      chunk thật, D_a tùy robot
+q     = batch["state"]                          # [B, D_s]
+eps   = torch.randn_like(A)                     # nhiễu cùng shape
+tau   = sample_tau(B)                           # p(τ) = Beta((s-τ)/s; 1.5, 1), s = 0.999
+A_tau = tau[:, None, None] * A + (1 - tau[:, None, None]) * eps
+
+s_tok = state_enc[emb](q)[:, None]              # [B, 1, d]   MLP riêng robot
+a_tok = action_enc[emb](A_tau, tau)             # [B, 16, d]  MLP riêng robot, mã hóa cả τ
+x     = torch.cat([s_tok, a_tok], dim=1)        # [B, 17, d]
+for blk in dit_blocks:                          # xen kẽ: cross-attn (nhìn phi) / self-attn (nhìn nhau)
+    x = blk(x, context=phi, t=tau)              # τ vào qua AdaLN
+v     = action_dec[emb](x[:, -16:])             # [B, 16, D_a]  chỉ lấy 16 token cuối
+loss  = ((v - (A - eps)) ** 2).mean()           # mục tiêu vận tốc A − ε (xem ghi chú dấu)
+
+# ===== Suy luận một chunk =====
+phi = vlm(images, text, take_layer=12)          # VLM chạy 1 lần
+A   = torch.randn(B, 16, D_a)                   # bắt đầu từ nhiễu (τ = 0)
+K   = 4
+for k in range(K):
+    A = A + (1 / K) * action_expert(phi, A, q, tau=k / K, emb=emb)   # DiT chạy K lần
+robot.execute(A)                                # 16 hành động</code></pre>
+<div class="co note"><b class="t">Mẹo phụ: loss phát hiện vật thể (Phụ lục F)</b>
+Paper còn thêm một loss phụ để VLM hiểu không gian tốt hơn: dùng bộ phát hiện OWL-v2 tìm khung bao vật thể được nhắc trong câu lệnh, lấy tâm khung (chia cho chiều rộng/cao ảnh), rồi bắt một lớp tuyến tính trên token VLM đoán tọa độ đó. \(L_{det} = \|x_{pred} - x_{gt}\|^2\), và loss tổng \(L = L_{fm} + L_{det}\). Phần chính của paper không nhắc mẹo này, chỉ có trong phụ lục.</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="sec" id="data">
+<h2>5. Dữ liệu: kim tự tháp (Section 2.2, 3, Bảng 1, 7)</h2>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Đi từ đáy lên đỉnh kim tự tháp: <i>data quantity decreases, and embodiment-specificity increases</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Đáy: rất nhiều, nhưng "xa" robot (video người, dữ liệu web đã dùng để huấn luyện VLM). Giữa: dữ liệu tổng hợp (mô phỏng + video do AI sinh). Đỉnh: ít nhưng "chuẩn" nhất, dữ liệu robot thật. Tầng dưới cho hiểu biết chung về thế giới và chuyển động; tầng trên neo mô hình vào việc điều khiển robot thật.</div></div>
+
+<h3>Bảng 7: bao nhiêu giờ dữ liệu pre-training?</h3>
+<div class="stat">
+  <div><div class="v">3.288,8 h</div><div class="k">robot thật (~39%)</div></div>
+  <div><div class="v">2.517,0 h</div><div class="k">video người (~30%)</div></div>
+  <div><div class="v">1.742,6 h</div><div class="k">mô phỏng (~21%)</div></div>
+  <div><div class="v">827,3 h</div><div class="k">video do AI sinh (~10%)</div></div>
+  <div><div class="v">8.375,7 h</div><div class="k">tổng (592,9 triệu khung hình)</div></div>
+</div>
+<p style="font-size:.85rem;color:var(--muted)">Phần trăm tự tính từ cột giờ của Bảng 7.</p>
+<div class="leg" id="dataLeg"></div>
+<div class="bars" id="dataBars"></div>
+
+<h3>Mỗi tầng lấy nhãn hành động từ đâu?</h3>
+<p>Mấu chốt của co-training: mọi mẫu phải có dạng <i>(state, ảnh, câu lệnh) → hành động</i>. Nhưng chỉ dữ liệu robot có hành động thật. Paper "vá" bằng hai loại nhãn giả:</p>
+<div class="tw"><table class="t">
+<tr><th>Nguồn dữ liệu</th><th>Hành động thật</th><th>Latent action (LAPA)</th><th>IDM</th></tr>
+<tr><td>Robot thật (GR-1 teleop, Open X-Embodiment, AgiBot)</td><td>✓</td><td>✓</td><td></td></tr>
+<tr><td>Mô phỏng (DexMimicGen)</td><td>✓</td><td></td><td></td></tr>
+<tr><td>Video do AI sinh (neural trajectories)</td><td></td><td>✓</td><td>✓</td></tr>
+<tr><td>Video người (Ego4D…)</td><td></td><td>✓</td><td></td></tr>
+</table></div>
+<p style="font-size:.85rem;color:var(--muted)">Tổng hợp từ Section 2.3 (đoạn Pre-training). Bảng 1 trong paper nói về chiến lược sinh dữ liệu nào áp dụng cho nguồn nào, hơi khác bảng này.</p>
+
+<h3>5.1 Latent action: gán "hành động ẩn" cho video</h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Huấn luyện một VQ-VAE: encoder nhận khung hiện tại \(x_t\) và khung tương lai \(x_{t+H}\), xuất latent action \(z_t\); decoder nhận \(z_t\) và \(x_t\) để dựng lại \(x_{t+H}\).</div>
+<div class="n"><span class="lab">Nghĩa là</span>Một trò chơi "nén chuyển động". Encoder phải tóm tắt "chuyện gì đã xảy ra giữa hai khung hình" vào một vector nhỏ \(z_t\), đủ để decoder vẽ lại khung sau khi chỉ biết khung trước. Vector đó chính là một mô tả hành động, dù không phải lệnh khớp thật.</div></div>
+<ol class="steps">
+<li>Huấn luyện VQ-VAE trên <b>tất cả</b> video (robot lẫn người), để mọi nguồn chia sẻ cùng một "không gian hành động ẩn".</li>
+<li>Sau khi huấn luyện, chỉ giữ encoder, dùng như một mô hình động học ngược (inverse dynamics).</li>
+<li>Lấy vector <b>liên tục trước khi lượng tử hóa</b> (pre-quantized) làm nhãn, và huấn luyện GR00T bằng chính loss flow matching (1), coi như một embodiment tên "LAPA".</li>
+</ol>
+<p>Hình 4 của paper cho thấy cùng một latent action ứng với "đưa tay phải sang trái" trên 8 embodiment khác nhau, kể cả tay người. Đây là bằng chứng (định tính) rằng không gian ẩn này có ý nghĩa chung.</p>
+
+<h3>5.2 Neural trajectories: video robot do AI "mơ" ra</h3>
+<ul>
+<li>Fine-tune mô hình sinh video từ ảnh (WAN2.1-I2V-14B, dùng LoRA) trên <b>88 giờ</b> teleop của GR-1. Phần Sec 3.2 ghi chi tiết: 100 epoch, 3.000 mẫu, video 480P, 81 khung hình.</li>
+<li>Từ khung hình đầu có sẵn, cho câu lệnh mới ("dùng tay trái", "đặt vào bát be"…) để sinh video robot làm việc khác. Một LLM đa phương thức thương mại đề xuất các tổ hợp "pick up {vật} from {A} to {B}" hợp lý về mặt vật lý.</li>
+<li>Lọc: đưa 8 khung hình cho LLM đa phương thức làm "giám khảo", loại video không làm đúng câu lệnh, rồi chú thích lại.</li>
+<li>Kết quả: <b>827 giờ</b>, khoảng <b>10×</b> dữ liệu gốc, tương đương khoảng 300 nghìn quỹ đạo. Chi phí: 2 phút GPU L40 cho 1 giây video, tổng ~105 nghìn giờ GPU L40 (chạy ~1,5 ngày trên 3.600 GPU).</li>
+<li>Video không có nhãn, nên gán latent action và nhãn IDM. IDM ở đây chính là kiến trúc DiT của System 1 + đặc trưng SigLIP-2, nhận 2 ảnh và sinh chunk hành động giữa chúng bằng flow matching.</li>
+</ul>
+<div class="co note"><b class="t">Trực giác</b>
+Mô hình video đã xem hàng triệu video Internet, nên biết nước đổ ra sao, cửa tủ mở thế nào. Đây là những thứ rất khó mô phỏng bằng engine vật lý. Neural trajectories là cách "mượn" hiểu biết đó để tạo thêm tình huống phản thực tế (counterfactual) mà không cần người teleop thêm.</div>
+
+<h3>5.3 Simulation trajectories: DexMimicGen</h3>
+<ol class="steps">
+<li>Thu vài chục demo người bằng Leap Motion (theo dõi cổ tay 6-DoF và ngón tay), retarget sang robot GR-1 qua bộ điều khiển IK toàn thân.</li>
+<li>Cắt mỗi demo thành các đoạn con xoay quanh một vật (object-centric subtasks).</li>
+<li>Ở môi trường mới, dịch chuyển mỗi đoạn theo vị trí vật mới, giữ nguyên tư thế tương đối giữa tay và vật, nội suy cho mượt rồi chạy thử.</li>
+<li>Chỉ giữ các demo thành công.</li>
+</ol>
+<p>Pre-training: 54 tổ hợp (vật chứa nguồn, vật chứa đích) × 10.000 demo = <b>540 nghìn demo</b>, dựng trong khung <b>RoboCasa</b>. Tính cả dữ liệu cho post-training: <b>780 nghìn quỹ đạo</b>, tương đương 6.500 giờ (9 tháng liên tục) demo người, sinh trong <b>11 giờ</b>.</p>
+
+<h3>5.4 Robot thật và video người</h3>
+<ul>
+<li><b>GR-1 teleop nội bộ</b> (88,4 h): tracker VIVE cho cổ tay, găng Xsens cho ngón, 20 Hz, camera đầu. Có chú thích hai cấp: hành động nguyên tử (nắm, di chuyển, đặt) và tác vụ cấp cao.</li>
+<li><b>Open X-Embodiment</b>: các tập RT-1, Bridge-v2, Language Table, DROID, MUTEX, RoboSet, Plex.</li>
+<li><b>AgiBot-Alpha</b>: 140 nghìn quỹ đạo từ 100 robot (tập lớn nhất: 1.979 giờ).</li>
+<li><b>Video người</b> (7 tập): Ego4D, Ego-Exo4D, Assembly-101, EPIC-KITCHENS, HOI4D, HoloAssist, RH20T-Human.</li>
+</ul>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="sec" id="train">
+<h2>6. Huấn luyện (Section 2.3, Bảng 6)</h2>
+<div class="two">
+<div class="co note" style="margin:0"><b class="t">Pre-training</b>
+Dữ liệu: cả kim tự tháp, trộn trong batch. Loss: flow matching (1) với hành động thật hoặc nhãn giả. Batch 16.384, 200.000 bước. Hạ tầng: tới 1.024 GPU H100; GR00T-N1-2B tốn khoảng 50.000 giờ GPU H100.</div>
+<div class="co" style="margin:0;background:var(--accent-soft);border-color:transparent"><b class="t">Post-training</b>
+Fine-tune trên dữ liệu của <b>một</b> embodiment. Vẫn đóng băng phần ngôn ngữ. Batch 128 hoặc 1.024, 20.000–60.000 bước. Batch nhỏ hơn để tránh overfit khi ít dữ liệu. Có thể trộn 1:1 với neural trajectories.</div>
+</div>
+
+<h3>Siêu tham số chung (Bảng 6)</h3>
+<div class="tw"><table class="t">
+<tr><th>Tham số</th><th>Pre-training</th><th>Post-training</th></tr>
+<tr><td>Learning rate</td><td colspan="2">1e-4, scheduler cosine, warmup 5%</td></tr>
+<tr><td>Optimizer</td><td colspan="2">AdamW (β1 = 0,95; β2 = 0,999; ε = 1e-8), weight decay 1e-5</td></tr>
+<tr><td>Batch size</td><td>16.384</td><td>128 hoặc 1.024</td></tr>
+<tr><td>Số bước gradient</td><td>200.000</td><td>20.000 – 60.000</td></tr>
+<tr><td>Vision encoder</td><td colspan="2">được huấn luyện</td></tr>
+<tr><td>Text tokenizer / LLM</td><td colspan="2">đóng băng</td></tr>
+<tr><td>DiT (và encoder/decoder)</td><td colspan="2">được huấn luyện</td></tr>
+</table></div>
+
+<div class="co link"><b class="t">Fine-tune trên GPU nhỏ</b>
+Paper thử trên một GPU A6000: nếu chỉ tinh chỉnh adapter (state/action encoder, action decoder) và DiT, batch lên tới 200; nếu tinh chỉnh cả vision encoder, batch chỉ tới 16. Đây là thông tin thực dụng khi bạn bắt đầu chạy codebase.</div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Khi post-train với neural trajectories, video model chỉ được fine-tune trên dữ liệu ít ỏi (dữ liệu người thu cho sim, 10% dữ liệu thật), để mô phỏng tình huống thực tế khi chỉ có ít teleop.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Họ cố tránh "gian lận": nếu video model được học trên toàn bộ dữ liệu thật thì việc nó giúp policy chẳng chứng minh được gì. Thiết lập này kiểm tra câu hỏi thật: <i>có ít demo, sinh thêm video có giúp không?</i></div></div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="sec" id="robocasa">
+<h2>7. RoboCasa và các benchmark (Section 4.1–4.3)</h2>
+
+<h3>7.1 RoboCasa là gì?</h3>
+<p><b>RoboCasa</b> (Nasiriany et al., RSS 2024) là một bộ mô phỏng các căn bếp gia đình quy mô lớn, xây trên robosuite/MuJoCo, với rất nhiều bố cục bếp, phong cách nội thất và mô hình 3D đồ vật. Mục tiêu: tạo một "sân tập" đủ đa dạng để huấn luyện và đánh giá robot tổng quát. Tác vụ chia hai loại: <b>atomic</b> (kỹ năng cơ bản, một thao tác) và <b>composite</b> (chuỗi nhiều kỹ năng). GR00T N1 chỉ dùng <b>24 tác vụ atomic</b>.</p>
+
+<div class="co warn"><b class="t">RoboCasa xuất hiện ở hai vai trò khác nhau trong paper này. Đừng lẫn!</b>
+<b>Vai trò 1 — benchmark "RoboCasa Kitchen":</b> 24 tác vụ atomic với tay robot <b>Franka Panda</b> một tay. Dùng để đánh giá post-training (Bảng 2, 4).<br>
+<b>Vai trò 2 — khung dựng tác vụ:</b> dữ liệu mô phỏng pre-training cho robot <b>GR-1</b> ("rearrange A from B to C", 54 tổ hợp) được xây <i>trong khung RoboCasa</i>, và benchmark "GR-1 Tabletop" (24 tác vụ) cũng cùng kiểu. Các paper sau (như Qwen-VLA) gọi bộ tác vụ GR-1 này là "RoboCasa-GR1"; nên kiểm tra kỹ khi gặp tên đó, vì nó khác RoboCasa Kitchen với tay Franka.</div>
+
+<h3>7.2 RoboCasa Kitchen trong GR00T N1</h3>
+<div class="tw"><table class="t">
+<tr><th>Thành phần</th><th>Cụ thể</th><th>Giải thích cho người mới</th></tr>
+<tr><td>Robot</td><td>Franka Emika Panda (một tay, kẹp hai ngón)</td><td>Tay robot công nghiệp phổ biến nhất trong nghiên cứu</td></tr>
+<tr><td>Quan sát</td><td>3 ảnh RGB: camera trái, phải, cổ tay</td><td>Camera cổ tay nhìn cận cảnh lúc gắp; hai camera bên nhìn toàn cảnh</td></tr>
+<tr><td>State</td><td>Vị trí + xoay của đầu tay và của <i>đế robot</i>, trạng thái kẹp</td><td>Đế robot có thể di chuyển trong bếp</td></tr>
+<tr><td>Action</td><td>Vị trí + xoay <b>tương đối</b> của đầu tay, trạng thái kẹp</td><td>"Dịch thêm Δ" chứ không phải "đi tới tọa độ X". Suy ra khoảng 7 chiều (3 + 3 axis-angle + 1); paper không ghi con số</td></tr>
+<tr><td>Dữ liệu</td><td>3.000 demo mỗi tác vụ, sinh bằng MimicGen; post-train với 30 / 100 / 300 demo</td><td>Cố tình dùng ít demo để đo khả năng học nhanh</td></tr>
+<tr><td>Chấm điểm</td><td>Success rate trung bình trên 100 lần thử; lấy <b>điểm cao nhất của 5 checkpoint cuối</b> (lưu mỗi 500 bước)</td><td>Theo đúng giao thức của paper RoboCasa</td></tr>
+</table></div>
+
+<h4>24 tác vụ atomic, chia theo kỹ năng</h4>
+<ul>
+<li><b>Cửa tủ</b> (4): đóng/mở cửa đơn, cửa đôi.</li>
+<li><b>Ngăn kéo</b> (2): đóng/mở.</li>
+<li><b>Máy pha cà phê</b> (3): bấm nút, đặt cốc vào máy, lấy cốc ra phục vụ.</li>
+<li><b>Gắp và đặt</b> (8): giữa mặt bếp và tủ, lò vi sóng, bồn rửa, bếp nấu (hai chiều).</li>
+<li><b>Lò vi sóng</b> (2): bấm bật/tắt.</li>
+<li><b>Bồn rửa</b> (3): bật/tắt vòi, xoay vòi.</li>
+<li><b>Bếp nấu</b> (2): vặn núm bật/tắt.</li>
+</ul>
+
+<div class="widget">
+<h4>Khám phá Bảng 4: GR00T N1 vs Diffusion Policy trên từng tác vụ RoboCasa</h4>
+<div class="ctrl">
+  <span>Số demo mỗi tác vụ:</span>
+  <button class="b on" type="button" data-n="0">30</button>
+  <button class="b" type="button" data-n="1">100</button>
+  <button class="b" type="button" data-n="2">300</button>
+  <span style="margin-left:10px">Sắp xếp:</span>
+  <select id="rcSort" style="font:inherit;padding:3px 6px"><option value="paper">theo thứ tự paper</option><option value="gap">theo chênh lệch (GR00T − DP)</option><option value="gr">theo điểm GR00T</option></select>
+</div>
+<div class="leg"><span><i style="background:var(--grey)"></i>Diffusion Policy</span><span><i style="background:var(--pri)"></i>GR00T-N1-2B</span></div>
+<div class="out" id="rcSum"></div>
+<div class="bars" id="rcBars" style="margin-top:10px"></div>
+</div>
+<div class="co note"><b class="t">Ba điều nên tự rút ra khi bấm thử</b>
+(1) Các tác vụ <b>gắp-đặt</b> khó nhất: gần 0% ở 30–100 demo với cả hai mô hình. Lý do: phải nắm chính xác nhiều loại đồ vật khác nhau, rồi đặt vào chỗ hẹp.<br>
+(2) Ở <b>30 demo</b>, GR00T chỉ thắng 8/24 tác vụ, thua 10, hòa 6, nhưng trung bình vẫn cao hơn (17,4% so với 14,7%) nhờ thắng đậm vài tác vụ. "Thắng trung bình" khác "thắng ở mọi tác vụ".<br>
+(3) Khoảng cách rõ nhất ở <b>100 demo</b>. Ví dụ "Turn Sink Spout": 42,2% so với 11,8% (paper nêu ở Sec 4.5).</div>
+
+<h3>7.3 Hai benchmark mô phỏng còn lại</h3>
+<div class="tw"><table class="t">
+<tr><th>Benchmark</th><th>Robot</th><th>Tác vụ</th><th>Dữ liệu</th></tr>
+<tr><td><b>DexMimicGen Cross-Embodiment (DexMG)</b>, 9 tác vụ</td><td>3 loại: 2 tay Panda + kẹp; 2 tay Panda + bàn tay khéo; GR-1 + bàn tay khéo</td><td>Xâu kim, lắp 3 mảnh, chuyển đồ; dọn hộp, dọn ngăn kéo, nâng khay; rót, pha cà phê, phân loại lon</td><td>1.000 demo/tác vụ</td></tr>
+<tr><td><b>GR-1 Tabletop</b>, 24 tác vụ</td><td>GR-1 hình người, bàn tay Fourier</td><td>18 tác vụ sắp xếp đồ (tổ hợp vật chứa <i>chưa xuất hiện</i> trong pre-training) + 6 tác vụ cho đồ vào tủ/ngăn kéo/lò vi sóng rồi đóng lại. 1 camera trên đầu</td><td>1.000 demo/tác vụ</td></tr>
+</table></div>
+
+<h3>7.4 Benchmark robot thật (GR-1)</h3>
+<ul>
+<li><b>Pick-and-Place</b> (5 tác vụ): khay, đĩa, thớt, giỏ, tấm lót, bát, chảo; đánh giá với vật đã thấy và vật mới.</li>
+<li><b>Articulated</b> (3): cho đồ vào rương gỗ, tủ tối màu, ngăn kéo trắng rồi đóng lại.</li>
+<li><b>Industrial</b> (3): đóng gói linh kiện, đổ cốc lưới đựng ốc vít, chuyền khối trụ giữa hai tay.</li>
+<li><b>Coordination</b> (2): hai robot phối hợp, robot này chuyền cốc cho robot kia.</li>
+</ul>
+<p>Mỗi tác vụ có từ 15 phút đến 3 giờ dữ liệu, thử ở mức 10% dữ liệu và toàn bộ. Chấm <b>10 lần thử</b> mỗi tác vụ, có <b>chấm điểm từng phần</b>; riêng "Machinery Packing" chấm số món (trên 5) bỏ vào thùng trong 30 giây, chỉ 5 lần thử.</p>
+
+<h3>7.5 Baseline và thiết lập</h3>
+<ul>
+<li><b>BC-Transformer</b> (RoboMimic): Transformer + GMM, nhận 10 khung quan sát, đoán 10 hành động.</li>
+<li><b>Diffusion Policy</b>: U-Net khử nhiễu, nhận 1 khung, ra 16 hành động.</li>
+<li>Cả hai huấn luyện <b>từ đầu</b>, không có VLM, không pre-training. GR00T post-train với batch 1.024, 60.000 bước (riêng DexMG dùng batch 128).</li>
+</ul>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="sec" id="results">
+<h2>8. Kết quả (Section 4.4, 4.5)</h2>
+
+<h3>8.1 Đánh giá ngay sau pre-training (robot GR-1 thật)</h3>
+<div class="tw"><table class="t">
+<tr><th>Tác vụ</th><th>Thử thách</th><th class="num">Kết quả</th></tr>
+<tr><td>Đặt đồ lên kệ dưới, nhưng vật nằm phía tay trái</td><td>Phải gắp bằng tay trái, chuyền sang tay phải rồi đặt</td><td class="num">76,6% (11,5/15)</td></tr>
+<tr><td>Đặt vật mới vào vật chứa chưa thấy</td><td>Tổng quát hóa sang đồ vật mới</td><td class="num">73,3% (11/15)</td></tr>
+</table></div>
+<p>Mỗi tác vụ: 5 vật × 3 lần thử. Điểm 0,5 = nắm đúng vật nhưng không đặt được. Mẫu chỉ 15 lần thử mỗi tác vụ, nên đây là bằng chứng định tính nhiều hơn định lượng.</p>
+
+<h3>8.2 Mô phỏng sau post-training (Bảng 2, Hình 10)</h3>
+<div class="tw"><table class="t">
+<tr><th>Mô hình (100 demo/tác vụ)</th><th class="num">RoboCasa</th><th class="num">DexMG</th><th class="num">GR-1</th><th class="num">Trung bình</th></tr>
+<tr><td>BC Transformer</td><td class="num">26,3</td><td class="num">53,9</td><td class="num">16,1</td><td class="num">26,4</td></tr>
+<tr><td>Diffusion Policy</td><td class="num">25,6</td><td class="num">56,1</td><td class="num">32,7</td><td class="num">33,4</td></tr>
+<tr class="hl"><td>GR00T-N1-2B</td><td class="num">32,1</td><td class="num">66,5</td><td class="num">50,0</td><td class="num">45,0</td></tr>
+</table></div>
+<p>"Trung bình" là trung bình theo số tác vụ (24 + 9 + 24 = 57 tác vụ), không phải trung bình ba cột. Tự kiểm tra: (24 × 32,1 + 9 × 66,5 + 24 × 50,0) / 57 ≈ 45,0.</p>
+<div class="leg"><span><i style="background:var(--grey)"></i>Diffusion Policy</span><span><i style="background:var(--pri)"></i>GR00T-N1-2B</span></div>
+<div class="bars" id="simBars"></div>
+
+<h3>8.3 Robot thật (Bảng 3)</h3>
+<div class="tw"><table class="t">
+<tr><th>Mô hình</th><th class="num">Pick&amp;Place</th><th class="num">Articulated</th><th class="num">Industrial</th><th class="num">Coordination</th><th class="num">TB</th></tr>
+<tr><td>Diffusion Policy (10%)</td><td class="num">3,0</td><td class="num">14,3</td><td class="num">6,7</td><td class="num">27,5</td><td class="num">10,2</td></tr>
+<tr><td>Diffusion Policy (đủ)</td><td class="num">36,0</td><td class="num">38,6</td><td class="num">61,0</td><td class="num">62,5</td><td class="num">46,4</td></tr>
+<tr><td>GR00T-N1-2B (10%)</td><td class="num">35,0</td><td class="num">62,0</td><td class="num">31,0</td><td class="num">50,0</td><td class="num">42,6</td></tr>
+<tr class="hl"><td>GR00T-N1-2B (đủ)</td><td class="num">82,0</td><td class="num">70,9</td><td class="num">70,0</td><td class="num">82,5</td><td class="num">76,8</td></tr>
+</table></div>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>GR00T hơn DP 32,4 điểm ở mức 10% dữ liệu và 30,4 điểm khi đủ dữ liệu; GR00T với 10% dữ liệu chỉ kém DP đủ dữ liệu 3,8 điểm.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Thông điệp chính: <b>hiệu quả dữ liệu</b>. Pre-training cho phép đạt mức gần như DP-đủ-dữ-liệu chỉ với 1/10 công thu demo. Các con số này khớp phép trừ: 42,6 − 10,2 = 32,4; 76,8 − 46,4 = 30,4; 46,4 − 42,6 = 3,8.</div></div>
+
+<h3>8.4 Thêm neural trajectories khi post-train (Hình 9)</h3>
+<div class="tw"><table class="t">
+<tr><th>RoboCasa</th><th class="num">GR00T</th><th class="num">+ LAPA</th><th class="num">+ IDM</th><th class="num">Paper báo tăng</th></tr>
+<tr><td>30 demo</td><td class="num">17,4</td><td class="num">21,6</td><td class="num">21,2</td><td class="num">+4,2</td></tr>
+<tr><td>100 demo</td><td class="num">32,1</td><td class="num">39,5</td><td class="num">40,9</td><td class="num">+8,8</td></tr>
+<tr><td>300 demo</td><td class="num">49,6</td><td class="num">52,9</td><td class="num">56,4</td><td class="num">+6,8</td></tr>
+</table></div>
+<p>Robot thật (10% dữ liệu, 8 tác vụ Pick&amp;Place-đã-thấy + Industrial, chỉ dùng nhãn IDM): 33,78% → 39,63%, tăng khoảng +5,8. Mỗi tác vụ thêm 3.000 neural trajectories (RoboCasa) hoặc 100 (robot thật), trộn tỉ lệ 1:1.</p>
+<p><b>LAPA hay IDM?</b> Ở 30 demo LAPA nhỉnh hơn một chút; khi có nhiều dữ liệu hơn, IDM vượt lên và khoảng cách giãn ra. Trực giác của paper: IDM được huấn luyện trên chính dữ liệu robot, nên càng nhiều dữ liệu, nhãn IDM càng gần hành động thật.</p>
+
+<h3>8.5 Kết quả định tính đáng nhớ</h3>
+<div class="co crit"><b class="t">Post-training làm mất kỹ năng</b>
+Mô hình <i>pre-trained</i> biết gắp quả táo bằng tay trái rồi chuyền sang tay phải (Hình 11), dù cử động giật hơn. Mô hình <i>post-trained</i> lại thất bại ở tình huống này, vì toàn bộ dữ liệu post-training chỉ dùng tay phải. Đây là ví dụ rõ của <b>catastrophic forgetting</b> (quên khi học cái mới), và là lý do các paper sau như Qwen-VLA nhấn mạnh việc giữ khả năng tổng quát khi fine-tune.</div>
+<p>So với Diffusion Policy, chuyển động của GR00T sau post-training mượt hơn và nắm chính xác hơn; DP thường đứng yên ở các khung đầu và nắm trượt (Hình 12).</p>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="sec" id="critique">
+<h2>9. Hạn chế và phản biện</h2>
+<h3>Paper tự nhận (Section 4.6)</h3>
+<ul>
+<li>Mới tập trung vào thao tác <b>ngắn hạn trên mặt bàn</b>; chưa làm loco-manipulation (vừa đi vừa thao tác) dài hạn.</li>
+<li>VLM mạnh hơn sẽ giúp suy luận không gian và hiểu ngôn ngữ tốt hơn.</li>
+<li>Dữ liệu tổng hợp còn khó vừa đa dạng vừa tuân thủ vật lý.</li>
+</ul>
+
+<h3>Điểm nên dè dặt (tự kiểm chứng trước khi nói với mentor)</h3>
+<ol>
+<li><b>Lỗi dấu trong mục tiêu flow matching</b> (ε − A thay vì A − ε), như phân tích ở 4.5.</li>
+<li><b>Bảng 2 và Bảng 4 lệch nhau ở DexMG.</b> Bảng 2 (100 demo) ghi GR00T 66,5% và DP 56,1%; còn Bảng 4 và Hình 10 cho cùng mức 100 demo lại là 58,5% và 46,9%. Mỗi bảng tự nhất quán bên trong, nhưng paper không giải thích vì sao khác nhau (có thể khác batch size hay lần chạy).</li>
+<li><b>"Điểm cao nhất của 5 checkpoint cuối"</b> là cách chấm hơi lạc quan: chọn checkpoint tốt nhất dựa trên chính kết quả đánh giá. Áp dụng cho cả baseline nên công bằng tương đối, nhưng con số tuyệt đối bị đẩy lên.</li>
+<li><b>Cỡ mẫu robot thật nhỏ:</b> 10 lần thử mỗi tác vụ (5 lần với Machinery Packing), không có khoảng tin cậy. Chênh vài điểm ở một tác vụ đơn lẻ có thể chỉ là ngẫu nhiên; mức chênh 30 điểm ở trung bình thì đủ thuyết phục.</li>
+<li><b>Baseline yếu so với tầm vóc mô hình:</b> chỉ so với DP và BC-Transformer huấn luyện từ đầu, không so với VLA khác (π0, OpenVLA). Bảng chứng minh "pre-training có ích", chưa chứng minh "GR00T tốt hơn các VLA khác".</li>
+<li><b>Mức tăng của neural trajectories</b> được báo bằng loại nhãn tốt hơn (LAPA hoặc IDM) ở từng mức dữ liệu, tức là chọn sau khi đã thấy kết quả.</li>
+<li><b>"Generalist" nhưng đánh giá bằng specialist:</b> mỗi benchmark được post-train riêng trên một embodiment. Kết quả là của mô hình chuyên biệt khởi đầu từ nền tổng quát.</li>
+<li><b>Lợi thế "gần phân phối":</b> dữ liệu mô phỏng pre-training (54 tổ hợp, dựng trong RoboCasa với GR-1) rất giống benchmark GR-1 Tabletop, dù tổ hợp vật chứa của benchmark là mới. Một phần lợi thế lớn ở cột GR-1 (+17 điểm) có thể đến từ sự giống nhau này.</li>
+<li><b>Không phải lúc nào nhiều dữ liệu cũng tốt hơn:</b> GR-1 Tabletop ở 300 demo (49,3%) thấp hơn 100 demo (50,0%), và một số tác vụ RoboCasa/DexMG đi xuống khi tăng dữ liệu (ví dụ Box Cleanup 100 demo: 29,4% so với DP 80,8%).</li>
+<li><b>Tần số 120 Hz</b> chưa được giải thích rõ (xem 4.4).</li>
+</ol>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sec" id="links">
+<h2>10. Liên hệ sang các paper tiếp theo</h2>
+<div class="tw"><table class="t">
+<tr><th>Paper</th><th>Mối nối với GR00T N1</th><th>Câu hỏi mang theo</th></tr>
+<tr><td><b>LIBERO</b> (đã xong)</td><td>Benchmark cho học suốt đời. GR00T cho thấy "kiến thức chung" từ pre-training giúp học tác vụ mới với ít demo, đúng tinh thần chuyển giao tri thức của LIBERO</td><td>Fine-tune từng tác vụ có làm quên (như ví dụ chuyền táo) không?</td></tr>
+<tr><td><b>Qwen-VLA</b></td><td>Cùng khuôn VLM + DiT + flow matching, H = 16. Khác: VLM 4B, nối bằng joint self-attention, robot được mô tả bằng prompt thay vì MLP riêng, τ đảo quy ước, thêm giai đoạn T2A và RL</td><td>Prompt hay MLP riêng: cách nào mở rộng sang robot mới dễ hơn?</td></tr>
+<tr><td><b>RTC inference-time</b></td><td>Chunk 16 hành động mất ~64 ms để tính; trong lúc đó robot vẫn chạy. Nối chunk cũ và chunk mới thế nào cho khỏi giật? RTC giải bằng cách "tô tiếp" (inpainting) chunk mới khớp phần đầu với chunk đang chạy, dựa trên flow matching</td><td>Dùng widget 4.4: ở 20 Hz và 120 Hz, bao nhiêu bước bị "đóng băng" trong lúc tính?</td></tr>
+<tr><td><b>RTC training-time</b></td><td>Đưa ý tưởng xử lý độ trễ vào ngay lúc huấn luyện action expert</td><td>Cần sửa loss (1) ở đâu?</td></tr>
+<tr><td><b>LingBot-VLA 2.0 (MoE)</b></td><td>Thay FFN trong action expert (DiT) bằng nhiều chuyên gia + router. Khác với "mixture-of-experts" kiểu π0 mà GR00T nhắc</td><td>MLP riêng từng embodiment của GR00T có phải là một dạng "chuyên gia cứng" không?</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="sec" id="quiz">
+<h2>11. Câu hỏi tự kiểm tra</h2>
+<p>Tự trả lời bằng lời của mình trước, rồi mới bấm xem gợi ý.</p>
+<details class="q"><summary>1. System 1 và System 2 trong GR00T N1 là gì? Vì sao chia hai?</summary>System 2 = VLM Eagle-2, hiểu ảnh + câu lệnh, chậm (~10 Hz). System 1 = DiT flow matching, sinh hành động nhanh. Chia hai để phần "hiểu" tận dụng VLM pre-trained trên Internet, còn phần "làm" nhỏ, nhanh, chạy được nhiều lần (K = 4) mỗi chunk. Hai phần huấn luyện chung end-to-end.</details>
+<details class="q"><summary>2. Thông tin từ ảnh đi vào action expert bằng đường nào?</summary>Ảnh → SigLIP-2 → 64 token → LLM (12 lớp đầu) → \(\varphi_t\) → các khối <b>cross-attention</b> trong DiT. Đó là đường duy nhất.</details>
+<details class="q"><summary>3. Robot A có 7 chiều hành động, robot B có 26 chiều. Làm sao một DiT phục vụ cả hai?</summary>Mỗi robot có action encoder/decoder (và state encoder) là MLP riêng, chiếu về và ra từ cùng số chiều d của DiT. Lõi DiT dùng chung.</details>
+<details class="q"><summary>4. Với τ = 0,5, a = 1,0, ε = 0,2: \(A^\tau\) bằng bao nhiêu? Vận tốc mục tiêu bằng bao nhiêu?</summary>\(A^{0.5} = 0.5 \times 1.0 + 0.5 \times 0.2 = 0.6\). Vận tốc a − ε = 0,8 (theo phép toán; paper viết ngược dấu).</details>
+<details class="q"><summary>5. Vì sao K = 1 bước Euler cho kết quả tệ khi dữ liệu có nhiều cách làm?</summary>Ở τ = 0 điểm xuất phát là nhiễu thuần, chưa chứa thông tin chọn bên, nên vận tốc tốt nhất là hướng về trung bình các đáp án. Một bước duy nhất đưa thẳng tới trung bình, giống hồi quy MSE (đâm vào bình). Nhiều bước cho phép "cam kết" dần vào một đáp án.</details>
+<details class="q"><summary>6. p(τ) của GR00T ưu tiên mức nhiễu nào, và vì sao hợp lý?</summary>Ưu tiên τ nhỏ (nhiều nhiễu): khoảng 65% mẫu có τ &lt; 0,5. Ở mức nhiều nhiễu, hướng đi phụ thuộc mạnh vào ảnh và câu lệnh nên khó và quan trọng hơn; gần sạch thì gần như chỉ cần "đánh bóng".</details>
+<details class="q"><summary>7. Video người không có hành động. GR00T học từ chúng bằng cách nào?</summary>Huấn luyện VQ-VAE dựng lại khung tương lai từ khung hiện tại + một vector ẩn. Encoder của nó cho ra latent action giữa hai khung; dùng vector liên tục trước lượng tử hóa làm nhãn flow matching, coi như embodiment "LAPA".</details>
+<details class="q"><summary>8. Neural trajectory khác simulation trajectory ở đâu?</summary>Neural: video do mô hình sinh video (WAN2.1 fine-tune) tạo ra, không có hành động, phải gán nhãn latent/IDM; giỏi với chất lỏng, vật có khớp. Simulation: chạy thật trong engine vật lý (DexMimicGen trong RoboCasa), có hành động thật, chỉ giữ demo thành công.</details>
+<details class="q"><summary>9. Trong RoboCasa Kitchen: robot gì, mấy camera, action dạng gì, chấm điểm ra sao?</summary>Franka Panda; 3 camera (trái, phải, cổ tay); action là vị trí + xoay tương đối của đầu tay + kẹp; 100 lần thử, lấy điểm cao nhất của 5 checkpoint cuối.</details>
+<details class="q"><summary>10. "GR00T thắng ở mọi benchmark và mọi mức dữ liệu" — câu này đúng tới đâu?</summary>Đúng với <i>điểm trung bình</i> của từng benchmark. Sai nếu hiểu là từng tác vụ: ở RoboCasa 30 demo, GR00T chỉ thắng 8/24 tác vụ. Ngoài ra Bảng 2 và Bảng 4 lệch nhau ở DexMG, và robot thật chỉ 10 lần thử/tác vụ.</details>
+<details class="q"><summary>11. Vì sao lấy đặc trưng ở lớp 12 chứ không phải lớp cuối?</summary>Paper: nhanh hơn (chạy ít lớp) và tỉ lệ thành công cao hơn (kết quả thực nghiệm). Trực giác (không phải paper chứng minh): lớp cuối chuyên cho việc đoán từ tiếp theo, lớp giữa giữ biểu diễn tổng quát hơn.</details>
+<details class="q"><summary>12. Ví dụ chuyền táo (Hình 11) nói lên điều gì về post-training?</summary>Post-training trên dữ liệu chỉ dùng tay phải làm mô hình quên kỹ năng chuyền tay mà bản pre-trained có. Fine-tune hẹp có thể đánh đổi khả năng tổng quát (catastrophic forgetting).</details>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="sec" id="sources">
+<h2>12. Nguồn</h2>
+<ul>
+<li>Paper gốc: NVIDIA, <i>GR00T N1: An Open Foundation Model for Generalist Humanoid Robots</i>, arXiv 2503.14734 (bản v2, 27/03/2025). Mọi con số trên trang này lấy từ PDF.</li>
+<li>Code và mô hình: <a href="https://github.com/NVIDIA/Isaac-GR00T">github.com/NVIDIA/Isaac-GR00T</a></li>
+<li>RoboCasa: Nasiriany et al., <i>RoboCasa: Large-Scale Simulation of Everyday Tasks for Generalist Robots</i>, RSS 2024, arXiv 2406.02523 · <a href="https://robocasa.ai">robocasa.ai</a></li>
+<li>DexMimicGen: Jiang et al., 2024, arXiv 2410.24185 · MimicGen: Mandlekar et al., CoRL 2023, arXiv 2310.17596</li>
+<li>π0: Black et al., 2024, arXiv 2410.24164 (nguồn của p(τ) và cách viết công thức flow)</li>
+<li>LAPA: Ye et al., <i>Latent Action Pretraining from Videos</i>, ICLR 2025, arXiv 2410.11758</li>
+<li>Eagle 2: Li et al., 2025, arXiv 2501.14818</li>
+<li>Flow Matching: Lipman et al., arXiv 2210.02747 · DiT: Peebles &amp; Xie, arXiv 2212.09748</li>
+<li>Diffusion Policy: Chi et al., arXiv 2303.04137 · ACT (action chunking): Zhao et al., arXiv 2304.13705</li>
+</ul>
+</section>
+
+</main>
+</div>
+<footer>GR00T N1 · Đọc hiểu paper — tài liệu học tập cá nhân, thư mục VLA Modeling</footer>
+
+<script>
+(function(){
+"use strict";
+/* ---------- theme ---------- */
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function css(v){return getComputedStyle(root).getPropertyValue(v).trim();}
+
+/* ---------- checklist ---------- */
+var boxes=[].slice.call(document.querySelectorAll('#chk input'));
+var saved={};
+try{saved=JSON.parse(localStorage.getItem('gr00t-chk')||'{}');}catch(e){saved={};}
+function updChk(){
+  var n=0;boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);if(b.checked)n++;});
+  document.getElementById('progBar').style.width=(100*n/boxes.length)+'%';
+}
+boxes.forEach(function(b){
+  b.checked=!!saved[b.dataset.k];
+  b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem('gr00t-chk',JSON.stringify(saved));}catch(e){}updChk();});
+});
+updChk();
+
+/* ---------- TOC scroll spy ---------- */
+var links=[].slice.call(document.querySelectorAll('#toc a'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){
+  var y=window.scrollY+120,idx=0;
+  targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});
+  links.forEach(function(a,i){a.classList.toggle('on',i===idx);});
+}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+/* ---------- architecture ---------- */
+var INFO={
+ img:'<b>Ảnh camera.</b> Một hoặc nhiều ảnh (tùy robot: RoboCasa có 3 camera, GR-1 có 1 camera trên đầu), mỗi ảnh đưa về 224 × 224 pixel.',
+ txt:'<b>Câu lệnh.</b> Mô tả tác vụ bằng tiếng Anh, ví dụ "pick up the apple and place it into the bottom shelf". Được đặt vào định dạng hội thoại (chat format) giống lúc huấn luyện VLM.',
+ vis:'<b>Vision encoder SigLIP-2.</b> Biến ảnh thành các vector; sau pixel shuffle còn 64 token mỗi ảnh. Theo Bảng 6, phần này <i>được huấn luyện</i> (không đóng băng).',
+ tok:'<b>Text tokenizer.</b> Cắt câu lệnh thành token chữ. Đóng băng.',
+ llm:'<b>LLM của Eagle-2 (SmolLM2).</b> Xử lý chung token ảnh và token chữ. Đóng băng trong cả pre-training lẫn post-training. GR00T chỉ dùng kết quả ở <b>lớp thứ 12</b> (lớp giữa): vừa nhanh hơn (bỏ các lớp sau) vừa cho tỉ lệ thành công cao hơn theo thực nghiệm.',
+ phi:'<b>φ<sub>t</sub>: token thị giác–ngôn ngữ.</b> Ma trận (số token × chiều ẩn). Tính <b>một lần</b> cho mỗi chunk, rồi dùng lại cho cả K = 4 bước khử nhiễu. Đi vào DiT qua cross-attention.',
+ state:'<b>Trạng thái robot q<sub>t</sub>.</b> Góc khớp, vận tốc khớp, vị trí đế, tư thế đầu tay… Số chiều khác nhau giữa các robot.',
+ senc:'<b>State encoder (MLP riêng từng embodiment).</b> Chiếu q<sub>t</sub> về 1 token kích thước d chung của DiT. Mỗi loại robot (và mỗi kiểu nhãn như "LAPA") có một MLP riêng.',
+ act:'<b>Chunk hành động nhiễu A<sub>t</sub><sup>τ</sup>.</b> 16 bước hành động, đã trộn nhiễu theo mức τ. Lúc huấn luyện: τA<sub>t</sub> + (1−τ)ε. Lúc suy luận: bắt đầu từ nhiễu thuần (τ = 0) và được làm sạch dần qua 4 vòng.',
+ aenc:'<b>Action encoder (MLP riêng từng embodiment).</b> Biến 16 vector hành động nhiễu thành 16 token kích thước d, đồng thời mã hóa luôn mức nhiễu τ.',
+ dit:'<b>DiT × N khối.</b> Chuỗi đầu vào: 1 token trạng thái + 16 token hành động. Các khối xen kẽ: <b>cross-attention</b> (token hành động "hỏi" φ<sub>t</sub>: vật ở đâu, câu lệnh muốn gì) và <b>self-attention</b> (các bước hành động và trạng thái "bàn với nhau" cho mạch lạc). τ đi vào mỗi khối qua AdaLN.',
+ adec:'<b>Action decoder (MLP riêng từng embodiment).</b> Đọc 16 token cuối của DiT (bỏ token trạng thái), xuất 16 vector <b>vận tốc</b> cùng số chiều hành động của robot. Vận tốc này dùng cho một bước Euler: A ← A + V/K.',
+ out:'<b>Chunk hành động A<sub>t</sub>.</b> Sau K = 4 bước Euler: 16 hành động liên tiếp gửi cho robot. Cả quá trình (VLM 1 lần + DiT 4 lần) mất 63,9 ms trên GPU L40 với bf16.'
+};
+var nodes=[].slice.call(document.querySelectorAll('#archSvg .n'));
+nodes.forEach(function(g){g.addEventListener('click',function(){
+  nodes.forEach(function(o){o.classList.remove('sel');});g.classList.add('sel');
+  document.getElementById('archInfo').innerHTML=INFO[g.dataset.k]||'';
+});});
+
+/* ---------- chunk timing ---------- */
+var hz=document.getElementById('hz'),hh=document.getElementById('hh'),ms=document.getElementById('ms');
+function chunk(){
+  var f=+hz.value,H=+hh.value,t=Math.max(1,+ms.value||63.9);
+  document.getElementById('hzV').textContent=f;document.getElementById('hV').textContent=H;
+  var steps=t*f/1000, used=Math.ceil(steps-1e-9), dur=H/f;
+  var c=document.getElementById('cells');c.innerHTML='';
+  for(var i=0;i<H;i++){var s=document.createElement('span');s.textContent=i+1;if(i<used)s.className=used>H?'over':'used';c.appendChild(s);}
+  var msg='Một chunk H = '+H+' ở '+f+' Hz kéo dài <b>'+(dur*1000).toFixed(0)+' ms</b>. Trong '+t.toFixed(1)+' ms suy luận, robot đã đi qua <b>'+steps.toFixed(2)+' bước</b> điều khiển (ô cam).';
+  if(steps>H) msg+=' <b style="color:var(--red)">Mô hình chậm hơn cả một chunk: robot sẽ hết hành động trước khi chunk mới xong.</b>';
+  else msg+=' Nếu chờ chunk mới mới chạy tiếp, robot sẽ khựng lại; nếu cứ chạy chunk cũ thì chunk mới được tính từ một quan sát "đã cũ" '+steps.toFixed(1)+' bước. Đây là bài toán RTC giải quyết.';
+  document.getElementById('chunkOut').innerHTML=msg;
+}
+[hz,hh,ms].forEach(function(e){e.addEventListener('input',chunk);});
+[].slice.call(document.querySelectorAll('[data-hz]')).forEach(function(b){b.addEventListener('click',function(){hz.value=b.dataset.hz;chunk();});});
+chunk();
+
+/* ---------- flow toy model ---------- */
+var H=16;
+var modeL=[],modeR=[];
+for(var i=0;i<H;i++){var s=i/(H-1),y=-1.6+3.2*s,x=0.95*Math.sin(Math.PI*s);modeL.push(-x,y);modeR.push(x,y);}
+var MODES=[modeL,modeR];
+var AVG=modeL.map(function(v,i){return (v+modeR[i])/2;});
+function randn(){var u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function noise(){var a=[];for(var i=0;i<2*H;i++)a.push(randn());return a;}
+function vel(x,t){
+  var lw=MODES.map(function(A){var d=0;for(var i=0;i<x.length;i++){var e=x[i]-t*A[i];d+=e*e;}return -d/(2*(1-t)*(1-t));});
+  var m=Math.max(lw[0],lw[1]),w0=Math.exp(lw[0]-m),w1=Math.exp(lw[1]-m),Z=w0+w1;
+  return x.map(function(xi,i){var ea=(w0*MODES[0][i]+w1*MODES[1][i])/Z;return ea-(xi-t*ea)/(1-t);});
+}
+function runEuler(eps,K){var x=eps.slice(),path=[x.slice()];for(var k=0;k<K;k++){var t=k/K,v=vel(x,t);x=x.map(function(xi,i){return xi+v[i]/K;});path.push(x.slice());}return path;}
+function classify(x){var m=0;for(var i=4;i<12;i++)m+=x[2*i];m/=8;return m<-0.35?'L':(m>0.35?'R':'M');}
+var SC=78;
+function P(x,y,cx,cy){return [(cx+x*SC).toFixed(1),(cy-y*SC).toFixed(1)];}
+function pathStr(v,cx,cy){var d='';for(var i=0;i<H;i++){var p=P(v[2*i],v[2*i+1],cx,cy);d+=(i?'L':'M')+p[0]+','+p[1];}return d;}
+function dots(v,cx,cy,col,r){var s='';for(var i=0;i<H;i++){var p=P(v[2*i],v[2*i+1],cx,cy);s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+r+'" fill="'+col+'"/>';}return s;}
+function scene(cx,cy){
+  var grey=css('--grey'),red=css('--red'),txt=css('--muted');
+  var o=P(0,0,cx,cy),st=P(0,-1.6,cx,cy),gl=P(0,1.6,cx,cy);
+  return '<circle cx="'+o[0]+'" cy="'+o[1]+'" r="'+(0.38*SC)+'" fill="'+css('--blue-soft')+'" stroke="'+css('--blue')+'" stroke-width="2"/>'+
+   '<text x="'+o[0]+'" y="'+(+o[1]+4)+'" text-anchor="middle" font-size="12" fill="'+css('--blue')+'">bình</text>'+
+   '<path d="'+pathStr(modeL,cx,cy)+'" stroke="'+grey+'" stroke-width="2" fill="none" stroke-dasharray="3 4" opacity=".8"/>'+
+   '<path d="'+pathStr(modeR,cx,cy)+'" stroke="'+grey+'" stroke-width="2" fill="none" stroke-dasharray="3 4" opacity=".8"/>'+
+   '<text x="'+st[0]+'" y="'+(+st[1]+20)+'" text-anchor="middle" font-size="12" fill="'+txt+'">xuất phát</text>'+
+   '<text x="'+gl[0]+'" y="'+(+gl[1]-10)+'" text-anchor="middle" font-size="12" fill="'+txt+'">đích</text>';
+}
+/* inference widget */
+var fEps=noise(),kk=document.getElementById('kk');
+function drawFlow(){
+  var K=+kk.value;document.getElementById('kV').textContent=K;
+  var cx=300,cy=240,svg=document.getElementById('flowSvg');
+  var path=runEuler(fEps,K),pri=css('--pri'),acc=css('--accent'),red=css('--red');
+  var h=scene(cx,cy);
+  h+='<path d="'+pathStr(AVG,cx,cy)+'" stroke="'+red+'" stroke-width="2.5" fill="none" stroke-dasharray="8 5"/>';
+  if(document.getElementById('fInter').checked){
+    for(var k=0;k<path.length-1;k++){var op=(0.25+0.5*k/Math.max(1,K)).toFixed(2);
+      h+='<path d="'+pathStr(path[k],cx,cy)+'" stroke="'+acc+'" stroke-width="1.3" fill="none" opacity="'+op+'"/>'+dots(path[k],cx,cy,acc,2);}
+  }
+  var fin=path[path.length-1];
+  h+='<path d="'+pathStr(fin,cx,cy)+'" stroke="'+pri+'" stroke-width="3.5" fill="none"/>'+dots(fin,cx,cy,pri,3.5);
+  h+='<text x="12" y="20" font-size="12" fill="'+css('--muted')+'">cam nhạt → đậm: nhiễu ban đầu và các bước trung gian · xanh: kết quả · đỏ: trung bình (MSE)</text>';
+  svg.innerHTML=h;
+  var c=classify(fin),lab={L:'vòng <b>TRÁI</b> — một cách làm hợp lệ',R:'vòng <b>PHẢI</b> — một cách làm hợp lệ',M:'đi <b>thẳng vào giữa</b> — giống đáp án trung bình, đâm vào bình'};
+  document.getElementById('flowOut').innerHTML='Với K = '+K+' bước, lần lấy mẫu này: '+lab[c]+'.';
+}
+kk.addEventListener('input',drawFlow);
+document.getElementById('fInter').addEventListener('change',drawFlow);
+document.getElementById('fNoise').addEventListener('click',function(){fEps=noise();drawFlow();});
+document.getElementById('fMany').addEventListener('click',function(){
+  var K=+kk.value,cnt={L:0,R:0,M:0};
+  for(var n=0;n<200;n++){var p=runEuler(noise(),K);cnt[classify(p[p.length-1])]++;}
+  document.getElementById('flowOut').innerHTML='200 lần lấy mẫu với K = '+K+': vòng trái <b>'+cnt.L+'</b>, vòng phải <b>'+cnt.R+'</b>, đâm thẳng vào giữa <b>'+cnt.M+'</b>.'+(K===1?' (K = 1 luôn ra trung bình.)':'');
+});
+drawFlow();
+
+/* training widget */
+var tEps=noise(),tau=document.getElementById('tau');
+function drawTrain(){
+  var t=+tau.value,mode=+document.querySelector('input[name=tm]:checked').value,A=MODES[mode];
+  document.getElementById('tauV').textContent=t.toFixed(2);
+  var cx=300,cy=210,acc=css('--accent'),pri=css('--pri');
+  var At=A.map(function(a,i){return t*a+(1-t)*tEps[i];});
+  var h=scene(cx,cy);
+  h+='<defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="'+acc+'"/></marker></defs>';
+  for(var i=0;i<H;i++){
+    var vx=A[2*i]-tEps[2*i],vy=A[2*i+1]-tEps[2*i+1],L=Math.sqrt(vx*vx+vy*vy)||1,sc=Math.min(0.45,0.18*L)/L;
+    var p0=P(At[2*i],At[2*i+1],cx,cy),p1=P(At[2*i]+vx*sc,At[2*i+1]+vy*sc,cx,cy);
+    h+='<line x1="'+p0[0]+'" y1="'+p0[1]+'" x2="'+p1[0]+'" y2="'+p1[1]+'" stroke="'+acc+'" stroke-width="1.6" marker-end="url(#ah2)"/>';
+  }
+  h+='<path d="'+pathStr(At,cx,cy)+'" stroke="'+pri+'" stroke-width="3" fill="none"/>'+dots(At,cx,cy,pri,3.5);
+  document.getElementById('trainSvg').innerHTML=h;
+  var j=7,a=A[2*j],e=tEps[2*j],v=t*a+(1-t)*e;
+  document.getElementById('trainOut').innerHTML='τ = '+t.toFixed(2)+': chunk gồm <b>'+Math.round(t*100)+'% hành động thật + '+Math.round((1-t)*100)+'% nhiễu</b>. '+
+   'Ví dụ tọa độ x của bước thứ 8: a = '+a.toFixed(2)+', ε = '+e.toFixed(2)+' → A<sup>τ</sup> = '+t.toFixed(2)+'×'+a.toFixed(2)+' + '+(1-t).toFixed(2)+'×('+e.toFixed(2)+') = <b>'+v.toFixed(2)+'</b>; vận tốc mục tiêu a − ε = <b>'+(a-e).toFixed(2)+'</b> (không đổi theo τ).';
+}
+tau.addEventListener('input',drawTrain);
+[].slice.call(document.querySelectorAll('input[name=tm]')).forEach(function(r){r.addEventListener('change',drawTrain);});
+document.getElementById('tNoise').addEventListener('click',function(){tEps=noise();drawTrain();});
+drawTrain();
+
+/* ---------- beta p(tau) plot ---------- */
+function drawBeta(){
+  var s=0.999,W=620,Hh=230,x0=50,x1=600,y0=190,y1=20,ymax=1.7,pri=css('--pri'),mut=css('--muted'),ln=css('--line');
+  function X(t){return x0+(x1-x0)*t;}function Y(p){return y0-(y0-y1)*p/ymax;}
+  var d='M'+X(0)+','+Y(0),area='';
+  var pts=[];for(var k=0;k<=200;k++){var t=k/200*s;pts.push([X(t),Y(1.5/s*Math.pow((s-t)/s,0.5))]);}
+  d='M'+pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' L');
+  area=d+' L'+X(s).toFixed(1)+','+y0+' L'+X(0)+','+y0+' Z';
+  var h='<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y0+'" stroke="'+mut+'"/><line x1="'+x0+'" y1="'+y0+'" x2="'+x0+'" y2="'+y1+'" stroke="'+mut+'"/>';
+  [0.5,1,1.5].forEach(function(v){h+='<line x1="'+x0+'" x2="'+x1+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="'+ln+'"/><text x="'+(x0-8)+'" y="'+(Y(v)+4)+'" font-size="11" text-anchor="end" fill="'+mut+'">'+v+'</text>';});
+  h+='<path d="'+area+'" fill="'+pri+'" opacity=".18"/><path d="'+d+'" stroke="'+pri+'" stroke-width="3" fill="none"/>';
+  h+='<line x1="'+X(0)+'" x2="'+X(1)+'" y1="'+Y(1)+'" y2="'+Y(1)+'" stroke="'+css('--accent')+'" stroke-dasharray="6 4" stroke-width="2"/><text x="'+(X(1)-4)+'" y="'+(Y(1)-6)+'" font-size="11" text-anchor="end" fill="'+css('--accent')+'">nếu bốc đều</text>';
+  [0,0.25,0.5,0.75,1].forEach(function(v){h+='<text x="'+X(v)+'" y="'+(y0+16)+'" font-size="11" text-anchor="middle" fill="'+mut+'">'+v+'</text>';});
+  h+='<text x="'+X(0)+'" y="'+(y0+32)+'" font-size="11.5" fill="'+mut+'">τ = 0: nhiễu thuần</text><text x="'+X(1)+'" y="'+(y0+32)+'" font-size="11.5" text-anchor="end" fill="'+mut+'">τ = 1: sạch</text>';
+  h+='<text x="'+(x0+8)+'" y="'+(y1+4)+'" font-size="11.5" fill="'+mut+'">mật độ p(τ)</text>';
+  var svg=document.getElementById('betaSvg');svg.setAttribute('viewBox','0 0 '+W+' '+(Hh+10));svg.innerHTML=h;
+  var frac=1-Math.pow((s-0.5)/s,1.5);
+  document.getElementById('betaOut').innerHTML='Khoảng <b>'+(frac*100).toFixed(0)+'%</b> số lần bốc có τ &lt; 0,5 (nửa "nhiều nhiễu"), so với 50% nếu bốc đều.';
+}
+drawBeta();
+
+/* ---------- data bars (Table 7) ---------- */
+var CAT={robot:['Robot thật','#00897B'],human:['Video người','#e65100'],sim:['Mô phỏng','#1e6fd9'],neural:['Video AI sinh','#8e44ad']};
+var DATA=[['AgiBot-Alpha',1979.4,'robot'],['DROID (OXE)',428.3,'robot'],['RT-1 (OXE)',338.4,'robot'],['Language Table (OXE)',195.7,'robot'],['Bridge-v2 (OXE)',111.1,'robot'],['GR-1 Teleop',88.4,'robot'],['RoboSet (OXE)',78.9,'robot'],['RH20T-Robot',62.5,'robot'],['MUTEX (OXE)',5.0,'robot'],['Plex (OXE)',1.1,'robot'],
+ ['Ego4D',2144.7,'human'],['HoloAssist',169.6,'human'],['Ego-Exo4D',123.0,'human'],['EPIC-KITCHENS',31.7,'human'],['Assembly-101',19.3,'human'],['RH20T-Human',16.3,'human'],['HOI4D',12.4,'human'],
+ ['GR-1 Simulation',1742.6,'sim'],['GR-1 Neural Videos',827.3,'neural']];
+(function(){
+  var max=2144.7,el=document.getElementById('dataBars'),h='';
+  DATA.forEach(function(d){var w=Math.max(0.3,85*d[1]/max);
+    h+='<div class="row"><div class="nm">'+d[0]+'</div><div class="bb"><div class="bar" style="width:'+w+'%;background:'+CAT[d[2]][1]+'"><span>'+d[1].toLocaleString('vi-VN')+' h</span></div></div></div>';});
+  el.innerHTML=h;
+  document.getElementById('dataLeg').innerHTML=Object.keys(CAT).map(function(k){return '<span><i style="background:'+CAT[k][1]+'"></i>'+CAT[k][0]+'</span>';}).join('');
+})();
+
+/* ---------- RoboCasa explorer (Table 4) ---------- */
+var RC=[
+['Close Double Door','Cửa tủ',[1.7,26.5,60.8],[0.0,43.1,74.5]],
+['Close Drawer','Ngăn kéo',[57.5,88.2,94.1],[76.9,96.1,99.0]],
+['Close Single Door','Cửa tủ',[21.7,46.1,72.6],[49.1,67.7,83.3]],
+['Coffee Press Button','Cà phê',[32.5,46.1,91.2],[27.8,56.9,85.3]],
+['Coffee Serve Mug','Cà phê',[6.7,28.4,66.7],[3.7,34.3,72.6]],
+['Coffee Setup Mug','Cà phê',[0.0,19.6,32.4],[0.0,2.0,22.6]],
+['Open Double Door','Cửa tủ',[0.0,9.8,18.6],[0.0,12.8,14.7]],
+['Open Drawer','Ngăn kéo',[15.8,42.2,61.8],[9.3,42.2,79.4]],
+['Open Single Door','Cửa tủ',[36.7,42.2,57.8],[20.4,54.9,58.8]],
+['PnP Cab → Counter','Gắp-đặt',[2.5,4.9,9.8],[0.9,3.9,19.6]],
+['PnP Counter → Cab','Gắp-đặt',[0.0,2.9,10.8],[1.9,6.9,36.3]],
+['PnP Counter → Microwave','Gắp-đặt',[0.0,2.0,8.8],[0.0,0.0,12.8]],
+['PnP Counter → Sink','Gắp-đặt',[0.0,0.0,13.7],[0.0,1.0,9.8]],
+['PnP Counter → Stove','Gắp-đặt',[0.0,1.0,17.7],[0.0,0.0,23.5]],
+['PnP Microwave → Counter','Gắp-đặt',[0.0,2.0,11.8],[0.0,0.0,15.7]],
+['PnP Sink → Counter','Gắp-đặt',[4.2,8.8,42.2],[0.0,5.9,33.3]],
+['PnP Stove → Counter','Gắp-đặt',[1.7,2.9,23.5],[0.0,0.0,29.4]],
+['Turn Off Microwave','Vi sóng',[63.3,53.9,52.0],[47.2,57.8,70.6]],
+['Turn Off Sink Faucet','Bồn rửa',[21.7,63.7,72.6],[49.1,67.7,72.6]],
+['Turn Off Stove','Bếp',[5.0,10.8,19.6],[4.6,15.7,26.5]],
+['Turn On Microwave','Vi sóng',[30.0,51.0,75.5],[55.6,73.5,78.4]],
+['Turn On Sink Faucet','Bồn rửa',[31.7,27.5,63.7],[33.3,59.8,62.8]],
+['Turn On Stove','Bếp',[12.5,22.6,36.3],[14.8,25.5,55.9]],
+['Turn Sink Spout','Bồn rửa',[8.3,11.8,23.5],[24.1,42.2,52.9]]];
+var rcN=0,NS=[30,100,300];
+function fmt(v){return v.toFixed(1).replace('.',',');}
+function drawRC(){
+  var mode=document.getElementById('rcSort').value;
+  var rows=RC.map(function(r,i){return {i:i,n:r[0],c:r[1],dp:r[2][rcN],gr:r[3][rcN]};});
+  if(mode==='gap')rows.sort(function(a,b){return (b.gr-b.dp)-(a.gr-a.dp);});
+  if(mode==='gr')rows.sort(function(a,b){return b.gr-a.gr;});
+  var w=0,l=0,t=0,sdp=0,sgr=0;
+  rows.forEach(function(r){sdp+=r.dp;sgr+=r.gr;if(r.gr>r.dp)w++;else if(r.gr<r.dp)l++;else t++;});
+  document.getElementById('rcSum').innerHTML='<b>'+NS[rcN]+' demo/tác vụ</b> — trung bình: DP <b>'+fmt(sdp/24)+'%</b>, GR00T <b>'+fmt(sgr/24)+'%</b>. GR00T thắng <b>'+w+'</b>, thua <b>'+l+'</b>, hòa <b>'+t+'</b> trên 24 tác vụ.';
+  document.getElementById('rcBars').innerHTML=rows.map(function(r){
+    return '<div class="row"><div class="nm" title="'+r.n+'">'+r.n+' <small>· '+r.c+'</small></div><div class="bb">'+
+     '<div class="bar dp" style="width:'+(0.85*r.dp)+'%"><span>'+fmt(r.dp)+'</span></div>'+
+     '<div class="bar gr" style="width:'+(0.85*r.gr)+'%"><span>'+fmt(r.gr)+'</span></div></div></div>';}).join('');
+}
+[].slice.call(document.querySelectorAll('[data-n]')).forEach(function(b){b.addEventListener('click',function(){
+  rcN=+b.dataset.n;[].slice.call(document.querySelectorAll('[data-n]')).forEach(function(o){o.classList.toggle('on',o===b);});drawRC();});});
+document.getElementById('rcSort').addEventListener('change',drawRC);
+drawRC();
+
+/* ---------- sim bars (Fig 10) ---------- */
+(function(){
+  var F=[['RoboCasa',[14.7,25.6,43.2],[17.4,32.1,49.6]],['DexMG',[23.7,46.9,68.4],[29.6,58.5,74.2]],['GR-1',[21.3,32.7,40.4],[43.2,50.0,49.3]]],h='';
+  F.forEach(function(b){[0,1,2].forEach(function(k){
+    h+='<div class="row"><div class="nm">'+b[0]+' <small>· '+NS[k]+' demo</small></div><div class="bb">'+
+     '<div class="bar dp" style="width:'+(0.85*b[1][k])+'%"><span>'+fmt(b[1][k])+'</span></div>'+
+     '<div class="bar gr" style="width:'+(0.85*b[2][k])+'%"><span>'+fmt(b[2][k])+'</span></div></div></div>';});});
+  document.getElementById('simBars').innerHTML=h;
+})();
+
+/* redraw colour-dependent svgs on theme change */
+new MutationObserver(function(){drawFlow();drawTrain();drawBeta();}).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+</body>
+</html>

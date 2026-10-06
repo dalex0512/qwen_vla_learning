@@ -1,0 +1,990 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>GR00T N1 · Slide trình bày</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+<style>
+/* Layout: khung 16:9 cố định 1280×720, tự co giãn vừa màn hình; thanh điều khiển dưới; khung lời thuyết trình bật bằng phím N */
+:root {
+  --stage: #E7ECEF;
+  --slide: #FCFCFB;
+  --ink: #15212B;
+  --muted: #586672;
+  --rule: #D5DCE1;
+  --accent: #00897B;
+  --accent-ink: #00695F;
+  --accent-soft: #DDF1EE;
+  --amber: #B8650F;
+  --amber-soft: #FBEEDC;
+  --indigo: #5B5BD6;
+  --bad: #B3362B;
+  --bad-soft: #F8E3E0;
+  --code-bg: #EEF2F4;
+  --c1: #00897B; --c2: #B8650F; --c3: #5B5BD6;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --stage: #0B1013; --slide: #141B20; --ink: #E3EAEE; --muted: #9AA8B2; --rule: #2A363E;
+    --accent: #2BA597; --accent-ink: #5CC9BC; --accent-soft: #123430; --amber: #C27C2B; --amber-soft: #33260F;
+    --indigo: #7E7EE8; --bad: #F08A80; --bad-soft: #3A1E1B; --code-bg: #1C252B;
+    --c1: #2BA597; --c2: #C27C2B; --c3: #7E7EE8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --stage: #0B1013; --slide: #141B20; --ink: #E3EAEE; --muted: #9AA8B2; --rule: #2A363E;
+  --accent: #2BA597; --accent-ink: #5CC9BC; --accent-soft: #123430; --amber: #C27C2B; --amber-soft: #33260F;
+  --indigo: #7E7EE8; --bad: #F08A80; --bad-soft: #3A1E1B; --code-bg: #1C252B;
+  --c1: #2BA597; --c2: #C27C2B; --c3: #7E7EE8; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--stage); color: var(--ink); font-family: var(--f-body); margin: 0; overflow: hidden; padding-inline: 0; }
+.app { position: fixed; inset: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) 0; display: flex; flex-direction: column; }
+.viewport { flex: 1; position: relative; min-height: 0; }
+.notes-panel { height: 0; overflow: auto; background: var(--slide); border-top: 1px solid var(--rule); font-size: 15px; line-height: 1.6; padding: 0 20px; transition: height .2s; }
+.app.show-notes .notes-panel { height: 30%; padding: 12px 20px; }
+.notes-panel h6 { margin: 0 0 4px; font: 600 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
+.notes-panel p { margin: 0 0 8px; max-width: 95ch; }
+.bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--slide); border-top: 1px solid var(--rule); flex-wrap: wrap; }
+.bar button { font: 600 13px var(--f-body); color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.bar button:hover { border-color: var(--accent); }
+.bar button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.bar .count { font: 600 13px var(--f-mono); color: var(--muted); min-width: 64px; text-align: center; }
+.bar .hint { margin-left: auto; font-size: 12px; color: var(--muted); }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: transparent; }
+.progress span { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 640px) { .bar .hint { display: none; } }
+
+/* Slide canvas */
+.deck { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform-origin: 0 0; }
+.slide { position: absolute; inset: 0; background: var(--slide); border-radius: 6px; box-shadow: 0 8px 30px rgba(0,0,0,.12); padding: 56px 72px 48px; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: opacity .25s; overflow: hidden; }
+.slide.active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+.slide .notes { display: none; }
+.kicker { font: 600 14px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 10px; }
+.slide h2 { font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -.015em; margin: 0 0 22px; text-wrap: balance; }
+.slide p, .slide li { font-size: 22px; line-height: 1.5; }
+.slide ul { margin: 0; padding-left: 26px; }
+.slide li { margin-bottom: 8px; }
+.pn { position: absolute; right: 28px; bottom: 18px; font: 600 13px var(--f-mono); color: var(--muted); }
+.src { position: absolute; left: 72px; bottom: 18px; font-size: 13px; color: var(--muted); max-width: 980px; }
+.grow { flex: 1; min-height: 0; }
+.row { display: flex; gap: 28px; }
+.col { flex: 1; min-width: 0; }
+.card { border: 1px solid var(--rule); border-radius: 12px; padding: 18px 20px; background: var(--slide); }
+.card h4 { margin: 0 0 6px; font-size: 22px; }
+.card p { margin: 0; font-size: 19px; line-height: 1.45; }
+.card.teal { background: var(--accent-soft); border-color: transparent; }
+.card.amb { background: var(--amber-soft); border-color: transparent; }
+.card.red { background: var(--bad-soft); border-color: transparent; }
+.tag { display: inline-block; font: 600 12px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; background: var(--code-bg); color: var(--muted); }
+.tag.on { background: var(--amber-soft); color: var(--amber); }
+.say { font-size: 20px; font-style: italic; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 14px; margin: 6px 0 0; }
+.math { font-size: 22px; }
+.mono { font-family: var(--f-mono); }
+.big { font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.callout { border-radius: 12px; padding: 14px 20px; font-size: 20px; line-height: 1.45; }
+.callout b { color: var(--ink); }
+svg text { font-family: var(--f-body); }
+table.t { border-collapse: collapse; width: 100%; font-size: 18px; }
+table.t th, table.t td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.t th { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+table.t td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.stat { flex: 1; border: 1px solid var(--rule); border-radius: 12px; padding: 10px 14px; }
+.stat .v { font: 700 26px var(--f-mono); color: var(--accent-ink); letter-spacing: -.02em; }
+.stat .k { font-size: 15px; color: var(--muted); line-height: 1.3; margin-top: 2px; }
+.slide .note-s { font-size: 15px; color: var(--muted); margin: 6px 0 0; line-height: 1.4; }
+</style>
+
+<div class="app" id="app">
+  <div class="viewport" id="viewport">
+    <div class="deck" id="deck">
+
+      <!-- 1 TITLE -->
+      <section class="slide" aria-label="Slide 1: Tiêu đề">
+        <div class="row grow" style="align-items:center">
+          <div class="col" style="flex:1.25">
+            <div class="kicker">Đọc paper · 2 / 6 trong lộ trình VLA</div>
+            <div style="font-size:96px;font-weight:800;letter-spacing:-.03em;line-height:1">GR00T N1</div>
+            <p style="font-size:28px;margin:14px 0 22px;font-weight:600;line-height:1.3">An Open Foundation Model for<br>Generalist Humanoid Robots</p>
+            <p style="font-size:18px;color:var(--muted);margin:0">NVIDIA · research leads: Linxi "Jim" Fan, Yuke Zhu</p>
+            <p style="font-size:18px;color:var(--muted);margin:0 0 26px">03/2025 · arXiv 2503.14734 · mô hình mở GR00T-N1-2B</p>
+            <div class="callout" style="background:var(--accent-soft)">Một mô hình VLA <b>dùng chung cho nhiều loại robot</b>: VLM để hiểu, DiT + flow matching để sinh động tác, học từ một <b>kim tự tháp dữ liệu</b>.</div>
+            <p style="font-size:18px;margin:22px 0 0;color:var(--muted)">Trình bày: <b style="color:var(--ink)">Đỗ Thái Dương</b></p>
+          </div>
+          <div class="col" style="flex:.9">
+            <svg viewBox="0 0 420 380" role="img" aria-label="Minh họa: System 2 hiểu, System 1 làm, robot hình người gắp quả táo">
+              <defs><marker id="m-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+              <g font-size="16" text-anchor="middle">
+                <rect x="10" y="30" width="220" height="74" rx="12" fill="var(--code-bg)" stroke="var(--indigo)" stroke-width="2"/>
+                <text x="120" y="62" font-weight="700" fill="var(--ink)">System 2 · VLM</text>
+                <text x="120" y="86" font-size="14" fill="var(--muted)">nhìn ảnh, đọc câu lệnh</text>
+                <path d="M120 104V140" stroke="var(--muted)" stroke-width="2" marker-end="url(#m-t)"/>
+                <rect x="10" y="142" width="220" height="74" rx="12" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+                <text x="120" y="174" font-weight="700" fill="var(--ink)">System 1 · DiT</text>
+                <text x="120" y="198" font-size="14" fill="var(--muted)">sinh động tác nhanh</text>
+                <path d="M230 179H282" stroke="var(--muted)" stroke-width="2" marker-end="url(#m-t)"/>
+              </g>
+              <circle cx="335" cy="70" r="22" fill="var(--slide)" stroke="var(--accent)" stroke-width="5"/>
+              <rect x="310" y="100" width="50" height="86" rx="14" fill="var(--accent)"/>
+              <line x1="318" y1="186" x2="318" y2="262" stroke="var(--accent)" stroke-width="12" stroke-linecap="round"/>
+              <line x1="352" y1="186" x2="352" y2="262" stroke="var(--accent)" stroke-width="12" stroke-linecap="round"/>
+              <line x1="312" y1="114" x2="292" y2="236" stroke="var(--accent)" stroke-width="10" stroke-linecap="round"/>
+              <line x1="358" y1="114" x2="388" y2="224" stroke="var(--accent)" stroke-width="10" stroke-linecap="round"/>
+              <rect x="190" y="262" width="225" height="14" rx="4" fill="var(--rule)"/>
+              <circle cx="292" cy="248" r="13" fill="var(--bad)"/>
+              <rect x="370" y="228" width="40" height="34" rx="4" fill="var(--amber)" opacity=".85"/>
+              <text x="300" y="320" text-anchor="middle" font-size="15" fill="var(--muted)">"pick up the apple…"</text>
+            </svg>
+          </div>
+        </div>
+        <div class="pn">1 / 15</div>
+        <aside class="notes">
+          <p>Hôm nay em trình bày paper thứ hai trong lộ trình: GR00T N1 của NVIDIA, công bố tháng 3 năm 2025. Đây là một mô hình nền tảng mở cho robot hình người; NVIDIA công bố luôn checkpoint GR00T-N1-2B, dữ liệu và benchmark mô phỏng.</p>
+          <p>Tóm tắt một câu: GR00T N1 là một VLA gồm hai phần. System 2 là một mô hình thị giác-ngôn ngữ, đọc ảnh và câu lệnh để hiểu tình huống. System 1 là một Diffusion Transformer sinh động tác bằng flow matching. Hai phần được huấn luyện chung, trên một hỗn hợp dữ liệu mà paper gọi là kim tự tháp dữ liệu. Em chọn đọc kỹ paper này vì kiểu kiến trúc VLM cộng action expert này là nền cho các paper RTC và MoE mà nhóm mình sẽ đọc tiếp.</p>
+        </aside>
+      </section>
+
+      <!-- 2 BRIDGE -->
+      <section class="slide" aria-label="Slide 2: Nối từ LIBERO">
+        <div class="kicker">Mở đầu · Nối từ LIBERO</div>
+        <h2>Cùng là bắt chước người, nhưng khác hẳn về quy mô</h2>
+        <div class="row" style="gap:16px;margin-bottom:16px">
+          <div class="card col"><span class="tag">Giống nhau · behavior cloning</span>
+            <h4 style="margin-top:8px">Đầu ra: GMM → flow matching</h4>
+            <p style="font-size:18px">Cả hai học bắt chước demo của người. LIBERO dùng hỗn hợp Gaussian, GR00T dùng flow matching. Cùng một mục đích: giữ được <b>nhiều cách làm đúng</b>.</p></div>
+          <div class="card col amb"><span class="tag on">Ngược nhau · pre-training</span>
+            <h4 style="margin-top:8px">LIBERO: làm hại · GR00T: là sức mạnh chính</h4>
+            <p style="font-size:18px">LIBERO: pretrain LIBERO-90 rồi học LIBERO-Long kém hơn học từ đầu. GR00T: pretrain trên 8.375,7 giờ dữ liệu, nền VLM có sẵn, nên post-train với ít demo vẫn tốt.</p></div>
+        </div>
+        <table class="t" style="font-size:16px">
+          <thead><tr><th style="width:18%">Môi trường</th><th style="width:38%">LIBERO</th><th>RoboCasa (GR00T dùng để đánh giá)</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--muted)">Robot</td><td>1 cánh tay trên bàn</td><td>Franka Emika Panda, 1 tay; state có cả đế robot</td></tr>
+            <tr><td style="color:var(--muted)">Camera</td><td>2: toàn cảnh + cổ tay, 128 × 128</td><td>3: trái, phải, cổ tay</td></tr>
+            <tr><td style="color:var(--muted)">Hành động</td><td>7 số điều khiển mỗi bước</td><td>Vị trí + xoay <b>tương đối</b> của đầu tay, trạng thái kẹp</td></tr>
+            <tr><td style="color:var(--muted)">Bài tập</td><td>130 bài; VLA dùng 4 bộ × 10 bài</td><td>24 tác vụ bếp "atomic"</td></tr>
+            <tr><td style="color:var(--muted)">Demo / bài</td><td>50</td><td>3.000 có sẵn; GR00T chỉ dùng <b>30 / 100 / 300</b></td></tr>
+            <tr><td style="color:var(--muted)">Chấm điểm</td><td>500 lượt mỗi bộ (cách VLA dùng)</td><td>100 lượt; lấy điểm cao nhất của 5 checkpoint cuối</td></tr>
+          </tbody>
+        </table>
+        <div class="src">Cột LIBERO: slide LIBERO (arXiv 2306.03310). Cột RoboCasa và số giờ: GR00T N1, Sec 4.1 và Bảng 7.</div>
+        <div class="pn">2 / 15</div>
+        <aside class="notes">
+          <p>Trước khi vào paper, em nối với LIBERO tuần trước. Điểm giống: cả hai đều là behavior cloning, tức học bắt chước demo của người. LIBERO dùng đầu ra hỗn hợp Gaussian để giữ được nhiều cách làm đúng; GR00T thay bằng flow matching, cùng mục đích, em sẽ giải thích ở slide 7 và 8.</p>
+          <p>Điểm ngược nhau: LIBERO thấy pretrain trên LIBERO-90 làm kết quả kém hơn học từ đầu, còn GR00T coi pre-training là nguồn sức mạnh chính. Cách hiểu của em là do quy mô và độ đa dạng: LIBERO-90 là 90 bài với mô hình nhỏ, còn GR00T pretrain trên hơn 8 nghìn giờ dữ liệu, trên nền một VLM đã học từ Internet. Đây là diễn giải của em, paper không so trực tiếp.</p>
+          <p>Bảng dưới so LIBERO với RoboCasa, môi trường mô phỏng chính GR00T dùng. RoboCasa dùng tay Franka, 3 camera, hành động là dịch chuyển tương đối. Mỗi tác vụ có sẵn 3.000 demo nhưng GR00T chỉ lấy 30, 100 hoặc 300 để đo khả năng học với ít dữ liệu. Cách chấm cũng khác LIBERO: 100 lượt, và lấy điểm cao nhất trong 5 checkpoint cuối.</p>
+        </aside>
+      </section>
+
+      <!-- 3 MOTIVATION -->
+      <section class="slide" aria-label="Slide 3: Motivation">
+        <div class="kicker">1 · Motivation</div>
+        <h2>Robot không có "Internet dữ liệu": mỗi loại robot là một hòn đảo</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.1">
+            <svg viewBox="0 0 560 340" role="img" aria-label="Dữ liệu web là một lục địa, dữ liệu robot là các đảo rời rạc">
+              <rect x="0" y="0" width="560" height="340" rx="14" fill="var(--code-bg)"/>
+              <g text-anchor="middle">
+                <ellipse cx="120" cy="175" rx="100" ry="125" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+                <text x="120" y="160" font-size="19" font-weight="700" fill="var(--ink)">Web</text>
+                <text x="120" y="184" font-size="15" fill="var(--muted)">chữ + ảnh</text>
+                <text x="120" y="206" font-size="15" fill="var(--muted)">→ LLM, VLM</text>
+                <text x="400" y="30" font-size="16" font-weight="700" fill="var(--ink)">Robot: các "đảo dữ liệu"</text>
+                <g fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2">
+                  <ellipse cx="310" cy="85" rx="62" ry="27"/><ellipse cx="470" cy="100" rx="56" ry="25"/>
+                  <ellipse cx="330" cy="175" rx="58" ry="25"/><ellipse cx="480" cy="195" rx="58" ry="27"/>
+                  <ellipse cx="380" cy="268" rx="70" ry="27"/>
+                </g>
+                <g font-size="14" fill="var(--ink)" font-weight="600">
+                  <text x="310" y="90">GR-1 · 88 giờ</text><text x="470" y="105">DROID</text>
+                  <text x="330" y="180">Bridge-v2</text><text x="480" y="200">AgiBot</text>
+                  <text x="380" y="273">video người*</text>
+                </g>
+                <text x="280" y="322" font-size="13" fill="var(--muted)">các đảo khác số khớp, camera, cách điều khiển · *video người không có nhãn hành động</text>
+              </g>
+            </svg>
+          </div>
+          <div class="col">
+            <p style="font-size:18px;margin:0 0 8px;color:var(--muted)">Paper: cần đủ 3 thành phần</p>
+            <div class="card" style="padding:12px 18px;margin-bottom:8px"><h4 style="font-size:20px">Phần cứng · robot hình người</h4><p style="font-size:17px">Thế giới được xây cho cơ thể người.</p></div>
+            <div class="card" style="padding:12px 18px;margin-bottom:8px"><h4 style="font-size:20px">Mô hình · tổng quát</h4><p style="font-size:17px">Một bộ não cho nhiều robot, nhiều việc.</p></div>
+            <div class="card teal" style="padding:12px 18px"><h4 style="font-size:20px">Dữ liệu · cần một chiến lược</h4><p style="font-size:17px">Dữ liệu robot hình người đắt, chậm thu.</p></div>
+          </div>
+        </div>
+        <div class="callout" style="background:var(--code-bg);margin-top:12px;font-size:19px"><b>Hai lời giải của GR00T:</b> ① kiến trúc dùng chung + "phiên dịch viên" riêng cho từng robot · ② kim tự tháp dữ liệu + gán <b>nhãn hành động giả</b> cho dữ liệu không có nhãn.</div>
+        <div class="pn">3 / 15</div>
+        <aside class="notes">
+          <p>Động lực của paper. LLM mạnh vì học từ cả Internet chữ; VLM học từ chữ và ảnh trên web. Robot thì không có kho dữ liệu tương đương. Dữ liệu của mỗi loại robot là một "hòn đảo": ví dụ dữ liệu teleop của robot GR-1 do NVIDIA tự thu chỉ khoảng 88 giờ. Các đảo lại khác nhau về số khớp, camera, cách điều khiển, nên không gộp thẳng được. Video người thì rất nhiều nhưng không có nhãn hành động.</p>
+          <p>Paper nói muốn có robot thông minh cần ba thứ: phần cứng tốt, ở đây là robot hình người; một mô hình tổng quát; và một chiến lược dữ liệu. Paper này lo hai phần sau, với hai lời giải: một kiến trúc dùng chung có bộ phiên dịch riêng cho từng robot, và một kim tự tháp dữ liệu, trong đó dữ liệu không có nhãn được gán nhãn hành động giả. Em sẽ đi lần lượt từng phần.</p>
+        </aside>
+      </section>
+
+      <!-- 4 ARCHITECTURE -->
+      <section class="slide" aria-label="Slide 4: Kiến trúc tổng thể">
+        <div class="kicker">2 · Method · Kiến trúc</div>
+        <h2>System 2 hiểu, System 1 làm, cả hai huấn luyện chung</h2>
+        <svg viewBox="0 0 1136 345" role="img" aria-label="Sơ đồ kiến trúc GR00T N1: ảnh và câu lệnh vào VLM, trạng thái và hành động nhiễu vào DiT, DiT nhìn sang VLM bằng cross-attention, lặp K bước" style="width:100%;height:auto">
+          <defs><marker id="m-a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+          <g stroke="var(--muted)" stroke-width="2" fill="none">
+            <path d="M160 50H193" marker-end="url(#m-a4)"/><path d="M160 140H193" marker-end="url(#m-a4)"/>
+            <path d="M365 50H398" marker-end="url(#m-a4)"/><path d="M365 140H398" marker-end="url(#m-a4)"/>
+            <path d="M590 95H623" marker-end="url(#m-a4)"/><path d="M695 125V208" marker-end="url(#m-a4)"/>
+            <path d="M160 236H193" marker-end="url(#m-a4)"/><path d="M160 298H193" marker-end="url(#m-a4)"/>
+            <path d="M365 236H398" marker-end="url(#m-a4)"/><path d="M365 298H398" marker-end="url(#m-a4)"/>
+            <path d="M770 268H803" marker-end="url(#m-a4)"/>
+            <path d="M965 268H1060V127" marker-end="url(#m-a4)"/>
+            <path d="M885 296V338H80V326" stroke-dasharray="7 5" marker-end="url(#m-a4)"/>
+          </g>
+          <g font-size="16" text-anchor="middle">
+            <rect x="0" y="20" width="160" height="60" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="80" y="46" font-weight="700" fill="var(--ink)">Ảnh camera</text><text x="80" y="68" font-size="13" fill="var(--muted)">224 × 224</text>
+            <rect x="195" y="20" width="170" height="60" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="280" y="46" font-weight="700" fill="var(--ink)">Vision encoder</text><text x="280" y="68" font-size="13" fill="var(--muted)">SigLIP-2</text>
+            <rect x="0" y="110" width="160" height="60" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="80" y="136" font-weight="700" fill="var(--ink)">Câu lệnh</text><text x="80" y="158" font-size="13" fill="var(--muted)">"pick up the apple…"</text>
+            <rect x="195" y="110" width="170" height="60" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="280" y="136" font-weight="700" fill="var(--ink)">Tokenizer</text><text x="280" y="158" font-size="13" fill="var(--muted)">chữ → token</text>
+            <rect x="400" y="20" width="190" height="150" rx="12" fill="var(--code-bg)" stroke="var(--indigo)" stroke-width="2.5"/>
+            <text x="495" y="54" font-weight="800" fill="var(--indigo)">System 2</text><text x="495" y="80" font-weight="700" fill="var(--ink)">LLM của Eagle-2</text>
+            <text x="495" y="102" font-size="13" fill="var(--muted)">(SmolLM2) ❄ đóng băng</text><text x="495" y="126" font-size="13" fill="var(--muted)">lấy ra ở lớp 12</text><text x="495" y="150" font-size="13" fill="var(--muted)">~10 Hz trên L40</text>
+            <rect x="625" y="65" width="140" height="60" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="695" y="91" font-weight="700" fill="var(--ink)">φₜ</text><text x="695" y="113" font-size="13" fill="var(--muted)">token ảnh + chữ</text>
+            <text x="705" y="172" font-size="13" text-anchor="start" fill="var(--muted)">cross-attention</text>
+            <rect x="0" y="210" width="160" height="52" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="80" y="234" font-weight="700" fill="var(--ink)">Trạng thái qₜ</text><text x="80" y="254" font-size="13" fill="var(--muted)">khớp, đầu tay…</text>
+            <rect x="195" y="210" width="170" height="52" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><text x="280" y="234" font-weight="700" fill="var(--ink)">State encoder</text><text x="280" y="254" font-size="13" fill="var(--muted)">MLP riêng / robot</text>
+            <rect x="0" y="272" width="160" height="52" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="80" y="296" font-weight="700" fill="var(--ink)">Hành động nhiễu</text><text x="80" y="316" font-size="13" fill="var(--muted)">16 bước + mức nhiễu τ</text>
+            <rect x="195" y="272" width="170" height="52" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><text x="280" y="296" font-weight="700" fill="var(--ink)">Action encoder</text><text x="280" y="316" font-size="13" fill="var(--muted)">MLP riêng / robot</text>
+            <rect x="400" y="210" width="370" height="114" rx="12" fill="var(--slide)" stroke="var(--accent)" stroke-width="2.5"/>
+            <text x="585" y="232" font-weight="800" fill="var(--accent-ink)">System 1 · DiT × N khối</text>
+            <rect x="415" y="242" width="70" height="58" rx="6" fill="var(--amber-soft)" stroke="var(--amber)"/><text x="450" y="276" font-size="14" fill="var(--ink)">Cross</text>
+            <rect x="493" y="242" width="70" height="58" rx="6" fill="var(--code-bg)" stroke="var(--muted)"/><text x="528" y="276" font-size="14" fill="var(--ink)">Self</text>
+            <text x="585" y="276" fill="var(--muted)">· · ·</text>
+            <rect x="607" y="242" width="70" height="58" rx="6" fill="var(--amber-soft)" stroke="var(--amber)"/><text x="642" y="276" font-size="14" fill="var(--ink)">Cross</text>
+            <rect x="685" y="242" width="70" height="58" rx="6" fill="var(--code-bg)" stroke="var(--muted)"/><text x="720" y="276" font-size="14" fill="var(--ink)">Self</text>
+            <text x="585" y="318" font-size="12" fill="var(--muted)">τ đưa vào qua AdaLN</text>
+            <rect x="805" y="240" width="160" height="56" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><text x="885" y="264" font-weight="700" fill="var(--ink)">Action decoder</text><text x="885" y="284" font-size="13" fill="var(--muted)">MLP riêng / robot</text>
+            <rect x="985" y="65" width="151" height="60" rx="10" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2"/><text x="1060" y="91" font-weight="700" fill="var(--ink)">16 hành động</text><text x="1060" y="113" font-size="13" fill="var(--muted)">→ robot</text>
+            <text x="1072" y="190" font-size="13" text-anchor="start" fill="var(--muted)">sau</text><text x="1072" y="207" font-size="13" text-anchor="start" fill="var(--muted)">K = 4</text>
+            <text x="975" y="318" font-size="13" text-anchor="start" fill="var(--muted)">vận tốc → 1 bước Euler,</text><text x="975" y="335" font-size="13" text-anchor="start" fill="var(--muted)">lặp lại K = 4 lần</text>
+            <rect x="805" y="160" width="14" height="14" rx="3" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="826" y="172" font-size="13" text-anchor="start" fill="var(--muted)">riêng từng robot</text>
+            <rect x="805" y="184" width="14" height="14" rx="3" fill="var(--code-bg)" stroke="var(--indigo)"/><text x="826" y="196" font-size="13" text-anchor="start" fill="var(--muted)">đóng băng</text>
+          </g>
+        </svg>
+        <div class="row" style="gap:12px;margin-top:10px">
+          <div class="stat"><div class="v">2,2B</div><div class="k">tổng tham số GR00T-N1-2B</div></div>
+          <div class="stat"><div class="v">1,34B</div><div class="k">nằm trong VLM Eagle-2</div></div>
+          <div class="stat"><div class="v">H = 16</div><div class="k">hành động mỗi lần sinh</div></div>
+          <div class="stat"><div class="v">63,9 ms</div><div class="k">sinh 1 chunk (GPU L40, bf16)</div></div>
+          <div class="stat"><div class="v">10 / 120 Hz</div><div class="k">tần số System 2 / System 1</div></div>
+        </div>
+        <div class="pn">4 / 15</div>
+        <aside class="notes">
+          <p>Đây là slide quan trọng nhất, vẽ lại Hình 3 của paper. Nửa trên là System 2: ảnh và câu lệnh được biến thành token rồi chạy qua mô hình ngôn ngữ của Eagle-2, một VLM của NVIDIA. Đầu ra là φ t, các vector đại diện cho ảnh và câu lệnh. VLM này to và chậm, khoảng 10 Hz.</p>
+          <p>Nửa dưới là System 1. Đầu vào là trạng thái robot và một chunk 16 hành động đang bị trộn nhiễu. Hai thứ này đi qua các encoder màu xanh, là các MLP riêng cho từng loại robot. Sau đó vào DiT, gồm các khối xen kẽ cross-attention và self-attention. Decoder, cũng riêng từng robot, xuất ra một vận tốc; ta đi một bước nhỏ theo vận tốc đó rồi lặp lại 4 lần, đường nét đứt phía dưới. Sau 4 lần ta có 16 hành động gửi cho robot.</p>
+          <p>Các con số: tổng 2,2 tỷ tham số, trong đó 1,34 tỷ nằm ở VLM. Sinh một chunk 16 hành động mất 63,9 mili giây trên GPU L40. Điểm then chốt: hai hệ thống được huấn luyện chung end-to-end, gradient chảy qua cả hai, chứ không phải ghép một LLM lập kế hoạch với một policy có sẵn.</p>
+        </aside>
+      </section>
+
+      <!-- 5 VLM + ENCODERS -->
+      <section class="slide" aria-label="Slide 5: System 2 và bộ phiên dịch">
+        <div class="kicker">2 · Method · System 2 và encoder riêng</div>
+        <h2>Biến mọi thứ thành token cùng kích thước</h2>
+        <div class="row grow">
+          <div class="col">
+            <svg viewBox="0 0 540 230" role="img" aria-label="Ảnh 224 nhân 224 được cắt thành 256 ô, gộp còn 64 token, đưa vào LLM 12 lớp đầu">
+              <defs>
+                <pattern id="g16" width="9.375" height="9.375" patternUnits="userSpaceOnUse"><path d="M9.375 0V9.375H0" fill="none" stroke="var(--rule)" stroke-width="1"/></pattern>
+                <pattern id="g8" width="12.5" height="12.5" patternUnits="userSpaceOnUse"><rect x="1" y="1" width="10.5" height="10.5" rx="2" fill="var(--accent)" opacity=".75"/></pattern>
+                <marker id="m-a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker>
+              </defs>
+              <rect x="10" y="20" width="150" height="150" fill="var(--code-bg)"/><rect x="10" y="20" width="150" height="150" fill="url(#g16)" stroke="var(--muted)"/>
+              <rect x="225" y="45" width="100" height="100" fill="url(#g8)"/>
+              <rect x="390" y="30" width="145" height="130" rx="12" fill="var(--code-bg)" stroke="var(--indigo)" stroke-width="2"/>
+              <g stroke="var(--muted)" stroke-width="2" fill="none"><path d="M165 95H218" marker-end="url(#m-a5)"/><path d="M330 95H383" marker-end="url(#m-a5)"/></g>
+              <g text-anchor="middle" font-size="15">
+                <text x="85" y="192" fill="var(--ink)" font-weight="600">224 × 224 px</text><text x="85" y="212" fill="var(--muted)" font-size="13">16 × 16 = 256 ô*</text>
+                <text x="192" y="84" font-size="12" fill="var(--muted)">gộp 2×2</text>
+                <text x="275" y="168" fill="var(--ink)" font-weight="600">64 token / ảnh</text><text x="275" y="188" fill="var(--muted)" font-size="13">(pixel shuffle)</text>
+                <text x="462" y="70" fill="var(--indigo)" font-weight="700">LLM</text><text x="462" y="94" fill="var(--ink)">12 lớp đầu</text><text x="462" y="116" fill="var(--muted)" font-size="13">+ token câu lệnh</text><text x="462" y="140" fill="var(--muted)" font-size="13">❄ → φₜ</text>
+              </g>
+            </svg>
+            <p class="note-s">*Giả định ô 14 × 14 px để ra 256 ô; paper chỉ ghi kết quả 64 token mỗi ảnh.</p>
+            <ul style="font-size:18px;margin-top:10px">
+              <li><b>Lớp 12, không phải lớp cuối:</b> paper thấy vừa nhanh hơn vừa thành công cao hơn.</li>
+              <li><b>LLM đóng băng;</b> vision encoder và DiT được học (Bảng 6).</li>
+            </ul>
+          </div>
+          <div class="col">
+            <svg viewBox="0 0 540 250" role="img" aria-label="Ba embodiment khác nhau mỗi cái có MLP encoder và decoder riêng, cùng đi qua một DiT dùng chung">
+              <defs><marker id="m-b5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+              <g stroke="var(--muted)" stroke-width="1.8" fill="none">
+                <path d="M120 38H143" marker-end="url(#m-b5)"/><path d="M120 125H143" marker-end="url(#m-b5)"/><path d="M120 212H143" marker-end="url(#m-b5)"/>
+                <path d="M235 38L298 100" marker-end="url(#m-b5)"/><path d="M235 125H298" marker-end="url(#m-b5)"/><path d="M235 212L298 150" marker-end="url(#m-b5)"/>
+                <path d="M398 100L440 45" marker-end="url(#m-b5)"/><path d="M398 125H440" marker-end="url(#m-b5)"/><path d="M398 150L440 205" marker-end="url(#m-b5)"/>
+              </g>
+              <g text-anchor="middle" font-size="14">
+                <rect x="0" y="12" width="120" height="52" rx="8" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="60" y="35" font-weight="700" fill="var(--ink)">Franka</text><text x="60" y="54" font-size="12" fill="var(--muted)">1 tay + kẹp</text>
+                <rect x="0" y="99" width="120" height="52" rx="8" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="60" y="122" font-weight="700" fill="var(--ink)">GR-1</text><text x="60" y="141" font-size="12" fill="var(--muted)">2 tay khéo léo</text>
+                <rect x="0" y="186" width="120" height="52" rx="8" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="60" y="209" font-weight="700" fill="var(--ink)">"LAPA"</text><text x="60" y="228" font-size="12" fill="var(--muted)">video người</text>
+                <rect x="145" y="14" width="90" height="48" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="190" y="43" fill="var(--ink)">MLP A</text>
+                <rect x="145" y="101" width="90" height="48" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="190" y="130" fill="var(--ink)">MLP B</text>
+                <rect x="145" y="188" width="90" height="48" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="190" y="217" fill="var(--ink)">MLP C</text>
+                <rect x="300" y="70" width="98" height="110" rx="10" fill="var(--slide)" stroke="var(--accent)" stroke-width="2.5"/><text x="349" y="118" font-weight="700" fill="var(--ink)">DiT</text><text x="349" y="138" font-size="12" fill="var(--muted)">dùng chung</text>
+                <rect x="442" y="20" width="96" height="40" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="490" y="45" font-size="13" fill="var(--ink)">decoder A</text>
+                <rect x="442" y="105" width="96" height="40" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="490" y="130" font-size="13" fill="var(--ink)">decoder B</text>
+                <rect x="442" y="190" width="96" height="40" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="490" y="215" font-size="13" fill="var(--ink)">decoder C</text>
+                <text x="268" y="246" font-size="12" fill="var(--muted)">cùng kích thước d</text>
+              </g>
+            </svg>
+            <div class="callout" style="background:var(--accent-soft);font-size:18px;margin-top:8px">Mỗi robot có <b>"phiên dịch viên" riêng</b> (MLP) vào và ra; lõi DiT dùng chung. Video người gán latent action cũng được coi là một embodiment: "LAPA".</div>
+          </div>
+        </div>
+        <div class="pn">5 / 15</div>
+        <aside class="notes">
+          <p>Đi sâu hai chi tiết. Bên trái là System 2: ảnh 224 nhân 224 được bộ mã hóa ảnh SigLIP-2 cắt thành các ô, rồi pixel shuffle gộp các ô kề nhau, cuối cùng mỗi ảnh chỉ còn 64 token. Con số 256 ô là em giả định ô 14 pixel cho dễ hình dung; paper chỉ ghi kết quả 64. Ít token thì chạy nhanh, rất quan trọng với robot.</p>
+          <p>Hai chi tiết đáng nhớ: GR00T không lấy đầu ra lớp cuối của LLM mà lấy ở lớp 12. Paper báo cách này vừa nhanh hơn, vì không phải chạy các lớp sau, vừa cho tỉ lệ thành công cao hơn; paper không giải thích vì sao. Và phần ngôn ngữ được đóng băng, còn bộ mã hóa ảnh vẫn được học.</p>
+          <p>Bên phải là cách xử lý nhiều robot. Robot Franka có vài số hành động, robot GR-1 hai tay có nhiều hơn hẳn. Mỗi loại có một MLP riêng chiếu vào cùng một kích thước d, và một decoder riêng chiếu ra. DiT ở giữa dùng chung. Mẹo hay là "embodiment" không cần là robot thật: video người gán nhãn hành động giả cũng có cặp MLP riêng, tên là LAPA.</p>
+        </aside>
+      </section>
+
+      <!-- 6 DIT + CHUNK -->
+      <section class="slide" aria-label="Slide 6: DiT và action chunk">
+        <div class="kicker">2 · Method · System 1 và action chunk</div>
+        <h2>Trong DiT, các bước hành động "bàn với nhau" và "nhìn sang" ảnh</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.05">
+            <svg viewBox="0 0 600 300" role="img" aria-label="Token trạng thái và 16 token hành động: self-attention giữa chúng, cross-attention nhìn lên token VLM">
+              <g id="attnSvg"></g>
+            </svg>
+            <div class="row" style="gap:12px;margin-top:6px">
+              <div class="card amb col" style="padding:10px 14px"><p style="font-size:16px"><b>Cross-attention:</b> token hành động hỏi φₜ "vật ở đâu, câu lệnh muốn gì?"</p></div>
+              <div class="card col" style="padding:10px 14px"><p style="font-size:16px"><b>Self-attention:</b> 16 bước + trạng thái nhìn nhau → quỹ đạo mạch lạc</p></div>
+            </div>
+          </div>
+          <div class="col" style="flex:.95">
+            <p style="margin:0 0 2px;font-size:18px;color:var(--muted)">Action chunk (như paper ACT):</p>
+            <div class="math">\[ A_t = [\,a_t,\ a_{t+1},\ \dots,\ a_{t+H-1}\,],\quad H = 16 \]</div>
+            <svg viewBox="0 0 520 150" role="img" aria-label="Số bước điều khiển trôi qua trong lúc tính một chunk ở 20 Hz và 120 Hz" style="margin-top:4px">
+              <g id="chunkSvg"></g>
+            </svg>
+            <p class="note-s">Ô cam: số bước robot đã chạy trong 63,9 ms tính chunk. Tự tính từ số trong paper (20 Hz: tần số teleop GR-1; 120 Hz: tần số System 1 paper nêu).</p>
+            <div class="callout" style="background:var(--code-bg);font-size:17px;margin-top:10px"><b>Lợi:</b> mượt, gọi mô hình nặng ít lần hơn. <b>Giá:</b> robot ít nhìn lại thế giới, và vẫn phải cử động trong lúc chờ chunk mới → bài toán của <b>RTC</b>.</div>
+          </div>
+        </div>
+        <div class="pn">6 / 15</div>
+        <aside class="notes">
+          <p>Bên trong DiT có hai loại khối xen kẽ. Hàng dưới là chuỗi đầu vào: một token trạng thái và 16 token hành động. Self-attention, các vòng cung xanh, cho các bước hành động nhìn nhau và nhìn trạng thái hiện tại, giúp quỹ đạo mạch lạc. Cross-attention, các mũi tên cam, cho token hành động nhìn lên token ảnh và chữ của VLM. Đây là con đường duy nhất thông tin về ảnh và câu lệnh đi vào action expert. Paper nói họ chọn cross-attention đơn giản, khác π0, để dễ thay VLM hay DiT khác.</p>
+          <p>Bên phải là action chunk: mỗi lần mô hình sinh luôn 16 hành động liên tiếp, ý tưởng từ paper ACT. Lợi ích là chuyển động mượt và ít phải gọi mô hình nặng. Cái giá: trong 63,9 mili giây tính chunk mới, robot vẫn chạy. Em tự tính: ở 20 Hz, tần số thu dữ liệu GR-1, chỉ khoảng 1,3 bước trôi qua; nhưng ở 120 Hz là gần 8 bước, tức nửa chunk. Nối chunk cũ và mới sao cho không giật chính là bài toán của paper RTC sau này.</p>
+        </aside>
+      </section>
+
+      <!-- 7 FLOW 1 -->
+      <section class="slide" aria-label="Slide 7: Vì sao cần flow matching">
+        <div class="kicker">2 · Method · Flow matching (1/2) · Formula</div>
+        <h2>Một tình huống, nhiều cách làm đúng: cần mô hình sinh</h2>
+        <div class="row grow">
+          <div class="col" style="flex:.8">
+            <svg viewBox="0 0 460 360" role="img" aria-label="Tay robot vòng trái hoặc vòng phải qua cái bình; trung bình hai cách đâm thẳng vào bình">
+              <defs><marker id="m-a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+              <circle cx="230" cy="180" r="42" fill="var(--code-bg)" stroke="var(--indigo)" stroke-width="3"/>
+              <text x="282" y="186" text-anchor="start" font-size="15" fill="var(--indigo)" font-weight="700">bình</text>
+              <path d="M230 330C80 270 80 90 230 34" stroke="var(--accent)" stroke-width="5" fill="none" marker-end="url(#m-a7)"/>
+              <path d="M230 330C380 270 380 90 230 34" stroke="var(--accent)" stroke-width="5" fill="none" marker-end="url(#m-a7)"/>
+              <path d="M230 330V36" stroke="var(--bad)" stroke-width="4" stroke-dasharray="9 7" fill="none"/>
+              <path d="M216 176L244 204M244 176L216 204" stroke="var(--bad)" stroke-width="5"/>
+              <circle cx="230" cy="330" r="9" fill="var(--ink)"/><circle cx="230" cy="30" r="9" fill="var(--amber)"/>
+              <g font-size="15" text-anchor="middle">
+                <text x="230" y="355" fill="var(--muted)">tay robot</text><text x="290" y="24" fill="var(--muted)">đích</text>
+                <text x="70" y="186" font-weight="700" fill="var(--accent-ink)">vòng trái ✓</text>
+                <text x="392" y="186" font-weight="700" fill="var(--accent-ink)">vòng phải ✓</text>
+                <rect x="178" y="98" width="104" height="24" rx="6" fill="var(--slide)"/><text x="230" y="116" font-weight="700" fill="var(--bad)">trung bình ✗</text>
+              </g>
+            </svg>
+          </div>
+          <div class="col">
+            <div class="callout" style="background:var(--bad-soft);font-size:18px;margin-bottom:12px"><b>Hồi quy MSE</b> học <b>trung bình</b> hai cách → đi thẳng, đâm vào bình. Mô hình sinh thì mỗi lần chọn hẳn một cách.</div>
+            <p style="margin:0 0 2px;font-size:18px;color:var(--muted)">Lúc huấn luyện: trộn hành động thật với nhiễu</p>
+            <div class="math">\[ A_t^\tau = \tau\,A_t + (1-\tau)\,\epsilon,\qquad \epsilon \sim \mathcal{N}(0, I) \]</div>
+            <svg viewBox="0 0 520 130" role="img" aria-label="Đường thẳng nối nhiễu (tau bằng 0) với hành động thật (tau bằng 1)">
+              <defs><marker id="m-b7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--amber)"/></marker></defs>
+              <line x1="50" y1="60" x2="470" y2="60" stroke="var(--rule)" stroke-width="6" stroke-linecap="round"/>
+              <path d="M155 40H300" stroke="var(--amber)" stroke-width="3" marker-end="url(#m-b7)"/>
+              <circle cx="50" cy="60" r="12" fill="var(--muted)"/><circle cx="470" cy="60" r="12" fill="var(--accent)"/><circle cx="155" cy="60" r="10" fill="var(--amber)"/>
+              <g font-size="15" text-anchor="middle">
+                <text x="50" y="96" font-weight="700" fill="var(--ink)">ε · nhiễu</text><text x="50" y="116" fill="var(--muted)" font-size="13">τ = 0</text>
+                <text x="470" y="96" font-weight="700" fill="var(--ink)">Aₜ · thật</text><text x="470" y="116" fill="var(--muted)" font-size="13">τ = 1</text>
+                <text x="155" y="96" fill="var(--amber)" font-weight="700">Aₜ<tspan baseline-shift="super" font-size="11">τ</tspan></text><text x="155" y="116" fill="var(--muted)" font-size="13">τ = 0,25</text>
+                <text x="300" y="28" fill="var(--amber)" font-size="13">vận tốc = Aₜ − ε</text>
+              </g>
+            </svg>
+            <p class="say">"Nối nhiễu và hành động thật bằng đường thẳng; dạy mạng biết hướng đi ở mỗi điểm."</p>
+          </div>
+        </div>
+        <div class="pn">7 / 15</div>
+        <aside class="notes">
+          <p>Vì sao không đoán thẳng hành động bằng hồi quy? Ví dụ tay robot cần đi vòng qua cái bình. Trong dữ liệu, có người vòng trái, có người vòng phải. Nếu học bằng sai số bình phương, đáp án tốt nhất về mặt toán là trung bình hai cách: đi thẳng, đâm vào bình. Đây cũng là lý do LIBERO dùng hỗn hợp Gaussian. GR00T dùng một mô hình sinh, flow matching: mỗi lần lấy mẫu, nó chọn hẳn một cách đúng.</p>
+          <p>Công thức trộn nhiễu: lấy chunk hành động thật A t, lấy nhiễu Gaussian ε cùng kích thước, và một số τ từ 0 đến 1. A t mũ τ bằng τ nhân hành động thật cộng một trừ τ nhân nhiễu. Hình dung đường thẳng nối nhiễu với hành động thật: τ bằng 0 là đứng ở nhiễu, τ bằng 1 là tới hành động thật. Trên đường thẳng, hướng đi luôn là A t trừ ε. Mạng sẽ được dạy đoán hướng đi đó, ở slide sau.</p>
+        </aside>
+      </section>
+
+      <!-- 8 FLOW 2 -->
+      <section class="slide" aria-label="Slide 8: Loss và Euler">
+        <div class="kicker">2 · Method · Flow matching (2/2) · Formula</div>
+        <h2>Học vận tốc, rồi đi K = 4 bước Euler từ nhiễu ra hành động</h2>
+        <div class="row grow">
+          <div class="col">
+            <p style="margin:0 0 2px;font-size:18px;color:var(--muted)">Loss (1), đúng như paper viết:</p>
+            <div class="math" style="font-size:20px">\[ \mathcal{L}_{fm}(\theta) = \mathbb{E}_\tau\Big[\big\|V_\theta(\varphi_t, A_t^\tau, q_t) - (\epsilon - A_t)\big\|^2\Big] \]</div>
+            <div class="callout" style="background:var(--bad-soft);font-size:17px;margin:6px 0 10px"><b>Chú ý dấu:</b> đạo hàm của \(A_t^\tau\) theo τ là \(A_t - \epsilon\), và bước Euler <i>cộng</i> V để đi về τ = 1, nên V cần ≈ \(A_t - \epsilon\). Paper (và π0) ghi \(\epsilon - A_t\): nhiều khả năng lỗi ký hiệu.</div>
+            <p style="margin:0;font-size:17px;color:var(--muted)">Chọn τ theo \(p(\tau)=\mathrm{Beta}\big(\tfrac{s-\tau}{s};1.5,1\big)\), s = 0,999: <b style="color:var(--ink)">ưu tiên τ nhỏ = nhiều nhiễu</b></p>
+            <svg id="chTau" viewBox="0 0 520 150" role="img" aria-label="Mật độ p(tau) giảm dần từ tau bằng 0 đến 1, so với phân phối đều"></svg>
+          </div>
+          <div class="col">
+            <p style="margin:0 0 2px;font-size:18px;color:var(--muted)">Lúc suy luận: bắt đầu từ \(A_t^0 \sim \mathcal{N}(0, I)\)</p>
+            <div class="math" style="font-size:20px">\[ A_t^{\tau + 1/K} = A_t^\tau + \tfrac{1}{K}\,V_\theta(\varphi_t, A_t^\tau, q_t),\quad K = 4 \]</div>
+            <svg viewBox="0 0 520 130" role="img" aria-label="Ví dụ số: từ -1,2 qua bốn bước cộng 0,45 tới 0,6">
+              <g id="eulerSvg"></g>
+            </svg>
+            <p class="note-s"><b>Số minh hoạ tự đặt:</b> một chiều hành động a = 0,6, nhiễu ε = −1,2 → vận tốc a − ε = 1,8, mỗi bước cộng 1,8 / 4 = 0,45.</p>
+            <ul style="font-size:18px;margin-top:10px">
+              <li><b>VLM chạy 1 lần</b>, DiT chạy 4 lần mỗi chunk.</li>
+              <li>Khi có nhiều cách đúng: <b>K = 1</b> ra đúng đường trung bình; <b>vài bước</b> mới kịp "chọn bên".</li>
+            </ul>
+          </div>
+        </div>
+        <div class="pn">8 / 15</div>
+        <aside class="notes">
+          <p>Loss số 1: đưa vào mạng ảnh và chữ φ t, chunk nhiễu và trạng thái q t; mạng V θ đoán một vận tốc, và ta phạt bình phương sai số với vận tốc mục tiêu. Ở đây có một điểm em muốn hỏi mọi người: paper ghi mục tiêu là ε trừ A t. Nhưng với công thức trộn ở slide trước, đạo hàm theo τ là A t trừ ε, và bước Euler bên phải cộng vận tốc để đi từ nhiễu về hành động thật. Vậy mục tiêu đúng phải là A t trừ ε. Cách viết này giống y paper π0 mà GR00T dẫn theo, nên khả năng cao là lỗi ký hiệu. Em sẽ kiểm tra trong code Isaac-GR00T.</p>
+          <p>τ không được bốc đều: paper dùng phân phối Beta, lấy từ π0, ưu tiên τ nhỏ, tức các mức nhiều nhiễu, nơi việc đoán hướng phụ thuộc nhiều nhất vào ảnh và câu lệnh.</p>
+          <p>Lúc chạy: bắt đầu từ nhiễu thuần, hỏi mạng hướng đi, bước một phần tư quãng, lặp 4 lần. Ví dụ số em tự đặt: hành động thật 0,6, nhiễu −1,2, mỗi bước cộng 0,45, sau 4 bước về đúng 0,6. Ví dụ này dễ vì chỉ có một đáp án. Khi có hai đáp án như trái và phải, nếu chỉ đi 1 bước, mạng chỉ biết hướng về trung bình; phải vài bước mới chọn được hẳn một bên. Paper thấy K bằng 4 dùng tốt cho mọi robot.</p>
+        </aside>
+      </section>
+
+      <!-- 9 PYRAMID -->
+      <section class="slide" aria-label="Slide 9: Kim tự tháp dữ liệu">
+        <div class="kicker">2 · Method · Dữ liệu</div>
+        <h2>Kim tự tháp dữ liệu: càng lên cao càng ít, càng sát robot</h2>
+        <div class="row grow">
+          <div class="col" style="flex:.85">
+            <svg viewBox="0 0 480 370" role="img" aria-label="Kim tự tháp ba tầng: video người ở đáy, dữ liệu tổng hợp ở giữa, robot thật ở đỉnh">
+              <polygon points="240,20 304.7,120 175.3,120" fill="var(--accent)"/>
+              <polygon points="175.3,120 304.7,120 382.4,240 97.6,240" fill="var(--amber)" opacity=".85"/>
+              <polygon points="97.6,240 382.4,240 460,360 20,360" fill="var(--indigo)" opacity=".8"/>
+              <g text-anchor="middle" fill="#FFFFFF" font-weight="700">
+                <text x="240" y="98" font-size="16">Robot thật</text>
+                <text x="240" y="176" font-size="17">Tổng hợp</text><text x="240" y="200" font-size="14" font-weight="500">mô phỏng + video AI sinh</text>
+                <text x="240" y="296" font-size="17">Video người + dữ liệu web</text><text x="240" y="320" font-size="14" font-weight="500">(web: dùng khi huấn luyện VLM)</text>
+              </g>
+            </svg>
+          </div>
+          <div class="col">
+            <p style="margin:0 0 4px;font-size:17px;color:var(--muted)">Giờ dữ liệu pre-training (Bảng 7)</p>
+            <svg id="chData" viewBox="0 0 560 220" role="img" aria-label="Biểu đồ thanh: robot thật 3288,8 giờ, video người 2517 giờ, mô phỏng 1742,6 giờ, video AI sinh 827,3 giờ"></svg>
+            <div class="row" style="gap:10px;margin-top:8px">
+              <div class="stat"><div class="v">88 → 827 h</div><div class="k">teleop GR-1 nhân ~10× bằng video AI sinh</div></div>
+              <div class="stat"><div class="v">780 nghìn</div><div class="k">quỹ đạo mô phỏng ≈ 6.500 giờ, sinh trong 11 giờ</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Hình 1, Sec 2.2, Bảng 7. Tổng 8.375,7 giờ (592,9 triệu khung hình).</div>
+        <div class="pn">9 / 15</div>
+        <aside class="notes">
+          <p>Lời giải thứ hai là dữ liệu. Thay vì đổ mọi nguồn vào một rổ, paper xếp thành kim tự tháp. Đáy là video người và dữ liệu web: rất nhiều nhưng xa robot; dữ liệu web thì đã nằm trong VLM. Giữa là dữ liệu tổng hợp: quỹ đạo mô phỏng và video robot do mô hình sinh video tạo ra. Đỉnh là dữ liệu robot thật: ít nhưng chuẩn nhất. Tầng dưới cho hiểu biết chung về chuyển động và đồ vật; tầng trên neo mô hình vào robot thật.</p>
+          <p>Theo Bảng 7, tổng cộng khoảng 8.376 giờ: robot thật khoảng 3.289 giờ, video người khoảng 2.517 giờ, mô phỏng khoảng 1.743 giờ, video AI sinh khoảng 827 giờ. Hai con số ấn tượng: 88 giờ teleop GR-1 được nhân lên khoảng 10 lần thành 827 giờ video sinh; và 780 nghìn quỹ đạo mô phỏng, tương đương 6.500 giờ người làm mẫu, chỉ mất 11 giờ để sinh.</p>
+        </aside>
+      </section>
+
+      <!-- 10 LABELS -->
+      <section class="slide" aria-label="Slide 10: Nhãn hành động giả">
+        <div class="kicker">2 · Method · Dữ liệu không có nhãn</div>
+        <h2>Gán "hành động giả" để mọi nguồn có cùng một dạng</h2>
+        <div class="row" style="gap:14px">
+          <div class="card col teal" style="padding:14px 16px"><span class="tag on">Latent action · LAPA</span>
+            <svg viewBox="0 0 330 92" role="img" aria-label="VQ-VAE: encoder nhận x t và x t cộng H ra z t; decoder dựng lại x t cộng H" style="margin:8px 0 4px">
+              <g id="lapaSvg"></g>
+            </svg>
+            <p style="font-size:16px">Học "nén chuyển động" giữa 2 khung hình. Encoder dùng làm bộ gán nhãn; vector trước lượng tử hóa = nhãn.</p></div>
+          <div class="card col" style="padding:14px 16px"><span class="tag">Neural trajectories</span>
+            <h4 style="margin-top:8px;font-size:19px">Video robot do AI "mơ" ra</h4>
+            <p style="font-size:16px">Fine-tune WAN2.1 trên 88 h teleop, câu lệnh mới → 827 h video. LLM đa phương thức lọc video sai lệnh. Gán nhãn latent + <b>IDM</b> (đoán hành động từ 2 ảnh).</p></div>
+          <div class="card col" style="padding:14px 16px"><span class="tag">Simulation · DexMimicGen</span>
+            <h4 style="margin-top:8px;font-size:19px">Nhân bản demo người</h4>
+            <p style="font-size:16px">Vài chục demo → cắt theo từng vật → ghép vào cảnh mới, giữ demo thành công. Pre-training: 54 tổ hợp × 10.000 = 540 nghìn demo.</p></div>
+        </div>
+        <div class="row grow" style="margin-top:14px;align-items:flex-start">
+          <div class="col" style="flex:1.1">
+            <table class="t" style="font-size:16px">
+              <thead><tr><th>Nguồn (pre-training)</th><th>Thật</th><th>Latent</th><th>IDM</th></tr></thead>
+              <tbody>
+                <tr><td>Robot thật (GR-1, Open X-Embodiment…)</td><td>✓</td><td>✓</td><td></td></tr>
+                <tr><td>Mô phỏng (DexMimicGen)</td><td>✓</td><td></td><td></td></tr>
+                <tr><td>Video AI sinh</td><td></td><td>✓</td><td>✓</td></tr>
+                <tr><td>Video người</td><td></td><td>✓</td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col">
+            <div class="callout" style="background:var(--accent-soft);font-size:17px"><b>Thêm video AI sinh khi post-train</b> (trộn 1:1): RoboCasa <b>+4,2 / +8,8 / +6,8</b> điểm ở 30 / 100 / 300 demo; robot thật <b>+5,8</b> (8 tác vụ, 10% dữ liệu).</div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Sec 2.2, 2.3, 3.2, Phụ lục F, Hình 9.</div>
+        <div class="pn">10 / 15</div>
+        <aside class="notes">
+          <p>Vấn đề: chỉ dữ liệu robot mới có hành động thật. Paper vá bằng hai loại nhãn giả. Loại thứ nhất là latent action theo phương pháp LAPA: huấn luyện một VQ-VAE, encoder nhìn khung hiện tại và khung sau H bước, nén thành vector z; decoder phải dựng lại khung sau từ khung hiện tại và z. Muốn dựng lại được thì z phải mô tả chuyển động đã xảy ra. Sau đó dùng encoder làm bộ gán nhãn cho mọi video. Loại thứ hai là IDM, mô hình động học ngược, nhìn hai ảnh rồi đoán hành động; IDM học trên dữ liệu robot thật nên nhãn sát hơn khi có nhiều dữ liệu.</p>
+          <p>Neural trajectories: NVIDIA fine-tune mô hình sinh video WAN2.1 trên 88 giờ teleop, rồi cho câu lệnh mới để sinh video robot làm việc khác, dùng LLM đa phương thức để lọc video làm sai lệnh. Simulation: DexMimicGen cắt vài chục demo người thành đoạn theo từng vật rồi ghép vào cảnh mới.</p>
+          <p>Kết quả ablation ở Hình 9: thêm video AI sinh khi post-train giúp RoboCasa tăng 4,2, 8,8 và 6,8 điểm, robot thật tăng 5,8. Lưu ý mức tăng báo theo loại nhãn tốt hơn ở từng mức dữ liệu.</p>
+        </aside>
+      </section>
+
+      <!-- 11 PRE vs POST -->
+      <section class="slide" aria-label="Slide 11: Pre-training và post-training">
+        <div class="kicker">2 · Method · Huấn luyện</div>
+        <h2>Pre-training rộng cho mọi robot, post-training hẹp cho một robot</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.35">
+            <table class="t" style="font-size:17px">
+              <thead><tr><th style="width:22%"></th><th>Pre-training</th><th>Post-training</th></tr></thead>
+              <tbody>
+                <tr><td style="color:var(--muted)">Dữ liệu</td><td>Cả kim tự tháp, mọi embodiment</td><td><b>Một</b> embodiment; có thể trộn 1:1 với video AI sinh</td></tr>
+                <tr><td style="color:var(--muted)">Loss</td><td colspan="2">Flow matching (1), cho cả nhãn thật và nhãn giả</td></tr>
+                <tr><td style="color:var(--muted)">Đóng băng</td><td colspan="2">LLM (phần ngôn ngữ); vision encoder và DiT được học</td></tr>
+                <tr><td style="color:var(--muted)">Batch</td><td class="n">16.384</td><td class="n">128 hoặc 1.024</td></tr>
+                <tr><td style="color:var(--muted)">Số bước</td><td class="n">200.000</td><td class="n">20.000 – 60.000</td></tr>
+                <tr><td style="color:var(--muted)">Tính toán</td><td>Tới 1.024 GPU H100; ~50.000 giờ GPU H100</td><td>Thử trên 1 GPU A6000: batch tới 200 nếu chỉ học adapter + DiT</td></tr>
+              </tbody>
+            </table>
+            <p class="note-s">Chung: learning rate 1e-4, AdamW, cosine (Bảng 6).</p>
+          </div>
+          <div class="col">
+            <div class="card teal" style="margin-bottom:12px;padding:14px 18px"><span class="tag on">Ngay sau pre-training · GR-1 thật</span>
+              <p style="font-size:17px;margin-top:8px">Chuyền vật tay trái → tay phải: <b>76,6%</b> (11,5 / 15)<br>Vật mới vào vật chứa mới: <b>73,3%</b> (11 / 15)</p></div>
+            <div class="card red" style="padding:14px 18px"><span class="tag">Hình 11 · cái giá của post-train</span>
+              <p style="font-size:17px;margin-top:8px">Bản pre-trained biết chuyền táo sang tay kia. Bản post-trained (dữ liệu chỉ dùng tay phải) <b>mất kỹ năng này</b>: quên khi fine-tune hẹp.</p></div>
+          </div>
+        </div>
+        <div class="pn">11 / 15</div>
+        <aside class="notes">
+          <p>Đây là phần mentor yêu cầu: pre-training khác post-training thế nào. Pre-training dùng cả kim tự tháp, mọi loại robot, batch rất lớn 16.384, 200 nghìn bước, tốn khoảng 50 nghìn giờ GPU H100. Post-training thì fine-tune trên dữ liệu của một robot, batch nhỏ 128 hoặc 1.024 để tránh overfit, 20 đến 60 nghìn bước. Cả hai dùng cùng loss flow matching, và đều đóng băng phần ngôn ngữ của VLM. Thông tin thực dụng: fine-tune được trên một GPU A6000 nếu chỉ học adapter và DiT.</p>
+          <p>Bên phải là hai quan sát. Ngay sau pre-training, chưa fine-tune, mô hình đã làm được 76,6% ở bài chuyền vật giữa hai tay và 73,3% với vật mới; lưu ý mỗi bài chỉ 15 lượt, điểm 0,5 là nắm đúng nhưng không đặt được. Và một ví dụ đáng nhớ: bản pre-trained biết chuyền quả táo từ tay trái sang tay phải, nhưng sau post-training trên dữ liệu chỉ dùng tay phải thì mất kỹ năng này. Đây là hiện tượng quên mà LIBERO đã nói tới.</p>
+        </aside>
+      </section>
+
+      <!-- 12 ROBOCASA -->
+      <section class="slide" aria-label="Slide 12: RoboCasa">
+        <div class="kicker">3 · Thí nghiệm · RoboCasa</div>
+        <h2>RoboCasa: 24 việc bếp cơ bản, đo học nhanh với ít demo</h2>
+        <div class="row grow">
+          <div class="col">
+            <table class="t" style="font-size:16px">
+              <tbody>
+                <tr><td style="width:24%;color:var(--muted)">Robot</td><td>Franka Emika Panda, 1 tay, kẹp</td></tr>
+                <tr><td style="color:var(--muted)">Quan sát</td><td>3 ảnh RGB: trái, phải, cổ tay</td></tr>
+                <tr><td style="color:var(--muted)">State</td><td>Vị trí + xoay của đầu tay và đế robot, kẹp</td></tr>
+                <tr><td style="color:var(--muted)">Action</td><td>Vị trí + xoay <b>tương đối</b> của đầu tay, kẹp</td></tr>
+                <tr><td style="color:var(--muted)">Dữ liệu</td><td>3.000 demo/tác vụ (MimicGen); dùng 30 / 100 / 300</td></tr>
+                <tr><td style="color:var(--muted)">Chấm</td><td>100 lượt; điểm cao nhất của 5 checkpoint cuối</td></tr>
+              </tbody>
+            </table>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+              <span class="tag">Cửa tủ · 4</span><span class="tag">Ngăn kéo · 2</span><span class="tag">Cà phê · 3</span><span class="tag on">Gắp-đặt · 8</span><span class="tag">Vi sóng · 2</span><span class="tag">Bồn rửa · 3</span><span class="tag">Bếp · 2</span>
+            </div>
+            <div class="callout" style="background:var(--amber-soft);font-size:16px;margin-top:12px"><b>RoboCasa có 2 vai trò:</b> benchmark tay Franka (slide này), và khung để dựng dữ liệu mô phỏng + benchmark cho robot GR-1. Đừng nhầm hai cái.</div>
+          </div>
+          <div class="col" style="flex:1.05">
+            <svg id="chRC" viewBox="0 0 560 330" role="img" aria-label="Biểu đồ cột: trung bình RoboCasa của Diffusion Policy và GR00T ở 30, 100, 300 demo"></svg>
+            <p class="note-s">Ở 30 demo, GR00T chỉ thắng <b>8</b>, thua <b>10</b>, hòa <b>6</b> trên 24 tác vụ, nhưng trung bình vẫn cao hơn. Khó nhất: các tác vụ gắp-đặt, gần 0% ở 30–100 demo.</p>
+          </div>
+        </div>
+        <div class="src">Nguồn: Sec 4.1, Bảng 4 (đếm thắng/thua tự tính từ Bảng 4).</div>
+        <div class="pn">12 / 15</div>
+        <aside class="notes">
+          <p>RoboCasa là bộ mô phỏng nhà bếp quy mô lớn. GR00T dùng 24 tác vụ "atomic", tức kỹ năng cơ bản: đóng mở cửa tủ, ngăn kéo, dùng máy pha cà phê, gắp đặt đồ giữa mặt bếp với tủ, lò vi sóng, bồn rửa, bếp, bấm nút lò vi sóng, vặn vòi nước và núm bếp. Robot là tay Franka với 3 camera. Hành động là dịch chuyển tương đối của đầu tay cộng trạng thái kẹp. Mỗi tác vụ có 3.000 demo sinh bằng MimicGen, nhưng chỉ dùng 30, 100 hoặc 300 để đo học với ít dữ liệu. Chấm 100 lượt, lấy điểm cao nhất của 5 checkpoint cuối.</p>
+          <p>Biểu đồ: GR00T hơn Diffusion Policy ở cả ba mức, nhưng khoảng cách không lớn ở 30 demo. Em đếm trong Bảng 4: ở 30 demo GR00T chỉ thắng 8 tác vụ, thua 10, hòa 6; trung bình cao hơn nhờ thắng đậm vài tác vụ. Các tác vụ gắp-đặt là khó nhất.</p>
+          <p>Một điểm dễ nhầm: RoboCasa còn được dùng làm khung để dựng dữ liệu mô phỏng pre-training và benchmark cho robot GR-1. Các paper sau gọi bộ đó là RoboCasa-GR1, khác với bộ tay Franka ở đây.</p>
+        </aside>
+      </section>
+
+      <!-- 13 RESULTS -->
+      <section class="slide" aria-label="Slide 13: Kết quả chính">
+        <div class="kicker">4 · Kết quả</div>
+        <h2>Thắng các baseline học từ đầu, rõ nhất khi ít dữ liệu</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.15">
+            <p style="margin:0 0 4px;font-size:17px;color:var(--muted)">Mô phỏng, 100 demo/tác vụ (Bảng 2)</p>
+            <svg id="chSim" viewBox="0 0 620 360" role="img" aria-label="Biểu đồ cột nhóm: BC-Transformer, Diffusion Policy, GR00T trên RoboCasa, DexMG, GR-1"></svg>
+          </div>
+          <div class="col">
+            <p style="margin:0 0 4px;font-size:17px;color:var(--muted)">Robot GR-1 thật, trung bình 13 tác vụ (Bảng 3)</p>
+            <svg id="chReal" viewBox="0 0 520 300" role="img" aria-label="Biểu đồ cột: Diffusion Policy và GR00T với 10% và đủ dữ liệu"></svg>
+            <div class="callout" style="background:var(--accent-soft);font-size:17px;margin-top:6px">GR00T với <b>10% dữ liệu (42,6%)</b> chỉ kém Diffusion Policy với <b>đủ dữ liệu (46,4%)</b> 3,8 điểm.</div>
+          </div>
+        </div>
+        <div class="src">Trung bình trong Bảng 2 tính theo số tác vụ (24 + 9 + 24). Robot thật: 10 lượt mỗi tác vụ.</div>
+        <div class="pn">13 / 15</div>
+        <aside class="notes">
+          <p>Kết quả chính. Bên trái là mô phỏng với 100 demo mỗi tác vụ. GR00T cao nhất ở cả ba benchmark: RoboCasa 32,1%, DexMG 66,5%, GR-1 50,0%. Khoảng cách lớn nhất ở GR-1, hơn Diffusion Policy khoảng 17 điểm. Lưu ý hai baseline là BC-Transformer và Diffusion Policy, đều học từ đầu, không có VLM, không có pre-training.</p>
+          <p>Bên phải là robot GR-1 thật, 13 tác vụ thuộc bốn nhóm: gắp đặt, đồ có khớp như tủ và ngăn kéo, đồ công nghiệp, và hai robot phối hợp. Với 10% dữ liệu, Diffusion Policy chỉ 10,2%, GR00T 42,6%. Với đủ dữ liệu: 46,4% so với 76,8%. Điểm đáng nhớ nhất: GR00T với 10% dữ liệu gần bằng Diffusion Policy với toàn bộ dữ liệu. Thông điệp của paper là hiệu quả dữ liệu: pre-training giúp tiết kiệm công thu demo.</p>
+        </aside>
+      </section>
+
+      <!-- 14 LIMITATIONS -->
+      <section class="slide" aria-label="Slide 14: Hạn chế và phản biện">
+        <div class="kicker">5 · Hạn chế · Góc nhìn phản biện</div>
+        <h2>Paper tự nhận gì, và chỗ nào nên đọc thận trọng</h2>
+        <div class="row grow">
+          <div class="col" style="flex:.7">
+            <div class="card" style="padding:14px 18px"><span class="tag">Paper tự nhận · Sec 4.6</span>
+              <ul style="font-size:20px;margin-top:10px">
+                <li>Mới làm việc <b>ngắn, trên mặt bàn</b>; chưa vừa đi vừa thao tác.</li>
+                <li>Cần VLM mạnh hơn cho không gian, ngôn ngữ.</li>
+                <li>Dữ liệu tổng hợp khó vừa đa dạng vừa đúng vật lý.</li>
+              </ul></div>
+          </div>
+          <div class="col" style="flex:1.3">
+            <table class="t" style="font-size:19px">
+              <thead><tr><th>Điểm</th><th>Vì sao cần thận trọng</th></tr></thead>
+              <tbody>
+                <tr><td><b>Dấu của loss</b></td><td>Ghi ε − A, phép toán cần A − ε (slide 8)</td></tr>
+                <tr><td><b>Số lệch giữa bảng</b></td><td>DexMG, 100 demo: Bảng 2 ghi GR00T 66,5 / DP 56,1; Bảng 4 ghi 58,5 / 46,9</td></tr>
+                <tr><td><b>Cách chấm sim</b></td><td>Lấy điểm cao nhất của 5 checkpoint cuối: lạc quan</td></tr>
+                <tr><td><b>Cỡ mẫu robot thật</b></td><td>10 lượt mỗi tác vụ, không có khoảng tin cậy</td></tr>
+                <tr><td><b>Baseline</b></td><td>Chỉ so với policy học từ đầu, không so với VLA khác (π0, OpenVLA)</td></tr>
+                <tr><td><b>"Generalist"?</b></td><td>Mỗi benchmark được post-train riêng trên một robot</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pn">14 / 15</div>
+        <aside class="notes">
+          <p>Paper tự nhận ba hạn chế: mới làm các việc ngắn trên mặt bàn, chưa vừa đi vừa thao tác; muốn có VLM mạnh hơn; và dữ liệu tổng hợp còn khó vừa đa dạng vừa đúng vật lý.</p>
+          <p>Em bổ sung vài điểm khi đọc kỹ. Một, dấu của loss như đã nói. Hai, số liệu DexMG ở 100 demo không khớp giữa Bảng 2 và Bảng 4: 66,5 so với 58,5 cho GR00T; mỗi bảng tự nhất quán nhưng paper không giải thích. Ba, ở mô phỏng họ lấy điểm cao nhất của 5 checkpoint cuối, áp dụng cho cả baseline nhưng con số tuyệt đối bị đẩy lên. Bốn, robot thật chỉ 10 lượt mỗi tác vụ. Năm, baseline đều là policy học từ đầu, nên bảng chứng minh pre-training có ích, chưa chứng minh GR00T tốt hơn các VLA khác. Sáu, mô hình được gọi là generalist nhưng mỗi benchmark được post-train riêng. Đây là nhận xét của em, mong mọi người góp ý.</p>
+        </aside>
+      </section>
+
+      <!-- 15 TAKEAWAYS -->
+      <section class="slide" aria-label="Slide 15: Tổng kết">
+        <div class="kicker">Tổng kết</div>
+        <h2>Bốn ý mang theo sang các paper tiếp theo</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.15">
+            <ol style="font-size:20px;padding-left:28px;margin:0">
+              <li><b>VLM + action expert:</b> System 2 hiểu (lớp 12, đóng băng), System 1 là DiT nối bằng cross-attention.</li>
+              <li><b>Flow matching:</b> trộn \(\tau A + (1-\tau)\epsilon\), học vận tốc, K = 4 bước Euler, chunk H = 16.</li>
+              <li><b>Dữ liệu là kim tự tháp;</b> nhãn giả (latent, IDM) biến video thành dữ liệu huấn luyện.</li>
+              <li><b>Pre-training giúp học nhanh</b> khi ít demo, nhưng post-train hẹp có thể làm quên.</li>
+            </ol>
+            <div class="card amb" style="margin-top:14px;padding:12px 18px"><h4 style="font-size:20px">Câu hỏi thảo luận</h4>
+              <p style="font-size:17px">• Mục tiêu đúng là ε − A hay A − ε? Code Isaac-GR00T viết thế nào?</p>
+              <p style="font-size:17px;margin-top:4px">• LIBERO thấy pretrain hại, GR00T thấy giúp: do quy mô dữ liệu hay do nền VLM?</p></div>
+          </div>
+          <div class="col" style="flex:.85">
+            <svg viewBox="0 0 440 380" role="img" aria-label="GR00T N1 nối sang ba paper tiếp theo: Qwen-VLA, RTC, MoE">
+              <g id="nextSvg"></g>
+            </svg>
+          </div>
+        </div>
+        <p style="font-size:20px;margin:10px 0 0;color:var(--muted)">Cảm ơn mọi người đã lắng nghe.</p>
+        <div class="pn">15 / 15</div>
+        <aside class="notes">
+          <p>Tóm lại bốn ý. Một, kiến trúc VLM cộng action expert: VLM hiểu ảnh và câu lệnh, DiT sinh hành động, nối với nhau bằng cross-attention. Hai, flow matching: trộn hành động thật với nhiễu, học vận tốc, chạy 4 bước Euler, mỗi lần ra 16 hành động. Ba, dữ liệu xếp thành kim tự tháp, và nhãn giả biến video không có nhãn thành dữ liệu huấn luyện. Bốn, pre-training giúp học nhanh với ít demo, nhưng fine-tune hẹp có thể làm mất kỹ năng.</p>
+          <p>Em xin đưa hai câu hỏi thảo luận: dấu trong loss, và vì sao kết luận về pre-training của LIBERO và GR00T ngược nhau.</p>
+          <p>Bên phải là mối nối sang các paper tiếp theo. Qwen-VLA dùng cùng khuôn VLM cộng DiT nhưng mô tả robot bằng câu prompt thay vì MLP riêng, và đảo quy ước τ. RTC xử lý chuyện nối các chunk khi mô hình mất thời gian tính. MoE thay lớp FFN trong DiT bằng nhiều chuyên gia có router; lưu ý chữ "mixture-of-experts" mà GR00T nhắc về π0 là kiểu khác. Em cảm ơn mọi người.</p>
+        </aside>
+      </section>
+
+    </div>
+  </div>
+  <div class="notes-panel" id="notesPanel" aria-live="polite"><h6>Lời thuyết trình</h6><div id="notesBody"></div></div>
+  <div class="bar">
+    <button type="button" id="prevBtn" aria-label="Slide trước">← Trước</button>
+    <span class="count" id="count">1 / 15</span>
+    <button type="button" id="nextBtn" aria-label="Slide sau">Sau →</button>
+    <button type="button" id="notesBtn" aria-pressed="false">Lời thuyết trình (N)</button>
+    <button type="button" id="fsBtn">Toàn màn hình (F)</button>
+    <span class="hint">Phím ← → để chuyển slide · N bật lời thuyết trình · F toàn màn hình</span>
+    <div class="progress"><span id="prog"></span></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var css = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
+  var app = document.getElementById("app"), deck = document.getElementById("deck"), vp = document.getElementById("viewport");
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length, cur = 0;
+
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight, pad = Math.min(24, w * 0.03);
+    var s = Math.min((w - 2 * pad) / 1280, (h - 2 * pad) / 720);
+    deck.style.transform = "translate(" + (-640 * s) + "px," + (-360 * s) + "px) scale(" + s + ")";
+  }
+  function go(i, push) {
+    cur = Math.max(0, Math.min(N - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("active", k === cur); s.setAttribute("aria-hidden", k === cur ? "false" : "true"); });
+    document.getElementById("count").textContent = (cur + 1) + " / " + N;
+    document.getElementById("prog").style.width = ((cur + 1) / N * 100) + "%";
+    var notes = slides[cur].querySelector(".notes");
+    document.getElementById("notesBody").innerHTML = notes ? notes.innerHTML : "";
+    if (push !== false) { try { history.replaceState(null, "", "#s" + (cur + 1)); } catch (e) {} }
+  }
+  function toggleNotes() {
+    var on = !app.classList.contains("show-notes");
+    app.classList.toggle("show-notes", on);
+    document.getElementById("notesBtn").setAttribute("aria-pressed", on ? "true" : "false");
+    setTimeout(fit, 220);
+  }
+  function toggleFs() {
+    try {
+      if (!document.fullscreenElement) { var p = document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(function () {}); }
+      else { document.exitFullscreen(); }
+    } catch (e) {}
+  }
+  document.getElementById("prevBtn").addEventListener("click", function () { go(cur - 1); });
+  document.getElementById("nextBtn").addEventListener("click", function () { go(cur + 1); });
+  document.getElementById("notesBtn").addEventListener("click", toggleNotes);
+  document.getElementById("fsBtn").addEventListener("click", toggleFs);
+  document.addEventListener("keydown", function (e) {
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") go(0);
+    else if (k === "End") go(N - 1);
+    else if (k === "n" || k === "N") toggleNotes();
+    else if (k === "f" || k === "F") toggleFs();
+  });
+  var tx = null;
+  vp.addEventListener("touchstart", function (e) { tx = e.touches[0].clientX; }, { passive: true });
+  vp.addEventListener("touchend", function (e) {
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1));
+    tx = null;
+  }, { passive: true });
+  window.addEventListener("resize", fit);
+  document.addEventListener("fullscreenchange", function () { setTimeout(fit, 50); });
+
+  /* ---------- charts & diagrams ---------- */
+  var NS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function barPath(x, y, w, h) { var r = Math.min(4, w / 2, h); return "M" + x + " " + (y + h) + "V" + (y + r) + "a" + r + " " + r + " 0 0 1 " + r + " " + (-r) + "h" + (w - 2 * r) + "a" + r + " " + r + " 0 0 1 " + r + " " + r + "V" + (y + h) + "z"; }
+  function vn(v, d) { return v.toFixed(d === undefined ? 1 : d).replace(".", ","); }
+  function arrowDef(svg, id, color) {
+    var defs = el("defs", {}), m = el("marker", { id: id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" });
+    m.appendChild(el("path", { d: "M0 0L10 5L0 10z", fill: color })); defs.appendChild(m); svg.appendChild(defs);
+  }
+
+  /* grouped vertical bars, style of LIBERO deck */
+  function grouped(id, cfg) {
+    var svg = document.getElementById(id); clear(svg);
+    var vb = svg.viewBox.baseVal, W = vb.width, H = vb.height;
+    var L = 52, R = 12, T = 72, B = 44, ph = H - T - B, max = cfg.max;
+    var Y = function (v) { return T + ph - v / max * ph; };
+    cfg.ticks.forEach(function (g) {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: Y(g), y2: Y(g), stroke: css("--rule"), "stroke-width": 1 }));
+      svg.appendChild(el("text", { x: L - 10, y: Y(g) + 5, "text-anchor": "end", "font-size": 14, fill: css("--muted") }, g + "%"));
+    });
+    svg.appendChild(el("text", { x: L, y: 18, "font-size": 15, fill: css("--muted"), "font-weight": 600 }, cfg.title));
+    var lx = W - R;
+    cfg.series.slice().reverse().forEach(function (s) {
+      var label = el("text", { x: lx, y: 44, "text-anchor": "end", "font-size": 15, fill: css("--ink") }, s.n);
+      svg.appendChild(label);
+      var bw = label.getComputedTextLength ? label.getComputedTextLength() : s.n.length * 8;
+      if (!bw) bw = s.n.length * 8;
+      svg.appendChild(el("rect", { x: lx - bw - 18, y: 33, width: 12, height: 12, rx: 3, fill: s.c }));
+      lx = lx - bw - 34;
+    });
+    var n = cfg.series.length, gw = (W - L - R) / cfg.groups.length, gap = 4;
+    var bw2 = Math.min(cfg.bw || 44, (gw * 0.8 - gap * (n - 1)) / n);
+    cfg.groups.forEach(function (gname, i) {
+      var cx = L + gw * i + gw / 2, x0 = cx - (n * bw2 + (n - 1) * gap) / 2;
+      cfg.series.forEach(function (s, j) {
+        var v = s.v[i], x = x0 + j * (bw2 + gap), y = Y(v), h = Y(0) - y;
+        var p = el("path", { d: barPath(x, y, bw2, h), fill: s.c });
+        p.appendChild(el("title", {}, s.n + " · " + gname + ": " + vn(v) + "%"));
+        svg.appendChild(p);
+        svg.appendChild(el("text", { x: x + bw2 / 2, y: y - 7, "text-anchor": "middle", "font-size": 13, fill: css("--ink"), "font-family": css("--f-mono") }, vn(v)));
+      });
+      svg.appendChild(el("text", { x: cx, y: H - 14, "text-anchor": "middle", "font-size": 16, fill: css("--ink"), "font-weight": 600 }, gname));
+    });
+    svg.appendChild(el("line", { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: css("--muted"), "stroke-width": 1 }));
+  }
+
+  function drawRC() {
+    grouped("chRC", { title: "RoboCasa · tỉ lệ thành công TB 24 tác vụ", max: 60, ticks: [0, 20, 40, 60], bw: 54,
+      groups: ["30 demo", "100 demo", "300 demo"],
+      series: [{ n: "Diffusion Policy", c: css("--c2"), v: [14.7, 25.6, 43.2] }, { n: "GR00T-N1-2B", c: css("--c1"), v: [17.4, 32.1, 49.6] }] });
+  }
+  function drawSim() {
+    grouped("chSim", { title: "Tỉ lệ thành công ↑", max: 80, ticks: [0, 20, 40, 60, 80], bw: 46,
+      groups: ["RoboCasa", "DexMG", "GR-1"],
+      series: [{ n: "BC-Transformer", c: css("--c3"), v: [26.3, 53.9, 16.1] }, { n: "Diffusion Policy", c: css("--c2"), v: [25.6, 56.1, 32.7] }, { n: "GR00T-N1-2B", c: css("--c1"), v: [32.1, 66.5, 50.0] }] });
+  }
+  function drawReal() {
+    grouped("chReal", { title: "Tỉ lệ thành công ↑", max: 100, ticks: [0, 25, 50, 75, 100], bw: 60,
+      groups: ["10% dữ liệu", "Đủ dữ liệu"],
+      series: [{ n: "Diffusion Policy", c: css("--c2"), v: [10.2, 46.4] }, { n: "GR00T", c: css("--c1"), v: [42.6, 76.8] }] });
+  }
+
+  function drawData() {
+    var svg = document.getElementById("chData"); clear(svg);
+    var data = [["Robot thật", 3288.8, css("--c1")], ["Video người", 2517.0, css("--c3")], ["Mô phỏng", 1742.6, css("--c2")], ["Video AI sinh", 827.3, css("--c2")]];
+    var L = 130, R = 90, T = 8, rowH = 46, W = 560, max = 3500;
+    var X = function (v) { return L + v / max * (W - L - R); };
+    data.forEach(function (d, i) {
+      var y = T + i * rowH, bh = 26, by = y + (rowH - bh) / 2, w = X(d[1]) - X(0);
+      svg.appendChild(el("text", { x: L - 10, y: by + 18, "text-anchor": "end", "font-size": 15, fill: css("--ink") }, d[0]));
+      var p = el("path", { d: "M" + X(0) + " " + by + "h" + (w - 4) + "a4 4 0 0 1 4 4v" + (bh - 8) + "a4 4 0 0 1 -4 4h" + (-(w - 4)) + "z", fill: d[2], opacity: i === 3 ? 0.6 : 1 });
+      p.appendChild(el("title", {}, d[0] + ": " + d[1] + " giờ"));
+      svg.appendChild(p);
+      svg.appendChild(el("text", { x: X(d[1]) + 7, y: by + 18, "font-size": 14, fill: css("--ink"), "font-family": css("--f-mono") }, d[1].toLocaleString("vi-VN", { minimumFractionDigits: 1 }) + " h"));
+    });
+    svg.appendChild(el("text", { x: L, y: T + 4 * rowH + 22, "font-size": 14, fill: css("--muted") }, "Tổng: 8.375,7 giờ"));
+  }
+
+  function drawTau() {
+    var svg = document.getElementById("chTau"); clear(svg);
+    var s = 0.999, L = 46, R = 16, T = 12, Bt = 118, W = 520, ymax = 1.7;
+    var X = function (t) { return L + t * (W - L - R); }, Y = function (p) { return Bt - p / ymax * (Bt - T); };
+    [0.5, 1, 1.5].forEach(function (g) {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: Y(g), y2: Y(g), stroke: css("--rule") }));
+      svg.appendChild(el("text", { x: L - 8, y: Y(g) + 4, "text-anchor": "end", "font-size": 12, fill: css("--muted") }, vn(g)));
+    });
+    var pts = [];
+    for (var k = 0; k <= 120; k++) { var t = k / 120 * s; pts.push(X(t).toFixed(1) + "," + Y(1.5 / s * Math.pow((s - t) / s, 0.5)).toFixed(1)); }
+    svg.appendChild(el("path", { d: "M" + pts.join(" L") + " L" + X(s).toFixed(1) + "," + Bt + " L" + X(0) + "," + Bt + "Z", fill: css("--accent"), opacity: 0.18 }));
+    svg.appendChild(el("path", { d: "M" + pts.join(" L"), stroke: css("--accent"), "stroke-width": 3, fill: "none" }));
+    svg.appendChild(el("line", { x1: X(0), x2: X(1), y1: Y(1), y2: Y(1), stroke: css("--amber"), "stroke-width": 2, "stroke-dasharray": "6 4" }));
+    svg.appendChild(el("text", { x: X(1) - 4, y: Y(1) - 6, "text-anchor": "end", "font-size": 12, fill: css("--amber") }, "nếu bốc đều"));
+    svg.appendChild(el("line", { x1: L, x2: W - R, y1: Bt, y2: Bt, stroke: css("--muted") }));
+    svg.appendChild(el("text", { x: X(0), y: Bt + 18, "font-size": 13, fill: css("--muted") }, "τ = 0 · nhiễu"));
+    svg.appendChild(el("text", { x: X(1), y: Bt + 18, "text-anchor": "end", "font-size": 13, fill: css("--muted") }, "τ = 1 · sạch"));
+    var frac = 1 - Math.pow((s - 0.5) / s, 1.5);
+    svg.appendChild(el("text", { x: X(0.5), y: Bt + 18, "text-anchor": "middle", "font-size": 13, fill: css("--ink"), "font-weight": 600 }, "~" + Math.round(frac * 100) + "% mẫu có τ < 0,5"));
+  }
+
+  function drawAttn() {
+    var g = document.getElementById("attnSvg"); clear(g);
+    var svg = g.ownerSVGElement;
+    var old = svg.querySelector("defs"); if (old) old.parentNode.removeChild(old);
+    arrowDef(svg, "m-at", css("--amber"));
+    /* VLM tokens */
+    g.appendChild(el("text", { x: 300, y: 18, "text-anchor": "middle", "font-size": 15, "font-weight": 700, fill: css("--indigo") }, "φₜ · token ảnh + chữ từ VLM"));
+    for (var i = 0; i < 12; i++) g.appendChild(el("rect", { x: 108 + i * 32, y: 30, width: 24, height: 24, rx: 4, fill: css("--code-bg"), stroke: css("--indigo"), "stroke-width": 2 }));
+    /* state + action tokens */
+    var ty = 196, tx0 = 30, st = 32;
+    g.appendChild(el("rect", { x: tx0, y: ty, width: 24, height: 24, rx: 4, fill: css("--amber") }));
+    for (var j = 1; j <= 16; j++) g.appendChild(el("rect", { x: tx0 + j * st, y: ty, width: 24, height: 24, rx: 4, fill: css("--accent") }));
+    /* cross-attention arrows */
+    [3, 7, 11, 15].forEach(function (j, idx) {
+      var x1 = tx0 + j * st + 12, x2 = 108 + (idx * 3 + 1) * 32 + 12;
+      g.appendChild(el("path", { d: "M" + x1 + " " + (ty - 4) + "L" + x2 + " 60", stroke: css("--amber"), "stroke-width": 2.2, fill: "none", "marker-end": "url(#m-at)" }));
+    });
+    g.appendChild(el("text", { x: 598, y: 118, "text-anchor": "end", "font-size": 14, "font-weight": 700, fill: css("--amber") }, "cross-attention"));
+    /* self-attention arcs */
+    [[0, 5], [2, 8], [5, 12], [9, 16], [1, 4]].forEach(function (p) {
+      var a = tx0 + p[0] * st + 12, b = tx0 + p[1] * st + 12, h = 20 + (p[1] - p[0]) * 5;
+      g.appendChild(el("path", { d: "M" + a + " " + (ty + 28) + "Q" + ((a + b) / 2) + " " + (ty + 28 + h) + " " + b + " " + (ty + 28), stroke: css("--accent"), "stroke-width": 2, fill: "none", opacity: 0.8 }));
+    });
+    g.appendChild(el("text", { x: 42, y: 186, "text-anchor": "middle", "font-size": 13, fill: css("--amber"), "font-weight": 700 }, "qₜ"));
+    g.appendChild(el("text", { x: 330, y: 186, "text-anchor": "middle", "font-size": 13, fill: css("--accent-ink"), "font-weight": 700 }, "16 token hành động aₜ … aₜ₊₁₅"));
+    g.appendChild(el("text", { x: 300, y: 296, "text-anchor": "middle", "font-size": 14, "font-weight": 700, fill: css("--accent-ink") }, "self-attention"));
+  }
+
+  function drawChunk() {
+    var g = document.getElementById("chunkSvg"); clear(g);
+    var rows = [["20 Hz", 20], ["120 Hz", 120]], ms = 63.9;
+    rows.forEach(function (r, i) {
+      var y = 14 + i * 64, steps = ms * r[1] / 1000, used = Math.ceil(steps), dur = 16 / r[1] * 1000;
+      g.appendChild(el("text", { x: 0, y: y + 19, "font-size": 15, "font-weight": 700, fill: css("--ink") }, r[0]));
+      for (var k = 0; k < 16; k++) g.appendChild(el("rect", { x: 70 + k * 27, y: y, width: 24, height: 26, rx: 4, fill: k < used ? css("--amber") : css("--accent-soft"), stroke: k < used ? css("--amber") : css("--accent") }));
+      g.appendChild(el("text", { x: 70, y: y + 44, "font-size": 13, fill: css("--muted") }, "1 chunk ≈ " + vn(dur, 0) + " ms · ~" + vn(steps, 1) + " bước trôi qua khi đang tính"));
+    });
+  }
+
+  function drawEuler() {
+    var g = document.getElementById("eulerSvg"); clear(g);
+    var svg = g.ownerSVGElement;
+    var old = svg.querySelector("defs"); if (old) old.parentNode.removeChild(old);
+    arrowDef(svg, "m-eu", css("--amber"));
+    var X = function (v) { return 40 + (v + 1.4) * 205; };
+    var vals = [-1.2, -0.75, -0.3, 0.15, 0.6];
+    g.appendChild(el("line", { x1: X(-1.35), x2: X(0.75), y1: 70, y2: 70, stroke: css("--rule"), "stroke-width": 4, "stroke-linecap": "round" }));
+    for (var i = 0; i < 4; i++) {
+      var a = X(vals[i]), b = X(vals[i + 1]);
+      g.appendChild(el("path", { d: "M" + (a + 6) + " 60Q" + ((a + b) / 2) + " 18 " + (b - 6) + " 60", stroke: css("--amber"), "stroke-width": 2, fill: "none", "marker-end": "url(#m-eu)" }));
+      g.appendChild(el("text", { x: (a + b) / 2, y: 30, "text-anchor": "middle", "font-size": 13, fill: css("--amber"), "font-weight": 700 }, "+0,45"));
+    }
+    vals.forEach(function (v, i) {
+      var last = i === 4;
+      g.appendChild(el("circle", { cx: X(v), cy: 70, r: last ? 9 : 7, fill: last ? css("--accent") : (i === 0 ? css("--muted") : css("--ink")) }));
+      g.appendChild(el("text", { x: X(v), y: 98, "text-anchor": "middle", "font-size": 14, fill: css("--ink"), "font-family": css("--f-mono") }, vn(v, 2)));
+      g.appendChild(el("text", { x: X(v), y: 118, "text-anchor": "middle", "font-size": 12, fill: css("--muted") }, "τ = " + vn(i / 4, 2)));
+    });
+  }
+
+  function drawLapa() {
+    var g = document.getElementById("lapaSvg"); clear(g);
+    var svg = g.ownerSVGElement;
+    var old = svg.querySelector("defs"); if (old) old.parentNode.removeChild(old);
+    arrowDef(svg, "m-la", css("--muted"));
+    function box(x, y, w, h, t, fill, stroke) { g.appendChild(el("rect", { x: x, y: y, width: w, height: h, rx: 6, fill: fill, stroke: stroke, "stroke-width": 1.5 })); g.appendChild(el("text", { x: x + w / 2, y: y + h / 2 + 5, "text-anchor": "middle", "font-size": 13, fill: css("--ink"), "font-weight": 600 }, t)); }
+    box(0, 6, 56, 30, "xₜ", css("--slide"), css("--rule"));
+    box(0, 54, 56, 30, "xₜ₊H", css("--slide"), css("--rule"));
+    box(80, 26, 70, 38, "Encoder", css("--slide"), css("--accent"));
+    box(172, 30, 40, 30, "zₜ", css("--amber-soft"), css("--amber"));
+    box(234, 26, 70, 38, "Decoder", css("--slide"), css("--accent"));
+    g.appendChild(el("text", { x: 318, y: 50, "font-size": 13, fill: css("--ink"), "font-weight": 600 }, "x̂ₜ₊H"));
+    [["M56 21L78 38"], ["M56 69L78 52"], ["M150 45H170"], ["M212 45H232"], ["M304 45H314"]].forEach(function (d) { g.appendChild(el("path", { d: d[0], stroke: css("--muted"), "stroke-width": 1.6, fill: "none", "marker-end": "url(#m-la)" })); });
+    g.appendChild(el("text", { x: 269, y: 84, "text-anchor": "middle", "font-size": 11, fill: css("--muted") }, "(decoder cũng nhận xₜ)"));
+  }
+
+  function drawNext() {
+    var g = document.getElementById("nextSvg"); clear(g);
+    var svg = g.ownerSVGElement;
+    var old = svg.querySelector("defs"); if (old) old.parentNode.removeChild(old);
+    arrowDef(svg, "m-nx", css("--muted"));
+    g.appendChild(el("rect", { x: 130, y: 6, width: 180, height: 60, rx: 12, fill: css("--accent"), stroke: "none" }));
+    g.appendChild(el("text", { x: 220, y: 42, "text-anchor": "middle", "font-size": 19, "font-weight": 800, fill: "#FFFFFF" }, "GR00T N1"));
+    var nodes = [
+      [10, 110, "Qwen-VLA", "VLM + DiT; robot mô tả bằng prompt thay MLP riêng; τ đảo quy ước"],
+      [10, 205, "RTC", "chunk mất ~64 ms để tính: nối chunk cũ với chunk mới sao cho không giật"],
+      [10, 300, "MoE", "thay FFN trong DiT bằng nhiều chuyên gia + router (khác \"MoE\" của π0)"]
+    ];
+    nodes.forEach(function (n, i) {
+      g.appendChild(el("path", { d: "M220 66V" + (n[1] - 4), stroke: css("--muted"), "stroke-width": 2, fill: "none", "marker-end": "url(#m-nx)", opacity: i === 0 ? 1 : 0 }));
+      g.appendChild(el("rect", { x: n[0], y: n[1], width: 420, height: 76, rx: 12, fill: i === 0 ? css("--accent-soft") : css("--code-bg"), stroke: i === 0 ? css("--accent") : css("--rule"), "stroke-width": 1.5 }));
+      g.appendChild(el("text", { x: n[0] + 16, y: n[1] + 28, "font-size": 18, "font-weight": 800, fill: css("--ink") }, n[2]));
+      var words = n[3].split(" "), line = "", ly = n[1] + 52, lines = [];
+      words.forEach(function (w) { if ((line + " " + w).length > 52) { lines.push(line); line = w; } else { line = line ? line + " " + w : w; } });
+      lines.push(line);
+      lines.slice(0, 2).forEach(function (t, k) { g.appendChild(el("text", { x: n[0] + 16, y: ly + k * 18 - (lines.length > 1 ? 6 : 0), "font-size": 14, fill: css("--muted") }, t)); });
+    });
+    g.appendChild(el("path", { d: "M220 186V201", stroke: css("--muted"), "stroke-width": 2, fill: "none", "marker-end": "url(#m-nx)" }));
+    g.appendChild(el("path", { d: "M220 281V296", stroke: css("--muted"), "stroke-width": 2, fill: "none", "marker-end": "url(#m-nx)" }));
+  }
+
+  function drawAll() { drawRC(); drawSim(); drawReal(); drawData(); drawTau(); drawAttn(); drawChunk(); drawEuler(); drawLapa(); drawNext(); }
+
+  var start = 0;
+  var m = /^#s(\d+)$/.exec(location.hash || "");
+  if (m) start = parseInt(m[1], 10) - 1;
+  go(start, false);
+  fit();
+  drawAll();
+  try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll); } catch (e) {}
+  new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { drawAll(); fit(); });
+})();
+</script>
+
+</body></html>

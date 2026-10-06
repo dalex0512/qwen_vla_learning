@@ -1,0 +1,264 @@
+
+======================================================================
+2026-10-05 09:45:08  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 759, in _fetch
+pdf2zh.translator.RateLimitedError: Google Translate is refusing requests from this network (HTTP 429 or CAPTCHA)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-fce9zu38\LIBERO-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-fce9zu38\LIBERO-ocr-sidecar.pdf <- RateLimitedError: Google Translate is refusing requests from this network (HTTP 429 or CAPTCHA)
+
+======================================================================
+2026-10-05 09:47:19  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:20  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:21  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:22  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:22  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:22  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:23  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:23  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:24  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:24  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:24  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:25  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:25  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-05 09:47:25  D:\VLA Modeling\Docs\LIBERO.pdf
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 452, in translate_pdf
+  File "pdf2zh\translator.py", line 235, in check_available
+pdf2zh.translator.RateLimitedError: Google Translate is cooling down after refusing this network
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 454, in translate_pdf
+scripts.translate_pdf.TranslationError: Google Translate is temporarily paused after a network refusal; successful translations remain cached. Try again later.
+
+======================================================================
+2026-10-06 16:24:15  D:\VLA Modeling\Docs\Groot.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 692, in _translate_alone
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 692, in <lambda>
+  File "pdf2zh\translator.py", line 591, in do_translate
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 306, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-wreqwyyg\Groot-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-wreqwyyg\Groot-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. <- EOFError <- BrokenPipeError: [WinError 109] The pipe has been ended
