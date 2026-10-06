@@ -6,12 +6,12 @@
   <title>VLA Modeling · Sổ tay học tập</title>
   <meta name="description" content="Sổ tay học tập và theo dõi lộ trình đọc paper VLA (Vision-Language-Action) modeling.">
   
-  <!-- Typography -->
+  <!-- Typography Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="assets/style.css?v=10.0">
+  <link rel="stylesheet" href="assets/style.css?v=20.0">
   <script>
     (function () {
       try {
@@ -28,13 +28,13 @@
   </script>
 </head>
 <body class="page-home">
-  <!-- Mảng màu mờ trang trí nền (Ambient Glow Orbs) -->
+  <!-- Mảng màu tròn mờ nền (Ambient Glow Orbs) -->
   <div class="ambient-glow ambient-glow--teal" aria-hidden="true"></div>
   <div class="ambient-glow ambient-glow--orange" aria-hidden="true"></div>
   <div class="ambient-glow ambient-glow--bottom" aria-hidden="true"></div>
 
   <div class="container main-layout">
-    <!-- Header thương hiệu & Đổi giao diện -->
+    <!-- Header thương hiệu & Nút đổi theme -->
     <header class="site-header">
       <div class="brand-group">
         <a href="index.html" class="brand-link">
@@ -67,8 +67,9 @@
       </div>
     </header>
 
-    <!-- HERO SECTION: 2 cột (Thông tin học tập + Robot Arm SVG) -->
-    <section class="hero-section" aria-label="Tổng quan học tập">
+    <!-- HERO SECTION: 2 cột -->
+    <section class="hero-section" aria-label="Tổng quan tiến trình học tập">
+      <!-- Cột Trái: Trạng thái & Tiêu điểm -->
       <div class="hero-content">
         <div class="hero-badge">
           <span class="badge-pulse-dot"></span>
@@ -99,7 +100,7 @@
           </div>
         </div>
 
-        <!-- Bộ đo tiến độ vòng tròn (Circular Progress Ring) -->
+        <!-- Vòng tròn tiến độ SVG -->
         <div class="hero-progress-row">
           <div class="progress-ring-box">
             <svg class="progress-ring-svg" width="68" height="68" viewBox="0 0 68 68">
@@ -111,13 +112,13 @@
             </div>
           </div>
           <div class="progress-ring-details">
-            <div class="progress-ring-title">Tiến độ trình bày</div>
-            <div class="progress-ring-sub" id="hero-progress-sub">Đã hoàn thành 0 trên 6 bài báo</div>
+            <div class="progress-ring-title">Tiến độ bài học</div>
+            <div class="progress-ring-sub" id="hero-progress-sub">Đã xong 0/6 paper</div>
           </div>
         </div>
       </div>
 
-      <!-- Cánh tay robot 2 khớp mô phỏng tác vụ gắp đặt (Manipulation Task) -->
+      <!-- Cột Phải: SVG Robot Arm 2 khớp chạy pick & place -->
       <div class="hero-visual" aria-hidden="true">
         <div class="robot-stage">
           <div class="stage-tag">VLA Manipulation Task · Pick & Place</div>
@@ -127,64 +128,65 @@
               <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.5" class="svg-grid-line" />
               </pattern>
-              <linearGradient id="arm-grad-teal" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id="arm-teal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#00897B" />
                 <stop offset="100%" stop-color="#004D40" />
               </linearGradient>
-              <linearGradient id="arm-grad-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id="arm-orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#FB8C00" />
                 <stop offset="100%" stop-color="#B8650F" />
               </linearGradient>
             </defs>
+
+            <!-- Lưới tọa độ bàn làm việc -->
             <rect x="10" y="10" width="400" height="250" fill="url(#grid-pattern)" opacity="0.4" rx="12" />
 
-            <!-- Bàn thao tác -->
+            <!-- Mặt bàn thao tác -->
             <rect x="20" y="250" width="380" height="12" rx="4" class="svg-bench" />
             <line x1="20" y1="250" x2="400" y2="250" stroke="#00897B" stroke-width="2" opacity="0.6" />
 
-            <!-- Vật thể nguồn: Bát bên trái -->
+            <!-- Vật thể nguồn: Bát bên trái (cx=90) -->
             <g class="svg-source-bowl">
-              <ellipse cx="90" cy="246" rx="26" ry="6" class="svg-bowl-lip" />
-              <path d="M 64 246 Q 90 270 116 246 Z" class="svg-bowl-body" />
-              <text x="90" y="280" text-anchor="middle" class="svg-label-text">Bát vật thể</text>
+              <ellipse cx="90" cy="246" rx="28" ry="7" class="svg-bowl-lip" />
+              <path d="M 62 246 Q 90 272 118 246 Z" class="svg-bowl-body" />
+              <text x="90" y="282" text-anchor="middle" class="svg-label-text">Bát vật thể</text>
             </g>
 
-            <!-- Vật thể đích: Đĩa bên phải -->
+            <!-- Vật thể đích: Đĩa bên phải (cx=320) -->
             <g class="svg-target-plate">
-              <ellipse cx="320" cy="248" rx="34" ry="7" class="svg-plate-outer" />
-              <ellipse cx="320" cy="248" rx="22" ry="4.5" class="svg-plate-inner" />
-              <text x="320" y="280" text-anchor="middle" class="svg-label-text">Đĩa đích</text>
+              <ellipse cx="320" cy="248" rx="36" ry="8" class="svg-plate-outer" />
+              <ellipse cx="320" cy="248" rx="24" ry="5" class="svg-plate-inner" />
+              <text x="320" y="282" text-anchor="middle" class="svg-label-text">Đĩa đích</text>
             </g>
 
-            <!-- Khối lập phương thao tác -->
+            <!-- Khối lập phương thao tác (Cube payload) -->
             <g class="robot-cube-payload">
               <rect x="-10" y="-10" width="20" height="20" rx="3" class="svg-cube-body" />
               <path d="M -10 -10 L 0 -16 L 10 -10 L 0 -4 Z" class="svg-cube-top" />
               <path d="M 0 -4 L 10 -10 L 10 10 L 0 16 Z" class="svg-cube-right" />
             </g>
 
-            <!-- Đế Robot -->
+            <!-- Đế cố định của Robot (cx=200, cy=250) -->
             <g class="robot-base-group" transform="translate(200, 250)">
               <path d="M -36 0 L -24 -24 L 24 -24 L 36 0 Z" class="svg-base-pedestal" />
               <circle cx="0" cy="-24" r="14" class="svg-joint-outer" />
               <circle cx="0" cy="-24" r="6" class="svg-joint-inner" />
             </g>
 
-            <!-- Khớp 1 & Cánh tay trên -->
+            <!-- Khớp 1 & Cánh tay trên (Link 1) -->
             <g class="robot-link-1" transform="translate(200, 226)">
               <rect x="-8" y="-95" width="16" height="95" rx="8" class="svg-arm-segment-1" />
               <line x1="0" y1="-8" x2="0" y2="-87" stroke="#80CBC4" stroke-width="2" stroke-linecap="round" opacity="0.8" />
               
-              <!-- Khớp 2 -->
+              <!-- Khớp 2 & Cánh tay trước (Link 2) -->
               <g class="robot-link-2" transform="translate(0, -95)">
                 <circle cx="0" cy="0" r="11" class="svg-joint-outer" />
                 <circle cx="0" cy="0" r="4.5" class="svg-joint-inner" />
                 
-                <!-- Cánh tay trước -->
                 <rect x="-6" y="-80" width="12" height="80" rx="6" class="svg-arm-segment-2" />
                 <line x1="0" y1="-6" x2="0" y2="-74" stroke="#FFE082" stroke-width="2" stroke-linecap="round" opacity="0.8" />
                 
-                <!-- Tay kẹp -->
+                <!-- Khớp quay cổ tay & Tay kẹp (Gripper) -->
                 <g class="robot-gripper" transform="translate(0, -80)">
                   <circle cx="0" cy="0" r="7" class="svg-joint-small" />
                   <rect x="-14" y="-6" width="28" height="6" rx="2" class="svg-gripper-crossbar" />
@@ -192,6 +194,7 @@
                   <path d="M -12 -6 L -12 -22 L -6 -22" class="svg-finger-left" />
                   <path d="M 12 -6 L 12 -22 L 6 -22" class="svg-finger-right" />
                   
+                  <!-- Vùng quét camera / cảm biến VLA -->
                   <polygon points="0,-4 -18,-42 18,-42" class="svg-sensor-cone" opacity="0.15" />
                   <circle cx="0" cy="-3" r="2" fill="#FB8C00" />
                 </g>
@@ -200,7 +203,7 @@
           </svg>
           <div class="stage-footer">
             <span class="stage-status-dot"></span>
-            <span>Chế độ mô phỏng trực quan liên tục</span>
+            <span>Mô phỏng chu trình gắp đặt VLA (6.5s)</span>
           </div>
         </div>
       </div>
@@ -210,7 +213,7 @@
     <section class="roadmap-section" aria-label="Lộ trình chi tiết 6 paper">
       <div class="roadmap-header-bar">
         <h2 class="roadmap-heading">Lộ trình nghiên cứu</h2>
-        <span class="roadmap-sub">Theo dõi từ nền tảng benchmark đến các cấu trúc chuyên sâu</span>
+        <span class="roadmap-sub">Theo dõi từ nền tảng benchmark đến các kiến trúc chuyên sâu</span>
       </div>
 
       <!-- Main Timeline Container -->
@@ -228,7 +231,7 @@
     </footer>
   </div>
 
-  <script src="papers.js?v=10.0"></script>
-  <script src="assets/app.js?v=10.0"></script>
+  <script src="papers.js?v=20.0"></script>
+  <script src="assets/app.js?v=20.0"></script>
 </body>
 </html>
