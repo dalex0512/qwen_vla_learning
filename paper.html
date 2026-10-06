@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="assets/style.css?v=7.0">
+  <link rel="stylesheet" href="assets/style.css?v=10.0">
   <script>
     (function () {
       try {
@@ -28,7 +28,7 @@
 </head>
 <body class="page-paper">
   <div class="viewer-shell">
-    <!-- THANH ĐIỀU HƯỚNG TRÊN CÙNG (Top Navigation Bar) -->
+    <!-- THANH ĐIỀU HƯỚNG TRÊN CÙNG -->
     <header class="viewer-header">
       <div class="viewer-nav-left">
         <a href="index.html" class="viewer-back-btn" title="Quay lại danh sách tổng quan">
@@ -47,7 +47,6 @@
       </div>
 
       <div class="viewer-nav-right">
-        <!-- Nút chuyển qua lại Paper Trước / Sau -->
         <nav class="paper-prev-next-group" aria-label="Chuyển bài báo">
           <a href="#" id="viewer-prev-btn" class="nav-pager-btn" title="Paper trước đó">
             <svg viewBox="0 0 20 20" fill="currentColor" class="nav-icon" aria-hidden="true">
@@ -63,7 +62,6 @@
           </a>
         </nav>
 
-        <!-- Nút đổi theme sáng / tối -->
         <button type="button" class="theme-toggle-btn viewer-theme-btn" id="theme-toggle-btn" aria-label="Đổi giao diện sáng/tối">
           <span class="theme-icon-wrap" aria-hidden="true">
             <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -86,7 +84,7 @@
       </div>
     </header>
 
-    <!-- THANH TAB TÀI LIỆU (Document Tabs Bar with Sliding Indicator) -->
+    <!-- THANH TAB TÀI LIỆU -->
     <nav class="viewer-tabs-bar" aria-label="Tài liệu của bài báo">
       <div class="tabs-list-wrapper">
         <div class="tabs-list" role="tablist" id="viewer-tab-list">
@@ -111,12 +109,10 @@
             <span>Song song</span>
           </button>
           
-          <!-- Thanh gạch chân trượt (Active Underline Slider) -->
           <div class="tab-indicator-line" id="tab-indicator-line" aria-hidden="true"></div>
         </div>
       </div>
 
-      <!-- Nút mở tab mới cho tài liệu đang chọn -->
       <div class="tab-actions-right">
         <a href="#" id="viewer-external-link" target="_blank" rel="noopener noreferrer" class="open-external-btn" title="Mở file này trong một tab trình duyệt mới">
           <span>Mở tab mới</span>
@@ -128,9 +124,9 @@
       </div>
     </nav>
 
-    <!-- KHU VỰC HIỂN THỊ NỘI DUNG CHÍNH (Tab Panels) -->
+    <!-- KHU VỰC HIỂN THỊ NỘI DUNG CHÍNH -->
     <main class="viewer-stage" id="viewer-stage">
-      <!-- SKELETON SHIMMER LOADING PLACEHOLDER -->
+      <!-- SKELETON SHIMMER -->
       <div class="viewer-skeleton" id="viewer-skeleton" aria-hidden="true">
         <div class="skeleton-shimmer"></div>
         <div class="skeleton-content">
@@ -144,21 +140,19 @@
         </div>
       </div>
 
-      <!-- Tab Đơn (Iframe chung cho Đọc hiểu, Slide, PDF gốc, Bản dịch) -->
+      <!-- Tab Đơn -->
       <div class="tab-panel tab-panel--single" id="panel-single">
         <iframe id="single-frame" class="viewer-frame" title="Nội dung tài liệu" allow="fullscreen; allow-scripts; allow-same-origin"></iframe>
       </div>
 
-      <!-- Tab Song song (Dual Split View) -->
+      <!-- Tab Song song -->
       <div class="tab-panel tab-panel--compare" id="panel-compare">
-        <!-- Chuyển đổi trên thiết bị di động (<900px) -->
         <div class="compare-mobile-nav">
           <button type="button" class="compare-seg-btn is-active" id="seg-btn-left" data-target="left">PDF Gốc</button>
           <button type="button" class="compare-seg-btn" id="seg-btn-right" data-target="right">Bản dịch (Vi)</button>
         </div>
 
         <div class="compare-grid">
-          <!-- Cột bên trái: PDF Gốc -->
           <div class="compare-column compare-column--left is-visible" id="col-pdf-goc">
             <div class="column-header">
               <span class="column-badge badge--teal">PDF GỐC</span>
@@ -172,7 +166,6 @@
             </div>
           </div>
 
-          <!-- Cột bên phải: Bản dịch Tiếng Việt -->
           <div class="compare-column compare-column--right is-visible" id="col-pdf-viet">
             <div class="column-header">
               <span class="column-badge badge--orange">BẢN DỊCH TIẾNG VIỆT</span>
@@ -208,8 +201,7 @@
     </main>
   </div>
 
-  <!-- Nạp dữ liệu và kịch bản -->
-  <script src="papers.js?v=7.0"></script>
-  <script src="assets/app.js?v=7.0"></script>
+  <script src="papers.js?v=10.0"></script>
+  <script src="assets/app.js?v=10.0"></script>
 </body>
 </html>

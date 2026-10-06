@@ -11,9 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="assets/style.css?v=7.0">
+  <link rel="stylesheet" href="assets/style.css?v=10.0">
   <script>
-    // Khởi tạo theme tức thì để tránh chớp màn hình (FOUC)
     (function () {
       try {
         var saved = localStorage.getItem('vla_theme_pref');
@@ -124,7 +123,6 @@
           <div class="stage-tag">VLA Manipulation Task · Pick & Place</div>
           
           <svg class="robot-arm-svg" viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Grid nền toạ độ không gian thao tác robot -->
             <defs>
               <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.5" class="svg-grid-line" />
@@ -140,64 +138,60 @@
             </defs>
             <rect x="10" y="10" width="400" height="250" fill="url(#grid-pattern)" opacity="0.4" rx="12" />
 
-            <!-- Bàn thao tác (Workbench) -->
+            <!-- Bàn thao tác -->
             <rect x="20" y="250" width="380" height="12" rx="4" class="svg-bench" />
             <line x1="20" y1="250" x2="400" y2="250" stroke="#00897B" stroke-width="2" opacity="0.6" />
 
-            <!-- Vật thể nguồn: Cái bát bên trái (Source Bowl) -->
+            <!-- Vật thể nguồn: Bát bên trái -->
             <g class="svg-source-bowl">
               <ellipse cx="90" cy="246" rx="26" ry="6" class="svg-bowl-lip" />
               <path d="M 64 246 Q 90 270 116 246 Z" class="svg-bowl-body" />
               <text x="90" y="280" text-anchor="middle" class="svg-label-text">Bát vật thể</text>
             </g>
 
-            <!-- Vật thể đích: Chiếc đĩa bên phải (Target Plate) -->
+            <!-- Vật thể đích: Đĩa bên phải -->
             <g class="svg-target-plate">
               <ellipse cx="320" cy="248" rx="34" ry="7" class="svg-plate-outer" />
               <ellipse cx="320" cy="248" rx="22" ry="4.5" class="svg-plate-inner" />
               <text x="320" y="280" text-anchor="middle" class="svg-label-text">Đĩa đích</text>
             </g>
 
-            <!-- Khối lập phương thao tác (Cube Payload) -->
+            <!-- Khối lập phương thao tác -->
             <g class="robot-cube-payload">
               <rect x="-10" y="-10" width="20" height="20" rx="3" class="svg-cube-body" />
               <path d="M -10 -10 L 0 -16 L 10 -10 L 0 -4 Z" class="svg-cube-top" />
               <path d="M 0 -4 L 10 -10 L 10 10 L 0 16 Z" class="svg-cube-right" />
             </g>
 
-            <!-- Đế Robot (Robot Base) -->
+            <!-- Đế Robot -->
             <g class="robot-base-group" transform="translate(200, 250)">
               <path d="M -36 0 L -24 -24 L 24 -24 L 36 0 Z" class="svg-base-pedestal" />
               <circle cx="0" cy="-24" r="14" class="svg-joint-outer" />
               <circle cx="0" cy="-24" r="6" class="svg-joint-inner" />
             </g>
 
-            <!-- Khớp 1 & Cánh tay trên (Link 1 - Shoulder & Upper Arm) -->
+            <!-- Khớp 1 & Cánh tay trên -->
             <g class="robot-link-1" transform="translate(200, 226)">
-              <!-- Thanh nối 1 -->
               <rect x="-8" y="-95" width="16" height="95" rx="8" class="svg-arm-segment-1" />
               <line x1="0" y1="-8" x2="0" y2="-87" stroke="#80CBC4" stroke-width="2" stroke-linecap="round" opacity="0.8" />
               
-              <!-- Khớp 2 (Elbow Joint) -->
+              <!-- Khớp 2 -->
               <g class="robot-link-2" transform="translate(0, -95)">
                 <circle cx="0" cy="0" r="11" class="svg-joint-outer" />
                 <circle cx="0" cy="0" r="4.5" class="svg-joint-inner" />
                 
-                <!-- Thanh nối 2 (Forearm) -->
+                <!-- Cánh tay trước -->
                 <rect x="-6" y="-80" width="12" height="80" rx="6" class="svg-arm-segment-2" />
                 <line x1="0" y1="-6" x2="0" y2="-74" stroke="#FFE082" stroke-width="2" stroke-linecap="round" opacity="0.8" />
                 
-                <!-- Cổ tay & Tay kẹp (Wrist & Gripper) -->
+                <!-- Tay kẹp -->
                 <g class="robot-gripper" transform="translate(0, -80)">
                   <circle cx="0" cy="0" r="7" class="svg-joint-small" />
                   <rect x="-14" y="-6" width="28" height="6" rx="2" class="svg-gripper-crossbar" />
                   
-                  <!-- Ngón kẹp trái -->
                   <path d="M -12 -6 L -12 -22 L -6 -22" class="svg-finger-left" />
-                  <!-- Ngón kẹp phải -->
                   <path d="M 12 -6 L 12 -22 L 6 -22" class="svg-finger-right" />
                   
-                  <!-- Tia cảm biến Laser / Camera VLA -->
                   <polygon points="0,-4 -18,-42 18,-42" class="svg-sensor-cone" opacity="0.15" />
                   <circle cx="0" cy="-3" r="2" fill="#FB8C00" />
                 </g>
@@ -219,10 +213,8 @@
         <span class="roadmap-sub">Theo dõi từ nền tảng benchmark đến các cấu trúc chuyên sâu</span>
       </div>
 
-      <!-- Main Timeline Container (Rendered dynamically by app.js) -->
-      <main id="paper-timeline" class="timeline-container">
-        <!-- Javascript sẽ sinh danh sách thẻ paper theo đúng 3 phong cách thiết kế -->
-      </main>
+      <!-- Main Timeline Container -->
+      <main id="paper-timeline" class="timeline-container"></main>
     </section>
 
     <!-- FOOTER -->
@@ -236,9 +228,7 @@
     </footer>
   </div>
 
-  <!-- Nạp dữ liệu danh sách papers trước, sau đó nạp file điều khiển giao diện -->
-  <script src="papers.js?v=7.0"></script>
-  <script src="assets/app.js?v=7.0"></script>
+  <script src="papers.js?v=10.0"></script>
+  <script src="assets/app.js?v=10.0"></script>
 </body>
 </html>
-
