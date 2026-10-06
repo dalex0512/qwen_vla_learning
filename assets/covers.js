@@ -1,295 +1,127 @@
-/**
- * covers.js - Trình vẽ Bìa SVG Minh hoạ Ý chính từng Paper
- * Thiết kế theo phong cách Vector nét phẳng, đồng bộ độ dày nét, thích ứng Sáng/Tối.
- * Có watermark số thứ tự to mờ góc trên, 2-3 từ khoá góc dưới và hoạt ảnh khi hover.
- */
-
+/* Bìa minh hoạ cho từng paper.
+   Dùng: window.VLA_COVERS[key]  -> chuỗi <svg>…</svg>
+   key: libero | groot | qwen | rtc-infer | rtc-train | moe
+   Màu lấy từ biến CSS trong covers.css (tự đổi theo sáng/tối).
+   Hoạt ảnh chạy khi phần tử cha có class "cv-host" được hover, hoặc có class "is-active". */
 (function () {
-  'use strict';
+  const bg = (id, deep) => `
+    <defs>
+      <linearGradient id="${id}-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" style="stop-color:var(${deep ? '--cv-bgd1' : '--cv-bg1'})"/>
+        <stop offset="1" style="stop-color:var(${deep ? '--cv-bgd2' : '--cv-bg2'})"/>
+      </linearGradient>
+    </defs>
+    <rect width="400" height="300" fill="url(#${id}-g)"/>
+    <circle cx="352" cy="38" r="90" class="cv-blob"/>
+    <circle cx="40" cy="282" r="70" class="cv-blob"/>`;
 
-  const Covers = {
-    /**
-     * Hàm chính xuất chuỗi SVG cho bìa sách
-     * @param {string} biaType - Mã bìa ('libero', 'groot', 'qwen', 'rtc-infer', 'rtc-train', 'moe')
-     * @param {object} paper - Dữ liệu paper từ PAPERS
-     * @param {number} index - Số thứ tự 1-6
-     * @returns {string} SVG markup string
-     */
-    render: function (biaType, paper, index) {
-      const idxStr = String(index).padStart(2, '0');
-      const isDeep = paper.nhom === 'Đọc sâu';
-      const bgClass = isDeep ? 'cover-bg--indigo' : 'cover-bg--teal';
+  const svg = (key, body) =>
+    `<svg class="cv cv-${key}" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true" focusable="false">${body}</svg>`;
 
-      let innerContent = '';
-      let keywords = [];
+  const COVERS = {
+    /* 1. LIBERO — bàn bếp nhìn từ trên xuống: kẹp robot mang cái bát sang đĩa */
+    libero: svg('libero', bg('libero', false) + `
+      <rect x="62" y="78" width="280" height="168" rx="24" class="cv-shadow"/>
+      <rect x="58" y="70" width="284" height="168" rx="24" class="cv-surface"/>
+      <rect x="252" y="88" width="70" height="46" rx="10" class="cv-indigo-2"/>
+      <rect x="276" y="106" width="22" height="5" rx="2.5" class="cv-indigo"/>
+      <circle cx="272" cy="188" r="32" class="cv-surface cv-stroke"/>
+      <circle cx="272" cy="188" r="21" class="cv-none cv-stroke-thin"/>
+      <g class="cv-move-bowl">
+        <circle cx="128" cy="174" r="25" class="cv-amber"/>
+        <circle cx="128" cy="174" r="15" class="cv-amber-2"/>
+        <rect x="110" y="134" width="36" height="14" rx="7" class="cv-teal"/>
+        <rect x="108" y="140" width="8" height="24" rx="4" class="cv-teal"/>
+        <rect x="140" y="140" width="8" height="24" rx="4" class="cv-teal"/>
+        <rect x="122" y="102" width="12" height="36" rx="6" class="cv-teal"/>
+      </g>
+      <rect x="80" y="214" width="12" height="12" rx="3" class="cv-teal"/>
+      <rect x="98" y="214" width="12" height="12" rx="3" class="cv-amber"/>
+      <rect x="116" y="214" width="12" height="12" rx="3" class="cv-indigo"/>
+      <rect x="134" y="214" width="12" height="12" rx="3" class="cv-ink-soft"/>`),
 
-      switch (biaType) {
-        case 'libero':
-          keywords = ['benchmark', '130 bài', '4 bộ'];
-          innerContent = `
-            <!-- Mặt bàn bếp & Bồn / Kệ -->
-            <rect x="25" y="30" width="230" height="130" rx="8" class="cv-plate cv-stroke" />
-            <rect x="35" y="40" width="80" height="24" rx="4" class="cv-box cv-stroke" />
-            <text x="75" y="56" class="cv-tag-text">Cabinet</text>
+    /* 2. GR00T N1 — người máy: đầu (Hệ 2, suy nghĩ) phát tín hiệu xuống tay (Hệ 1, hành động) */
+    groot: svg('groot', bg('groot', false) + `
+      <circle cx="200" cy="84" r="44" class="cv-amber-2 cv-halo"/>
+      <line x1="182" y1="214" x2="174" y2="268" class="cv-limb cv-limb-dark"/>
+      <line x1="218" y1="214" x2="226" y2="268" class="cv-limb cv-limb-dark"/>
+      <polyline points="166,140 128,186 136,230" class="cv-limb"/>
+      <polyline points="234,140 276,176 300,146" class="cv-limb"/>
+      <rect x="190" y="104" width="20" height="20" rx="6" class="cv-teal"/>
+      <rect x="158" y="118" width="84" height="100" rx="26" class="cv-teal"/>
+      <circle cx="200" cy="158" r="12" class="cv-surface cv-dim"/>
+      <circle cx="200" cy="84" r="28" class="cv-amber"/>
+      <rect x="186" y="78" width="28" height="9" rx="4.5" class="cv-surface"/>
+      <circle cx="300" cy="146" r="11" class="cv-amber"/>
+      <circle r="6" class="cv-signal cv-surface" style="offset-path: path('M200 92 L200 158 L234 140 L276 176 L300 146')"/>`),
 
-            <!-- 4 ô bộ dữ liệu chuẩn -->
-            <g class="cv-libero-grid" transform="translate(130, 40)">
-              <rect x="0" y="0" width="55" height="16" rx="3" class="cv-pill" />
-              <text x="27" y="12" class="cv-mini-text">Spatial</text>
-              <rect x="62" y="0" width="55" height="16" rx="3" class="cv-pill" />
-              <text x="89" y="12" class="cv-mini-text">Object</text>
-              <rect x="0" y="20" width="55" height="16" rx="3" class="cv-pill" />
-              <text x="27" y="32" class="cv-mini-text">Goal</text>
-              <rect x="62" y="20" width="55" height="16" rx="3" class="cv-pill" />
-              <text x="89" y="32" class="cv-mini-text">Long</text>
-            </g>
+    /* 3. Qwen-VLA — ảnh (mắt) + lệnh (bong bóng) vào bộ não VLM, ra quỹ đạo hành động */
+    qwen: svg('qwen', bg('qwen', false) + `
+      <path d="M128 108 C 160 108, 180 150, 200 150" class="cv-flow"/>
+      <path d="M128 196 C 160 196, 180 150, 200 150" class="cv-flow"/>
+      <path d="M46 108 Q 86 74 126 108 Q 86 142 46 108 Z" class="cv-surface cv-stroke"/>
+      <circle cx="86" cy="108" r="13" class="cv-teal"/>
+      <circle cx="91" cy="103" r="4" class="cv-surface"/>
+      <path d="M50 176 h70 a12 12 0 0 1 12 12 v18 a12 12 0 0 1 -12 12 h-46 l-12 12 v-12 h-12 a12 12 0 0 1 -12 -12 v-18 a12 12 0 0 1 12 -12 Z" class="cv-surface cv-stroke"/>
+      <rect x="54" y="189" width="54" height="6" rx="3" class="cv-ink-soft"/>
+      <rect x="54" y="200" width="36" height="6" rx="3" class="cv-ink-soft"/>
+      <rect x="164" y="114" width="72" height="72" rx="22" class="cv-teal"/>
+      <rect x="180" y="130" width="17" height="17" rx="5" class="cv-teal-2"/>
+      <rect x="203" y="130" width="17" height="17" rx="5" class="cv-surface cv-dim"/>
+      <rect x="180" y="153" width="17" height="17" rx="5" class="cv-surface cv-dim"/>
+      <rect x="203" y="153" width="17" height="17" rx="5" class="cv-teal-2"/>
+      <path id="qwen-traj" d="M236 150 C 270 150, 280 92, 314 100 S 350 170, 362 132" class="cv-traj"/>
+      <circle r="7" class="cv-amber cv-dot cv-dot1" style="offset-path: path('M236 150 C 270 150, 280 92, 314 100 S 350 170, 362 132')"/>
+      <circle r="7" class="cv-amber cv-dot cv-dot2" style="offset-path: path('M236 150 C 270 150, 280 92, 314 100 S 350 170, 362 132')"/>
+      <circle r="7" class="cv-amber cv-dot cv-dot3" style="offset-path: path('M236 150 C 270 150, 280 92, 314 100 S 350 170, 362 132')"/>`),
 
-            <!-- Đĩa đích (Target Plate) bên phải -->
-            <g class="cv-plate-group" transform="translate(200, 115)">
-              <ellipse cx="0" cy="0" rx="28" ry="16" class="cv-plate-outer cv-stroke" />
-              <ellipse cx="0" cy="0" rx="18" ry="10" class="cv-plate-inner cv-stroke" />
-              <text x="0" y="4" class="cv-tag-text">Đích</text>
-            </g>
+    /* 4. RTC inference — các action chunk nối tiếp trên trục thời gian, chỗ nối được làm mượt */
+    'rtc-infer': svg('rtc-infer', bg('rtcI', true) + `
+      <path d="M48 120 C 100 60, 140 170, 200 118 S 300 70, 352 112" class="cv-traj cv-traj-wide"/>
+      <rect x="152" y="96" width="44" height="150" rx="10" class="cv-amber-2 cv-soft"/>
+      <rect x="252" y="96" width="44" height="150" rx="10" class="cv-amber-2 cv-soft"/>
+      <rect x="48" y="168" width="148" height="24" rx="12" class="cv-indigo cv-chunk cv-chunk1"/>
+      <rect x="152" y="196" width="144" height="24" rx="12" class="cv-indigo-mid cv-chunk cv-chunk2"/>
+      <rect x="252" y="224" width="100" height="24" rx="12" class="cv-indigo-2 cv-chunk cv-chunk3"/>
+      <line x1="48" y1="266" x2="352" y2="266" class="cv-axis"/>
+      <path d="M344 260 L354 266 L344 272" class="cv-axis cv-none"/>`),
 
-            <!-- Bát vật thể (Source Bowl) trượt sang đĩa khi hover -->
-            <g class="cv-anim-bowl-slide" transform="translate(80, 115)">
-              <ellipse cx="0" cy="0" rx="22" ry="13" class="cv-bowl-body cv-stroke" />
-              <circle cx="0" cy="0" r="6" class="cv-cube-item" />
-              <text x="0" y="3" class="cv-tag-text">Bát</text>
-            </g>
-          `;
-          break;
+    /* 5. RTC training — action chunk đặt trong vòng lặp huấn luyện */
+    'rtc-train': svg('rtc-train', bg('rtcT', true) + `
+      <circle cx="200" cy="150" r="96" class="cv-ring-track"/>
+      <g class="cv-spin">
+        <circle cx="200" cy="150" r="96" class="cv-ring"/>
+        <path d="M290 112 L306 136 L278 136 Z" class="cv-indigo"/>
+        <path d="M110 188 L94 164 L122 164 Z" class="cv-indigo"/>
+      </g>
+      <rect x="120" y="114" width="80" height="22" rx="11" class="cv-indigo"/>
+      <rect x="160" y="141" width="80" height="22" rx="11" class="cv-indigo-mid"/>
+      <rect x="200" y="168" width="80" height="22" rx="11" class="cv-indigo-2"/>
+      <rect x="160" y="141" width="40" height="22" rx="11" class="cv-amber cv-overlap"/>
+      <rect x="200" y="168" width="40" height="22" rx="11" class="cv-amber cv-overlap"/>`),
 
-        case 'groot':
-          keywords = ['humanoid', 'dual-system', 'flow matching'];
-          innerContent = `
-            <!-- Robot hình người đơn giản hoá -->
-            <!-- Khối đầu: Hệ 2 · VLM -->
-            <g class="cv-groot-head" transform="translate(140, 42)">
-              <rect x="-48" y="-18" width="96" height="36" rx="8" class="cv-block-system2 cv-stroke" />
-              <text x="0" y="4" class="cv-system-text">Hệ 2 · VLM</text>
-              <!-- Mắt cảm biến -->
-              <circle cx="-24" cy="-6" r="3" class="cv-accent-dot" />
-              <circle cx="24" cy="-6" r="3" class="cv-accent-dot" />
-            </g>
-
-            <!-- Đường dẫn tín hiệu thần kinh từ đầu xuống thân -->
-            <line x1="140" y1="60" x2="140" y2="85" class="cv-neural-line cv-stroke" />
-            <circle cx="140" cy="72" r="3.5" class="cv-signal-pulse" />
-
-            <!-- Khối thân: Hệ 1 · Action -->
-            <g class="cv-groot-body" transform="translate(140, 108)">
-              <rect x="-56" y="-22" width="112" height="44" rx="10" class="cv-block-system1 cv-stroke" />
-              <text x="0" y="4" class="cv-system-text">Hệ 1 · Action</text>
-            </g>
-
-            <!-- Cánh tay và bàn tay robot -->
-            <path d="M 84 96 L 50 115 L 45 145" class="cv-limb-line cv-stroke" />
-            <circle cx="45" cy="145" r="5" class="cv-hand-dot cv-stroke" />
-            
-            <path d="M 196 96 L 230 115 L 235 145" class="cv-limb-line cv-stroke" />
-            <circle cx="235" cy="145" r="5" class="cv-hand-dot cv-stroke" />
-
-            <!-- Chân -->
-            <line x1="115" y1="130" x2="105" y2="162" class="cv-limb-line cv-stroke" />
-            <line x1="165" y1="130" x2="175" y2="162" class="cv-limb-line cv-stroke" />
-          `;
-          break;
-
-        case 'qwen':
-          keywords = ['VLM', 'action expert', 'multi-modal'];
-          innerContent = `
-            <!-- Bên trái: Mắt (Vision) + Bong bóng thoại (Language) -->
-            <g class="cv-input-group" transform="translate(48, 70)">
-              <!-- Icon Mắt -->
-              <ellipse cx="0" cy="0" rx="16" ry="10" class="cv-eye-outline cv-stroke" />
-              <circle cx="0" cy="0" r="5" class="cv-eye-pupil" />
-              <text x="0" y="20" class="cv-mini-label">Vision</text>
-            </g>
-
-            <g class="cv-input-group" transform="translate(48, 125)">
-              <!-- Icon Chat Bubble -->
-              <path d="M -14 -10 L 14 -10 Q 18 -10 18 -6 L 18 6 Q 18 10 14 10 L -4 10 L -12 16 L -10 10 L -14 10 Q -18 10 -18 6 L -18 -6 Q -18 -10 -14 -10 Z" class="cv-chat-bubble cv-stroke" />
-              <text x="0" y="28" class="cv-mini-label">Prompt</text>
-            </g>
-
-            <!-- Mũi tên dẫn vào khối VLM -->
-            <path d="M 72 70 L 102 92" class="cv-flow-arrow cv-stroke" marker-end="url(#arrowhead-teal)" />
-            <path d="M 72 125 L 102 104" class="cv-flow-arrow cv-stroke" marker-end="url(#arrowhead-teal)" />
-
-            <!-- Khối VLM trung tâm -->
-            <g class="cv-vlm-core" transform="translate(138, 98)">
-              <rect x="-32" y="-30" width="64" height="60" rx="10" class="cv-core-block cv-stroke" />
-              <text x="0" y="-4" class="cv-core-title">Qwen</text>
-              <text x="0" y="14" class="cv-core-sub">VLM</text>
-            </g>
-
-            <!-- 3 Mũi tên hành động bắn ra bên phải -->
-            <g class="cv-action-arrows">
-              <g class="cv-arrow-row cv-arrow-1" transform="translate(178, 78)">
-                <line x1="0" y1="0" x2="52" y2="-12" class="cv-action-path cv-stroke" />
-                <polygon points="52,-12 42,-18 45,-10" class="cv-arrow-head" />
-                <text x="62" y="-9" class="cv-act-label">a₁</text>
-              </g>
-              <g class="cv-arrow-row cv-arrow-2" transform="translate(178, 98)">
-                <line x1="0" y1="0" x2="56" y2="0" class="cv-action-path cv-stroke" />
-                <polygon points="56,0 46,-4 46,4" class="cv-arrow-head" />
-                <text x="64" y="4" class="cv-act-label">a₂</text>
-              </g>
-              <g class="cv-arrow-row cv-arrow-3" transform="translate(178, 118)">
-                <line x1="0" y1="0" x2="52" y2="12" class="cv-action-path cv-stroke" />
-                <polygon points="52,12 45,10 42,18" class="cv-arrow-head" />
-                <text x="62" y="16" class="cv-act-label">a₃</text>
-              </g>
-            </g>
-          `;
-          break;
-
-        case 'rtc-infer':
-          keywords = ['inference', 'action chunk', 'real-time'];
-          innerContent = `
-            <!-- Trục thời gian t -->
-            <line x1="30" y1="140" x2="250" y2="140" class="cv-axis-line cv-stroke" />
-            <polygon points="250,140 242,136 242,144" class="cv-arrow-head" />
-            <text x="245" y="156" class="cv-axis-label">t (thời gian)</text>
-
-            <!-- 3 Action Chunk nối nhau với vùng chồng lấn -->
-            <g class="cv-chunk-seq" transform="translate(40, 50)">
-              <!-- Chunk 1 -->
-              <g class="cv-chunk-item cv-chunk-1" transform="translate(0, 0)">
-                <rect x="0" y="0" width="70" height="30" rx="5" class="cv-chunk-box cv-stroke" />
-                <text x="35" y="18" class="cv-chunk-text">Chunk k-1</text>
-              </g>
-
-              <!-- Vùng Overlap 1-2 -->
-              <rect x="52" y="18" width="22" height="30" rx="3" class="cv-overlap-box" />
-
-              <!-- Chunk 2 -->
-              <g class="cv-chunk-item cv-chunk-2" transform="translate(56, 24)">
-                <rect x="0" y="0" width="70" height="30" rx="5" class="cv-chunk-box cv-chunk-active cv-stroke" />
-                <text x="35" y="18" class="cv-chunk-text">Chunk k</text>
-              </g>
-
-              <!-- Vùng Overlap 2-3 -->
-              <rect x="108" y="42" width="22" height="30" rx="3" class="cv-overlap-box" />
-
-              <!-- Chunk 3 -->
-              <g class="cv-chunk-item cv-chunk-3" transform="translate(112, 48)">
-                <rect x="0" y="0" width="70" height="30" rx="5" class="cv-chunk-box cv-stroke" />
-                <text x="35" y="18" class="cv-chunk-text">Chunk k+1</text>
-              </g>
-            </g>
-
-            <!-- Nhãn mượt mà suy luận -->
-            <text x="140" y="34" class="cv-rtc-pill">Smooth Stitching</text>
-          `;
-          break;
-
-        case 'rtc-train':
-          keywords = ['training', 'chunk', 'feedback loop'];
-          innerContent = `
-            <!-- Vòng lặp huấn luyện xoay quanh (Training Feedback Loop) -->
-            <g class="cv-loop-group" transform="translate(140, 92)">
-              <circle cx="0" cy="0" r="58" class="cv-train-loop-bg cv-stroke" />
-              <path d="M 0 -58 A 58 58 0 0 1 58 0 A 58 58 0 0 1 0 58 A 58 58 0 0 1 -58 0" fill="none" class="cv-train-loop cv-stroke" />
-              <polygon points="0,-58 10,-64 10,-52" class="cv-arrow-head cv-loop-arrow" />
-              <polygon points="0,58 -10,52 -10,64" class="cv-arrow-head cv-loop-arrow" />
-            </g>
-
-            <!-- Trung tâm: Action Chunks -->
-            <g class="cv-train-center" transform="translate(105, 74)">
-              <rect x="0" y="0" width="70" height="36" rx="6" class="cv-train-block cv-stroke" />
-              <text x="35" y="16" class="cv-chunk-text">RTC Loss</text>
-              <text x="35" y="28" class="cv-mini-text">Gradient</text>
-            </g>
-
-            <text x="140" y="24" class="cv-rtc-pill">Training-time Flow</text>
-          `;
-          break;
-
-        case 'moe':
-          keywords = ['MoE', 'FFN', 'action expert'];
-          innerContent = `
-            <!-- Khối Router trên đỉnh -->
-            <g class="cv-router-block" transform="translate(140, 40)">
-              <rect x="-42" y="-16" width="84" height="32" rx="6" class="cv-router-box cv-stroke" />
-              <text x="0" y="4" class="cv-system-text">Router</text>
-            </g>
-
-            <!-- 4 Mũi tên phân phối tới 4 Expert -->
-            <path d="M 115 56 L 45 92" class="cv-expert-line cv-stroke" />
-            <path d="M 130 56 L 105 92" class="cv-expert-line cv-stroke" />
-            <path d="M 150 56 L 175 92" class="cv-expert-line cv-stroke" />
-            <path d="M 165 56 L 235 92" class="cv-expert-line cv-stroke" />
-
-            <!-- 4 Khối Expert bên dưới -->
-            <g class="cv-experts-row">
-              <g class="cv-exp-item cv-exp-1" transform="translate(45, 114)">
-                <rect x="-20" y="-18" width="40" height="36" rx="6" class="cv-expert-box cv-stroke" />
-                <text x="0" y="-2" class="cv-mini-text">Exp 1</text>
-                <circle cx="0" cy="9" r="3" class="cv-exp-led" />
-              </g>
-
-              <g class="cv-exp-item cv-exp-2" transform="translate(105, 114)">
-                <rect x="-20" y="-18" width="40" height="36" rx="6" class="cv-expert-box cv-stroke" />
-                <text x="0" y="-2" class="cv-mini-text">Exp 2</text>
-                <circle cx="0" cy="9" r="3" class="cv-exp-led" />
-              </g>
-
-              <g class="cv-exp-item cv-exp-3" transform="translate(175, 114)">
-                <rect x="-20" y="-18" width="40" height="36" rx="6" class="cv-expert-box cv-stroke" />
-                <text x="0" y="-2" class="cv-mini-text">Exp 3</text>
-                <circle cx="0" cy="9" r="3" class="cv-exp-led" />
-              </g>
-
-              <g class="cv-exp-item cv-exp-4" transform="translate(235, 114)">
-                <rect x="-20" y="-18" width="40" height="36" rx="6" class="cv-expert-box cv-stroke" />
-                <text x="0" y="-2" class="cv-mini-text">Exp 4</text>
-                <circle cx="0" cy="9" r="3" class="cv-exp-led" />
-              </g>
-            </g>
-          `;
-          break;
-
-        default:
-          keywords = ['research', 'modeling', 'VLA'];
-          innerContent = `
-            <rect x="40" y="40" width="200" height="100" rx="8" class="cv-plate cv-stroke" />
-            <text x="140" y="95" class="cv-system-text">${paper.ten}</text>
-          `;
-      }
-
-      const keywordsMarkup = keywords.map(kw => `<span class="cv-kw-tag">${kw}</span>`).join('');
-
-      return `
-        <div class="book-cover-inner ${bgClass}">
-          <svg class="book-cover-svg" viewBox="0 0 280 190" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <marker id="arrowhead-teal" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-                <polygon points="0 0, 6 3, 0 6" fill="var(--teal-500)" />
-              </marker>
-            </defs>
-
-            <!-- Số thứ tự Watermark to mờ góc trên -->
-            <text x="260" y="46" text-anchor="end" class="cv-watermark-num">${idxStr}</text>
-
-            <!-- Nội dung SVG chính -->
-            ${innerContent}
-          </svg>
-
-          <!-- 2-3 Từ khoá nhỏ góc dưới -->
-          <div class="cv-keywords-row">
-            ${keywordsMarkup}
-          </div>
-        </div>
-      `;
-    }
+    /* 6. LingBot MoE — router chia token tới vài chuyên gia (chỉ vài chuyên gia sáng) */
+    moe: svg('moe', bg('moe', true) + `
+      <path d="M78 150 L132 150" class="cv-wire"/>
+      <path d="M188 150 C 210 150, 210 70, 250 70" class="cv-wire cv-w1"/>
+      <path d="M188 150 C 210 150, 210 123, 250 123" class="cv-wire cv-w2"/>
+      <path d="M188 150 C 210 150, 210 177, 250 177" class="cv-wire cv-w3"/>
+      <path d="M188 150 C 210 150, 210 230, 250 230" class="cv-wire cv-w4"/>
+      <path d="M318 70 C 340 70, 336 150, 356 150 M318 123 C 340 123, 336 150, 356 150 M318 177 C 340 177, 336 150, 356 150 M318 230 C 340 230, 336 150, 356 150" class="cv-wire cv-wire-faint"/>
+      <circle cx="70" cy="150" r="13" class="cv-ink-soft"/>
+      <path d="M160 120 L190 150 L160 180 L130 150 Z" class="cv-indigo" stroke-linejoin="round"/>
+      <rect x="250" y="54" width="68" height="32" rx="16" class="cv-expert cv-e1"/>
+      <rect x="250" y="107" width="68" height="32" rx="16" class="cv-expert cv-e2"/>
+      <rect x="250" y="161" width="68" height="32" rx="16" class="cv-expert cv-e3"/>
+      <rect x="250" y="214" width="68" height="32" rx="16" class="cv-expert cv-e4"/>
+      <circle cx="360" cy="150" r="11" class="cv-teal"/>`)
   };
 
-  if (typeof window !== 'undefined') {
-    window.Covers = Covers;
-  }
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { Covers };
-  }
+  window.VLA_COVERS = COVERS;
+  window.Covers = {
+    render: function (key, paper, index) {
+      const k = key || (paper && paper.bia) || 'libero';
+      return COVERS[k] || COVERS['libero'] || '';
+    }
+  };
 })();

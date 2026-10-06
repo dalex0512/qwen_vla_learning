@@ -389,8 +389,8 @@
         const isActive = paper.id === activePaper.id;
         const isUnstudied = !isDone && !isActive;
 
-        let cardClass = 'book-card';
-        if (isActive) cardClass += ' book-card--active';
+        let cardClass = 'book-card cv-host';
+        if (isActive) cardClass += ' book-card--active is-active';
         if (isUnstudied) cardClass += ' book-card--unstudied';
 
         // Tag trạng thái
@@ -403,11 +403,16 @@
           statusTagHtml = '<span class="book-status-tag book-status-tag--pending">Sắp có</span>';
         }
 
-        // Bìa SVG từ Covers
+        // Bìa SVG từ Covers / VLA_COVERS
         const coverBia = paper.bia || paper.id;
-        const coverSvgMarkup = (window.Covers && typeof window.Covers.render === 'function')
-          ? window.Covers.render(coverBia, paper, overallIndex)
-          : `<div style="padding: 40px; text-align: center;">${paper.ten}</div>`;
+        let coverSvgMarkup = '';
+        if (window.VLA_COVERS && window.VLA_COVERS[coverBia]) {
+          coverSvgMarkup = window.VLA_COVERS[coverBia];
+        } else if (window.Covers && typeof window.Covers.render === 'function') {
+          coverSvgMarkup = window.Covers.render(coverBia, paper, overallIndex);
+        } else {
+          coverSvgMarkup = `<div style="padding: 40px; text-align: center;">${paper.ten}</div>`;
+        }
 
         // Các nút tài liệu dạng icon nhỏ kèm tooltip
         const files = paper.files || {};
