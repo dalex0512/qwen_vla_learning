@@ -41,12 +41,12 @@ const PAPERS = [
     nhom: "Đọc rộng",
     bia: "groot",
     moTa: "Mô hình nền tảng cho robot hình người của NVIDIA",
-    trangThai: "chua-doc",
+    trangThai: "da-present",
     files: {
-      docHieu: null,
-      slide: null,
-      pdfGoc: null,
-      pdfViet: null
+      docHieu: "Groot/GR00T N1 · Đọc hiểu paper.html",
+      slide: "Groot/GR00T N1 · Slide trình bày.html",
+      pdfGoc: "Docs/Groot.pdf",
+      pdfViet: "Docs/translated/Groot-vi.pdf"
     }
   },
   {
