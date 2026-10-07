@@ -229,6 +229,60 @@
 .state--active { background: var(--amber-soft); color: var(--amber-ink); }
 :root[data-theme="light"] .state--active { color: #7A4A00; }
 .state--todo { background: var(--bg); color: var(--muted); border: 1px solid var(--rule); }
+.badge-cap {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--l2-soft);
+  color: var(--l2);
+  border: 1px solid color-mix(in srgb, var(--l2) 28%, transparent);
+}
+:root[data-theme="dark"] .badge-cap {
+  background: rgba(156, 136, 255, 0.16);
+  color: #B8ACFF;
+  border-color: rgba(156, 136, 255, 0.35);
+}
+
+/* Khối cặp bài RTC nối với nhau bằng đường ngoặc tím nhạt */
+.pair-rtc-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+
+.pair-rtc-bracket {
+  position: absolute;
+  right: -24px;
+  top: 14px;
+  bottom: 14px;
+  width: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #B8ACFF;
+}
+
+:root[data-theme="light"] .pair-rtc-bracket {
+  color: #8C7AE6;
+  opacity: 0.75;
+}
+
+.pair-rtc-bracket-svg {
+  width: 14px;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 880px) {
+  .pair-rtc-bracket {
+    right: -12px;
+    width: 12px;
+  }
+}
 .arxiv { font: 500 0.76rem var(--font-mono); color: var(--muted); }
 .arxiv:hover { color: var(--ink); text-decoration: underline; }
 .card-title { font: 800 1.7rem/1.15 var(--display); letter-spacing: -0.03em; margin-top: 8px; }

@@ -80,7 +80,7 @@
   // Cấu hình hiển thị theo giá trị "nhom" trong papers.js. Nhóm lạ (vd. "Liên quan") dùng kiểu l3.
   const GROUPS = {
     'Đọc rộng': { title: 'Đọc nền', cls: 'l1', hint: 'Nắm bức tranh tổng quan và các benchmark chuẩn' },
-    'Đọc sâu': { title: 'Đọc chuyên sâu', cls: 'l2', hint: 'Đi vào kiến trúc chi tiết, huấn luyện và MoE' },
+    'Đọc sâu': { title: 'Đọc chuyên sâu', cls: 'l2', hint: 'Phương pháp chính: nối chunk thời gian thực (RTC) và MoE trong action expert.' },
     'Liên quan': { title: 'Paper liên quan', cls: 'l3', hint: 'Tài liệu mở rộng, đọc thêm khi cần' }
   };
   function groupInfo(name) {
@@ -96,6 +96,10 @@
     const check = state === 'done'
       ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7.5"/></svg>'
       : '';
+    const capBadge = (paper.cap && paper.thuTuCap)
+      ? `<span class="badge-cap">Cặp ${paper.cap} · ${paper.thuTuCap}/2</span>`
+      : '';
+
     return `
       <li class="stop is-${state}" id="card-${paper.id}" style="--i:${no - 1}">
         <span class="node" aria-hidden="true">${check}</span>
@@ -104,11 +108,12 @@
           <div class="card-body">
             <div class="card-head">
               <span class="state state--${state}">${stateLabel}</span>
+              ${capBadge}
               <a class="arxiv" href="https://arxiv.org/abs/${paper.arxiv}" target="_blank" rel="noopener noreferrer">arXiv:${paper.arxiv}</a>
             </div>
             <h3 class="card-title"><a href="paper.html?id=${paper.id}">${paper.ten}</a></h3>
             <p class="card-desc">${paper.moTa}</p>
-            <div class="chips">${chips || '<span class="soon">Chưa có tài liệu. Thêm file trong papers.js khi đã có.</span>'}</div>
+            <div class="chips">${chips || '<span class="soon">Sắp có</span>'}</div>
           </div>
         </article>
       </li>`;
@@ -124,11 +129,41 @@
     order.forEach(name => {
       const info = groupInfo(name);
       const list = papers.filter(p => p.nhom === name);
-      const stops = list.map(p => {
+      
+      let stopsHtml = '';
+      let rtcGroupBuffer = [];
+
+      list.forEach(p => {
         no++;
         const state = p.trangThai === 'da-present' ? 'done' : (p.id === activePaper.id ? 'active' : 'todo');
-        return stopHtml(p, no, state);
-      }).join('');
+        const sHtml = stopHtml(p, no, state);
+
+        if (p.cap === 'RTC') {
+          rtcGroupBuffer.push(sHtml);
+          if (p.thuTuCap === 2 || rtcGroupBuffer.length === 2) {
+            stopsHtml += `
+              <div class="pair-rtc-group">
+                ${rtcGroupBuffer.join('')}
+                <div class="pair-rtc-bracket" aria-hidden="true" title="Cặp bài RTC">
+                  <svg class="pair-rtc-bracket-svg" viewBox="0 0 20 100" preserveAspectRatio="none">
+                    <path d="M 2 2 C 14 2, 14 44, 18 50 C 14 56, 14 98, 2 98" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </div>
+              </div>`;
+            rtcGroupBuffer = [];
+          }
+        } else {
+          if (rtcGroupBuffer.length > 0) {
+            stopsHtml += rtcGroupBuffer.join('');
+            rtcGroupBuffer = [];
+          }
+          stopsHtml += sHtml;
+        }
+      });
+      if (rtcGroupBuffer.length > 0) {
+        stopsHtml += rtcGroupBuffer.join('');
+      }
+
       html += `
         <section class="line ${info.cls}" aria-label="${info.title}">
           <header class="line-head">
@@ -136,7 +171,7 @@
             <div><h2>${info.title}</h2><p>${list.length} paper${info.hint ? ' · ' + info.hint : ''}</p></div>
           </header>
           <div class="track" aria-hidden="true"><i class="track-fill"></i></div>
-          <ol class="stops">${stops}</ol>
+          <ol class="stops">${stopsHtml}</ol>
         </section>`;
     });
     root.innerHTML = html;

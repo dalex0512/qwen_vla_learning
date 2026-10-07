@@ -71,12 +71,14 @@ const PAPERS = [
     ten: "RTC inference-time",
     arxiv: "2506.07339",
     nhom: "Đọc sâu",
+    cap: "RTC",
+    thuTuCap: 1,
     bia: "rtc-infer",
     moTa: "Chạy action chunk mượt khi suy luận",
     trangThai: "chua-doc",
     files: {
-      docHieu: null,
-      slide: null,
+      docHieu: null, // "RTC/RTC-Inference · Đọc hiểu paper.html"
+      slide: null,   // "RTC/RTC · Slide trình bày.html"
       pdfGoc: null,
       pdfViet: null
     }
@@ -86,12 +88,14 @@ const PAPERS = [
     ten: "RTC training-time",
     arxiv: "2512.05964",
     nhom: "Đọc sâu",
+    cap: "RTC",
+    thuTuCap: 2,
     bia: "rtc-train",
     moTa: "Đưa RTC vào lúc huấn luyện",
     trangThai: "chua-doc",
     files: {
-      docHieu: null,
-      slide: null,
+      docHieu: null, // "RTC/RTC-Training · Đọc hiểu paper.html"
+      slide: null,   // "RTC/RTC · Slide trình bày.html"
       pdfGoc: null,
       pdfViet: null
     }
@@ -105,8 +109,8 @@ const PAPERS = [
     moTa: "MoE trong action expert",
     trangThai: "chua-doc",
     files: {
-      docHieu: null,
-      slide: null,
+      docHieu: null, // "LingBot/LingBot · Đọc hiểu paper.html"
+      slide: null,   // "LingBot/LingBot · Slide trình bày.html"
       pdfGoc: null,
       pdfViet: null
     }
