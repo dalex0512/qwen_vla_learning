@@ -89,9 +89,14 @@
 
   function stopHtml(paper, no, state) {
     const files = paper.files || {};
-    const chips = DOC_LINKS.filter(d => files[d.key]).map(d =>
-      `<a class="chip" href="paper.html?id=${paper.id}#${d.tab}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d.icon}</svg>${d.label}</a>`
-    ).join('');
+    // File dùng chung cho nhiều paper (vd. slide của cặp RTC) hiện nhãn "chung"
+    const sharedCount = f => (window.PAPERS || []).filter(q => q.files && q.files.slide === f).length;
+    const chips = DOC_LINKS.filter(d => files[d.key]).map(d => {
+      const shared = d.key === 'slide' && sharedCount(files.slide) > 1;
+      const label = shared ? 'Slide chung' : d.label;
+      const hint = shared ? ' title="Một bộ slide cho cả cặp paper"' : '';
+      return `<a class="chip${shared ? ' chip--shared' : ''}"${hint} href="paper.html?id=${paper.id}#${d.tab}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d.icon}</svg>${label}</a>`;
+    }).join('');
     const stateLabel = state === 'done' ? 'Đã xong' : (state === 'active' ? 'Đọc tiếp' : 'Sắp tới');
     const check = state === 'done'
       ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7.5"/></svg>'
@@ -109,6 +114,10 @@
             <div class="card-head">
               <span class="state state--${state}">${stateLabel}</span>
               ${capBadge}
+              <button type="button" class="tick" data-toggle="${paper.id}" aria-pressed="${state === 'done'}" title="Tự đánh dấu paper này đã xong hoặc chưa">
+                <span class="tick-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7.5"/></svg></span>
+                <span class="tick-text">${state === 'done' ? 'Đã xong' : 'Đánh dấu xong'}</span>
+              </button>
               <a class="arxiv" href="https://arxiv.org/abs/${paper.arxiv}" target="_blank" rel="noopener noreferrer">arXiv:${paper.arxiv}</a>
             </div>
             <h3 class="card-title"><a href="paper.html?id=${paper.id}">${paper.ten}</a></h3>
@@ -142,14 +151,14 @@
           rtcGroupBuffer.push(sHtml);
           if (p.thuTuCap === 2 || rtcGroupBuffer.length === 2) {
             stopsHtml += `
-              <div class="pair-rtc-group">
-                ${rtcGroupBuffer.join('')}
+              <li class="pair-rtc-group"><ol class="pair-list">
+                ${rtcGroupBuffer.join('')}</ol>
                 <div class="pair-rtc-bracket" aria-hidden="true" title="Cặp bài RTC">
                   <svg class="pair-rtc-bracket-svg" viewBox="0 0 20 100" preserveAspectRatio="none">
                     <path d="M 2 2 C 14 2, 14 44, 18 50 C 14 56, 14 98, 2 98" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                   </svg>
                 </div>
-              </div>`;
+              </li>`;
             rtcGroupBuffer = [];
           }
         } else {
@@ -189,12 +198,23 @@
       });
     }
     layoutTracks();
-    window.addEventListener('resize', layoutTracks);
-    window.addEventListener('load', layoutTracks);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutTracks);
+    if (!renderRoute.bound) {
+      renderRoute.bound = true;
+      renderRoute.layout = layoutTracks;
+      window.addEventListener('resize', () => renderRoute.layout());
+      window.addEventListener('load', () => renderRoute.layout());
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderRoute.layout());
+    } else {
+      renderRoute.layout = layoutTracks;
+    }
 
     // Hiện dần khi cuộn tới
     const targets = root.querySelectorAll('.line, .stop');
+    if (renderRoute.rendered) {
+      targets.forEach(el => el.classList.add('is-in'));
+      return;
+    }
+    renderRoute.rendered = true;
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver((entries, obs) => {
         entries.forEach(e => {
@@ -209,36 +229,87 @@
     }
   }
 
+  // Tiến độ do người dùng tự tích, lưu trong trình duyệt. papers.js chỉ là giá trị mặc định.
+  const PROGRESS_KEY = 'vla_progress_v1';
+  function loadOverrides() {
+    try { return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveOverrides(o) {
+    try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  function effectivePapers(overrides) {
+    return window.PAPERS.map(p => {
+      const ov = overrides[p.id];
+      let st = p.trangThai;
+      if (ov === 'done') st = 'da-present';
+      else if (ov === 'todo' && st === 'da-present') st = 'chua-doc';
+      return Object.assign({}, p, { trangThai: st });
+    });
+  }
+
   function initHomePage() {
     if (!window.PAPERS || !Array.isArray(window.PAPERS) || !document.getElementById('route')) return;
 
-    const papers = window.PAPERS;
-    const total = papers.length;
-    const done = papers.filter(p => p.trangThai === 'da-present').length;
-    const activePaper = papers.find(p => p.trangThai === 'dang-doc')
-      || papers.find(p => p.trangThai === 'chua-doc')
-      || papers[papers.length - 1];
-    const activeNo = papers.indexOf(activePaper) + 1;
+    let overrides = loadOverrides();
 
-    const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
-    set('hero-focus-title', activePaper.ten);
-    set('hero-focus-desc', activePaper.moTa);
-    set('hero-focus-group', `${groupInfo(activePaper.nhom).title} · Paper ${activeNo}/${total}`);
-    set('hero-eyebrow', `Sổ tay VLA · ${total} paper`);
-    set('hero-progress-sub', done >= total ? `Đã đọc hết ${total} paper` : `${done}/${total} paper đã xong`);
-    const cta = document.getElementById('hero-focus-cta');
-    if (cta) cta.href = `paper.html?id=${activePaper.id}`;
-
-    const pips = document.getElementById('hero-pips');
-    if (pips) {
-      pips.innerHTML = papers.map((p, i) => {
-        const cls = p.trangThai === 'da-present' ? 'is-done' : (p.id === activePaper.id ? 'is-active' : '');
-        return `<i class="${cls}" style="--i:${i}"></i>`;
-      }).join('');
+    function toggle(id) {
+      const base = window.PAPERS.find(p => p.id === id);
+      if (!base) return;
+      const isDone = effectivePapers(overrides).find(p => p.id === id).trangThai === 'da-present';
+      const wantDone = !isDone;
+      if (wantDone === (base.trangThai === 'da-present')) delete overrides[id];
+      else overrides[id] = wantDone ? 'done' : 'todo';
+      saveOverrides(overrides);
+      refresh();
     }
 
-    renderRoute(papers, activePaper);
-    initHomeExtras(papers, activePaper);
+    function refresh() {
+      const papers = effectivePapers(overrides);
+      const total = papers.length;
+      const done = papers.filter(p => p.trangThai === 'da-present').length;
+      const activePaper = papers.find(p => p.trangThai === 'dang-doc')
+        || papers.find(p => p.trangThai !== 'da-present')
+        || papers[papers.length - 1];
+      const activeNo = papers.indexOf(activePaper) + 1;
+
+      const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+      set('hero-focus-title', activePaper.ten);
+      set('hero-focus-desc', activePaper.moTa);
+      set('hero-focus-group', `${groupInfo(activePaper.nhom).title} · Paper ${activeNo}/${total}`);
+      set('hero-eyebrow', `Sổ tay VLA · ${total} paper`);
+      set('hero-progress-sub', done >= total ? `Đã đọc hết ${total} paper` : `${done}/${total} paper đã xong`);
+      const cta = document.getElementById('hero-focus-cta');
+      if (cta) cta.href = `paper.html?id=${activePaper.id}`;
+
+      const pips = document.getElementById('hero-pips');
+      if (pips) {
+        pips.innerHTML = papers.map((p, i) => {
+          const cls = p.trangThai === 'da-present' ? 'is-done' : (p.id === activePaper.id ? 'is-active' : '');
+          return `<i class="${cls}" style="--i:${i}"></i>`;
+        }).join('');
+      }
+
+      const resetBtn = document.getElementById('reset-progress');
+      if (resetBtn) resetBtn.hidden = Object.keys(overrides).length === 0;
+
+      renderRoute(papers, activePaper);
+      initHomeExtras(papers, activePaper);
+    }
+
+    document.getElementById('route').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-toggle]');
+      if (btn) toggle(btn.getAttribute('data-toggle'));
+    });
+    const resetBtn = document.getElementById('reset-progress');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        overrides = {};
+        saveOverrides(overrides);
+        refresh();
+      });
+    }
+
+    refresh();
   }
 
   // Thanh "Đọc tiếp" nổi + ánh sáng đi theo chuột trên thẻ
@@ -254,12 +325,6 @@
           `<i class="${p.trangThai === 'da-present' ? 'is-done' : (p.id === activePaper.id ? 'is-active' : '')}"></i>`
         ).join('');
       }
-      const hero = document.querySelector('.hero');
-      if (hero && 'IntersectionObserver' in window) {
-        new IntersectionObserver(([e]) => {
-          dock.classList.toggle('is-shown', !e.isIntersecting);
-        }, { threshold: 0 }).observe(hero);
-      }
     }
 
     // Dải tên paper chạy ngang (tự lấy từ papers.js)
@@ -271,6 +336,16 @@
       };
       const once = papers.map(item).join('');
       ticker.innerHTML = once + once + once + once;
+    }
+
+    if (initHomeExtras.bound) return;
+    initHomeExtras.bound = true;
+
+    const heroEl = document.querySelector('.hero');
+    if (dock && heroEl && 'IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => {
+        dock.classList.toggle('is-shown', !e.isIntersecting);
+      }, { threshold: 0 }).observe(heroEl);
     }
 
     // Thanh tiến độ cuộn trang

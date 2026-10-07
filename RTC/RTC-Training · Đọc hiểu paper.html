@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RTC training-time · Đọc hiểu paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+
+/* layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+
+/* paper viết / nghĩa là */
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+
+/* callouts */
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+
+/* tables */
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+
+/* misc */
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* checklist */
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+
+/* steps */
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* details */
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+
+/* arch svg */
+.n{cursor:pointer}
+.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.n.emb rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.frz rect.b0{fill:var(--blue-soft);stroke:var(--blue)}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.n text{fill:var(--text);font-size:13px;text-anchor:middle;pointer-events:none}
+.n text.s{fill:var(--muted);font-size:11.5px}
+.ar{stroke:var(--grey);stroke-width:1.8;fill:none}
+.lbl{fill:var(--muted);font-size:11.5px}
+#archInfo{min-height:96px}
+
+/* bars */
+.bars .row{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{display:flex;flex-direction:column;gap:2px}
+.bars .bar{height:11px;border-radius:4px;position:relative;min-width:2px}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-4px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .dp{background:var(--grey)}
+.bars .gr{background:var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:120px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cells{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.cells span{width:26px;height:26px;border-radius:5px;background:var(--pri-soft);border:1px solid var(--pri);font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cells span.used{background:var(--accent);border-color:var(--accent);color:#fff}
+.cells span.over{background:var(--red);border-color:var(--red);color:#fff}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+
+/* ===== thêm cho trang Qwen-VLA ===== */
+details.more{border:1px dashed var(--line);border-radius:12px;padding:8px 14px;margin:12px 0;background:var(--card)}
+details.more>summary{cursor:pointer;font-weight:600;color:var(--pri);font-size:.93rem}
+details.more>summary::marker{color:var(--pri)}
+details.more[open]>summary{margin-bottom:8px}
+.key{border:2px solid var(--pri);border-radius:14px;padding:12px 18px;margin:14px 0;background:var(--pri-soft)}
+.key b.t{display:block;color:var(--pri-strong);margin-bottom:2px}
+.idea{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:center;border-top:1px solid var(--line);padding:16px 0}
+.idea h3{margin:0 0 6px}
+.idea .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;font-size:.95rem}
+.idea .go{font-size:.85rem;color:var(--muted)}
+.stat div div{border:0;padding:0;border-radius:0}
+.idea svg text{font-size:13px}
+@media (max-width:760px){.idea{grid-template-columns:1fr}}
+.lv{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;vertical-align:middle;margin-left:8px;letter-spacing:.02em;line-height:1.6}
+.lv.m{background:var(--accent);color:#fff}
+.lv.s{background:var(--blue-soft);color:var(--blue)}
+.lv.k{background:var(--code-bg);color:var(--muted);border:1px solid var(--line)}
+nav.toc a i.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+i.d.m{background:var(--accent)} i.d.s{background:var(--blue)} i.d.k{background:var(--grey);opacity:.6}
+.legend-lv{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.9rem;margin:10px 0}
+.basics{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.basics>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.basics>div b.h{display:block;color:var(--pri-strong);margin-bottom:4px}
+.basics>div .why{display:block;margin-top:6px;font-size:.86rem;color:var(--muted)}
+table.t td.keep{color:var(--pri-strong);font-weight:600;white-space:nowrap}
+table.t td.chg{color:var(--accent);font-weight:600;white-space:nowrap}
+table.t td.unk{color:var(--muted);font-weight:600;white-space:nowrap}
+.prompt{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--code-bg);border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:10px;padding:12px 14px;white-space:pre-wrap;line-height:1.6}
+.prompt .v{background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:0 3px}
+.ctrl select,.ctrl input[type=text],.ctrl input[type=number]{font:inherit;font-size:.9rem;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+.grid{display:grid;gap:2px;margin:10px 0;max-width:100%;overflow-x:auto}
+.grid span{width:13px;height:13px;border-radius:2px;background:var(--code-bg);border:1px solid var(--line)}
+.grid span.on{background:var(--pri);border-color:var(--pri)}
+.grid span.pad{background:var(--card);border:1px dashed var(--grey);opacity:.6}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+@media (max-width:760px){.stages{grid-template-columns:1fr 1fr}}
+.stg{border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;background:var(--card);text-align:center;font-size:.85rem}
+.stg.sel{border-color:var(--accent)}
+.stg .nm{font-weight:700;color:var(--pri-strong);font-size:.95rem}
+.stg .blk{border-radius:7px;padding:3px 4px;margin:5px 0;font-size:.8rem;border:1.5px solid}
+.stg .blk.fz{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.stg .blk.tr{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stg .inp{color:var(--muted);font-size:.78rem}
+.stg .ck{margin-top:6px;font-size:.76rem;font-weight:600}
+.arrowrow{display:flex;justify-content:space-around;color:var(--grey);font-size:.8rem;margin:-4px 0 4px}
+.bars .q{background:var(--accent)}
+.bars .g6{background:var(--blue)}
+.delta-up{color:var(--pri-strong);font-weight:600}
+.delta-dn{color:var(--red);font-weight:600}
+.n.vlm rect.b0{fill:var(--accent-soft);stroke:var(--accent)}
+.n.dit rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.rl rect.b0{stroke-dasharray:5 4}
+.say{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:14px 0}
+.say b.t{display:block;color:var(--accent);margin-bottom:4px}
+
+/* ===== thêm cho trang RTC ===== */
+#smSvg,#btSvg,#sfSvg{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px}
+#smMeth label{font-size:.88rem}
+.out .tw{margin:0 0 8px}
+pre code#torchCode{font-size:.82rem}
+.two>div{min-width:0}
+mjx-container[display="true"]{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0;position:relative}
+mjx-container:not([display]){max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle;position:relative}
+.chk code{word-break:break-all}
+.bars .bb{min-width:0;padding-right:118px}
+@media (max-width:600px){.bars .bb{padding-right:96px}}
+
+#tkSvg{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px}
+header.top a{color:#fff}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>RTC training-time · Đọc hiểu paper</h1>
+  <p><b>Training-Time Action Conditioning for Efficient Real-Time Chunking</b> — Kevin Black, Allen Z. Ren, Michael Equi, Sergey Levine (Physical Intelligence) · arXiv 2512.05964 (v2, 09/12/2025)</p>
+  <p>Bài đọc sâu thứ hai, nối thẳng từ trang <a href="RTC-Inference%20%C2%B7%20%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20paper.html" style="color:#fff">RTC inference-time</a>. Lộ trình: LIBERO → GR00T N1 → Qwen-VLA → RTC inference-time → <b>RTC training-time</b> → MoE.</p>
+  <div class="meta">
+    <span class="pill">Giả lập độ trễ lúc huấn luyện</span><span class="pill">Prefix sạch, τ = 1</span><span class="pill">τ riêng cho từng token</span><span class="pill">Loss chỉ trên postfix</span><span class="pill">0 chi phí suy luận thêm</span><span class="pill">π0.6 · 108 vs 135 ms</span><span class="pill">6 trang</span>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#tldr"><i class="d m"></i>0. Tóm tắt 1 phút</a>
+  <a href="#quick" style="font-weight:700;color:var(--pri-strong)"><i class="d m"></i>★ Đọc nhanh 15 phút</a>
+  <a href="#roadmap"><i class="d m"></i>1. Lộ trình & checklist</a>
+  <a href="#glossary"><i class="d s"></i>2. Bảng thuật ngữ</a>
+  <a href="#basics"><i class="d m"></i>3. Nền tối thiểu</a>
+  <a href="#bridge"><i class="d m"></i>4. Từ RTC suy luận sang RTC huấn luyện</a>
+  <a href="#problem"><i class="d m"></i>5. Vấn đề: cái giá của RTC suy luận</a>
+  <a href="#method"><i class="d m"></i>6. Phương pháp</a>
+  <a class="sub" href="#idea">6.1 Ý chính</a>
+  <a class="sub" href="#derive">6.2 Dẫn công thức loss</a>
+  <a class="sub" href="#arch">6.3 Ba thay đổi & adaLN theo token</a>
+  <a class="sub" href="#delay">6.4 Chọn phân phối độ trễ</a>
+  <a class="sub" href="#sampling">6.5 Suy luận: drop-in</a>
+  <a class="sub" href="#flip">6.6 Lật sang quy ước Qwen-VLA</a>
+  <a class="sub" href="#sim">6.7 Bấm thử: 4 cách nối</a>
+  <a href="#algo"><i class="d m"></i>7. Code</a>
+  <a href="#results"><i class="d m"></i>8. Thí nghiệm & kết quả</a>
+  <a class="sub" href="#kinetix">8.1 Kinetix</a>
+  <a class="sub" href="#real">8.2 Robot thật với π0.6</a>
+  <a class="sub" href="#compare">8.3 Đặt hai paper cạnh nhau</a>
+  <a href="#code"><i class="d m"></i>9. Nằm ở đâu trong code</a>
+  <a href="#critique"><i class="d s"></i>10. Hạn chế & phản biện</a>
+  <a href="#mentor"><i class="d m"></i>11. Câu hỏi mentor có thể vặn</a>
+  <a href="#quiz"><i class="d s"></i>12. Tự kiểm tra & thí nghiệm</a>
+  <a href="#story"><i class="d s"></i>13. Ghép hai paper thành một mạch</a>
+  <a href="#sources"><i class="d k"></i>14. Nguồn</a>
+</nav>
+
+<main>
+
+<!-- ============ 0 ============ -->
+<section class="sec" id="tldr">
+<h2>0. Tóm tắt 1 phút <span class="lv m">Phải nắm</span></h2>
+<p>Paper trước giải bài toán nối chunk <b>lúc suy luận</b>, và phải trả giá bằng một lần backward ở mỗi bước khử nhiễu. Paper này (cùng nhóm, 6 trang) hỏi: <i>nếu đằng nào cũng biết trước robot sẽ cần "nối tiếp một đoạn đã chốt", sao không dạy mô hình làm việc đó ngay từ lúc huấn luyện?</i> Năm ý cần nhớ:</p>
+<div class="tldr">
+  <div><b>① Cùng bài toán, đổi chỗ giải</b>Vẫn chạy bất đồng bộ, vẫn đóng băng d hành động đầu (gọi là <strong>action prefix</strong>). Nhưng thay vì dẫn hướng bằng gradient lúc suy luận, mô hình <strong>học thẳng</strong> phân phối \(p(\mathbf A_{t+d:H}\mid \mathbf o_t, \mathbf A_{t:t+d})\).</div>
+  <div><b>② Giả lập độ trễ khi huấn luyện</b>Mỗi mẫu huấn luyện bốc ngẫu nhiên một d. d hành động đầu của chunk thật được đưa vào ở dạng <strong>sạch</strong>, phần sau (postfix) được làm nhiễu như flow matching thường.</div>
+  <div><b>③ Ba thay đổi nhỏ</b>(1) Cho mỗi token một mức nhiễu τ riêng (với DiT dùng adaLN-zero thì chỉ cần để scale/shift/gate khác nhau theo token, <strong>không thêm tham số</strong>). (2) Token prefix có τ = 1, tức là sạch. (3) Loss chỉ tính trên postfix.</div>
+  <div><b>④ Suy luận như thường</b>Mỗi bước Euler: ghi đè prefix bằng hành động đã chốt, đặt τ = 1 cho chúng, gọi mô hình một lần, cộng vận tốc. <strong>Không backward, không thêm độ trễ</strong>. Cùng giao diện với GuidedInference nên thay thế thẳng (drop-in).</div>
+  <div><b>⑤ Kết quả</b>Kinetix: hơn RTC suy luận từ d ≥ 2, càng trễ càng hơn (d = 4: ≈ 0,72 so với ≈ 0,61). Robot thật π0.6 (pha espresso, gấp hộp): <strong>ngang</strong> RTC suy luận về thành công và tốc độ, nhưng độ trễ 108 ms so với 135 ms. Đổi lại: mất soft masking, phải fine-tune, phải chọn phân phối độ trễ.</div>
+</div>
+
+<div class="say"><b class="t">Nếu chỉ có 30 giây để nói với mentor</b>
+RTC bản suy luận cần backward ở mỗi bước khử nhiễu nên làm tăng độ trễ, đúng thứ nó muốn giấu, và kém dần khi độ trễ lớn vì dựa vào xấp xỉ tuyến tính qua Jacobian. Bản training-time giả lập độ trễ ngay lúc huấn luyện: bốc ngẫu nhiên d, đưa d hành động đầu ở dạng sạch với τ = 1, cho mỗi token một τ riêng qua adaLN, và chỉ tính loss trên phần còn lại. Lúc chạy, chỉ cần ghi đè prefix ở mỗi bước Euler, không tốn thêm gì. Trên Kinetix nó hơn bản suy luận khi d ≥ 2; trên π0.6 thật thì ngang về thành công và tốc độ nhưng rẻ hơn (108 so với 135 ms). Cái mất: không còn soft masking và phải chọn trước phân phối độ trễ khi fine-tune.</div>
+
+<div class="co link"><b class="t">Đọc trang này cùng PDF</b>
+PDF chỉ 6 trang: trang 1–2 là phần mở đầu và phương pháp (Hình 1, 2, Eq. 1–2, ba bước), trang 3 là kết quả (Hình 3, 5), trang 4 là thảo luận, trang 6 là <b>Algorithm 1: code JAX đầy đủ</b> của loss và hàm lấy mẫu. Mỗi mục dưới đây ghi rõ vị trí tương ứng.</div>
+</section>
+
+<!-- ============ QUICK ============ -->
+<section class="sec" id="quick">
+<h2>★ Đọc nhanh 15 phút <span class="lv m">Phải nắm</span></h2>
+<p>Bốn ý của paper bằng lời thường. Nếu bạn đã nắm trang RTC inference-time, phần này đi rất nhanh: chỉ có một ý mới thật sự (ý 2), ba ý còn lại là hệ quả.</p>
+
+<div class="idea">
+<div>
+<h3><span class="num">1</span>Gia sư kèm mỗi bài vs học trước cách làm</h3>
+<p>RTC suy luận giống một học sinh làm bài mà <b>mỗi câu</b> đều có gia sư ngồi cạnh chỉnh từng bước (lực kéo gradient). Kết quả tốt, nhưng mỗi câu tốn thêm thời gian của gia sư: với π0.5, mỗi bước khử nhiễu chậm 2,5×.</p>
+<p>RTC huấn luyện: cho học sinh luyện trước đúng dạng bài này ở nhà. Vào phòng thi tự làm, không cần ai kèm, nhanh như bình thường.</p>
+<p class="go">Đi sâu: mục 5 (bấm thử ngân sách độ trễ).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 170" role="img" aria-label="So sánh thời gian một lần gọi mô hình: gốc, RTC suy luận, RTC huấn luyện">
+<text x="10" y="20" style="font-size:12px;fill:var(--muted)">một lần gọi π0.5 (ms, Bảng 3 paper trước)</text>
+<g style="font-size:11.5px">
+<text x="10" y="52" style="fill:var(--text)">gốc</text>
+<rect x="110" y="38" width="217" height="22" style="fill:var(--grey);opacity:.5"/><rect x="327" y="38" width="49" height="22" style="fill:var(--pri)"/>
+<text x="384" y="54" style="fill:var(--text)">76</text>
+<text x="10" y="90" style="fill:var(--text)">RTC suy luận</text>
+<rect x="110" y="76" width="217" height="22" style="fill:var(--grey);opacity:.5"/><rect x="327" y="76" width="122" height="22" style="fill:var(--accent)"/>
+<text x="452" y="92" style="fill:var(--text)">97</text>
+<text x="10" y="128" style="fill:var(--text)">RTC huấn luyện</text>
+<rect x="110" y="114" width="217" height="22" style="fill:var(--grey);opacity:.5"/><rect x="327" y="114" width="49" height="22" style="fill:var(--blue)"/>
+<text x="384" y="130" style="fill:var(--text)">76</text>
+<text x="218" y="160" text-anchor="middle" style="fill:var(--muted)">ảnh + prefill VLM (62)</text>
+<text x="390" y="160" text-anchor="middle" style="fill:var(--muted)">5 bước khử nhiễu</text>
+</g>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">2</span>Bài tập "viết tiếp câu"</h3>
+<p>Khi huấn luyện, lấy một chunk thật từ dữ liệu, bốc ngẫu nhiên d (ví dụ 2). Đưa cho mô hình <b>2 hành động đầu nguyên vẹn</b> và phần còn lại đã bị làm nhiễu, yêu cầu khử nhiễu phần còn lại. Giống bài tập cho sẵn vài chữ đầu, bắt viết tiếp cả câu cho liền mạch.</p>
+<p>Vì d thật lúc chạy dao động, d được bốc ngẫu nhiên mỗi mẫu. d = 0 vẫn có trong lúc bốc, nên mô hình vẫn sinh chunk bình thường được khi không có prefix.</p>
+<p class="go">Đi sâu: mục 6.1, 6.2, 6.4.</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 170" role="img" aria-label="Chunk huấn luyện: 2 hành động đầu sạch, phần sau nhiễu, loss chỉ trên phần sau">
+<text x="10" y="20" style="font-size:12px;fill:var(--muted)">đầu vào mô hình (H = 8, d = 2)</text>
+<g>
+<rect x="10" y="32" width="52" height="34" rx="4" style="fill:var(--accent)"/><rect x="66" y="32" width="52" height="34" rx="4" style="fill:var(--accent)"/>
+<rect x="122" y="32" width="52" height="34" rx="4" style="fill:var(--code-bg);stroke:var(--grey);stroke-dasharray:3 2"/><rect x="178" y="32" width="52" height="34" rx="4" style="fill:var(--code-bg);stroke:var(--grey);stroke-dasharray:3 2"/><rect x="234" y="32" width="52" height="34" rx="4" style="fill:var(--code-bg);stroke:var(--grey);stroke-dasharray:3 2"/><rect x="290" y="32" width="52" height="34" rx="4" style="fill:var(--code-bg);stroke:var(--grey);stroke-dasharray:3 2"/><rect x="346" y="32" width="52" height="34" rx="4" style="fill:var(--code-bg);stroke:var(--grey);stroke-dasharray:3 2"/><rect x="402" y="32" width="52" height="34" rx="4" style="fill:var(--code-bg);stroke:var(--grey);stroke-dasharray:3 2"/>
+<text x="36" y="54" text-anchor="middle" style="font-size:11.5px;fill:#fff;font-weight:700">sạch</text><text x="92" y="54" text-anchor="middle" style="font-size:11.5px;fill:#fff;font-weight:700">sạch</text>
+<text x="288" y="23" text-anchor="middle" style="font-size:11.5px;fill:var(--muted)">6 ô nhiễu ở mức τ</text>
+<text x="36" y="86" text-anchor="middle" style="font-size:11.5px;fill:var(--accent)">τ = 1</text><text x="92" y="86" text-anchor="middle" style="font-size:11.5px;fill:var(--accent)">τ = 1</text>
+<text x="288" y="86" text-anchor="middle" style="font-size:11.5px;fill:var(--muted)">τ ~ phân phối thường</text>
+<rect x="10" y="102" width="108" height="26" rx="4" style="fill:var(--grey);opacity:.35"/><rect x="122" y="102" width="332" height="26" rx="4" style="fill:var(--pri);opacity:.8"/>
+<text x="64" y="120" text-anchor="middle" style="font-size:11.5px;fill:var(--text)">không loss</text>
+<text x="288" y="120" text-anchor="middle" style="font-size:11.5px;fill:#fff;font-weight:700">loss flow matching</text>
+<text x="235" y="155" text-anchor="middle" style="font-size:11.5px;fill:var(--muted)">(giống Hình 2 của paper)</text>
+</g>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">3</span>Mỗi token đeo một "thẻ độ chín"</h3>
+<p>Trong flow matching, τ cho mô hình biết chunk đang "chín" tới đâu (0 = sống, 1 = chín). Bình thường cả chunk dùng chung một τ. Ở đây mỗi token đeo thẻ riêng: prefix đeo τ = 1 ("đã chín, đừng nấu nữa, cứ dựa vào"), postfix đeo τ hiện tại.</p>
+<p>Với DiT, τ đi vào qua <b>adaLN-zero</b>: từ τ sinh ra bộ "núm chỉnh" scale, shift, gate. Chỉ cần tính bộ núm này <b>cho từng token</b> thay vì một bộ cho cả chunk. Cùng trọng số, không thêm tham số. τ khác nhau giữa các token cũng chính là cách mô hình "biết" độ trễ d.</p>
+<p class="go">Đi sâu: mục 6.3 (widget token).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 170" role="img" aria-label="Mỗi token có tau riêng, đi qua cùng một MLP để ra scale shift gate riêng">
+<g style="font-size:11.5px">
+<text x="10" y="20" style="fill:var(--muted)">τ theo token</text>
+<rect x="10" y="30" width="50" height="26" rx="13" style="fill:var(--accent-soft);stroke:var(--accent)"/><text x="35" y="47" text-anchor="middle" style="fill:var(--accent)">1,0</text>
+<rect x="66" y="30" width="50" height="26" rx="13" style="fill:var(--accent-soft);stroke:var(--accent)"/><text x="91" y="47" text-anchor="middle" style="fill:var(--accent)">1,0</text>
+<rect x="122" y="30" width="50" height="26" rx="13" style="fill:var(--pri-soft);stroke:var(--pri)"/><text x="147" y="47" text-anchor="middle" style="fill:var(--pri-strong)">0,4</text>
+<rect x="178" y="30" width="50" height="26" rx="13" style="fill:var(--pri-soft);stroke:var(--pri)"/><text x="203" y="47" text-anchor="middle" style="fill:var(--pri-strong)">0,4</text>
+<rect x="234" y="30" width="50" height="26" rx="13" style="fill:var(--pri-soft);stroke:var(--pri)"/><text x="259" y="47" text-anchor="middle" style="fill:var(--pri-strong)">0,4</text>
+<rect x="290" y="30" width="50" height="26" rx="13" style="fill:var(--pri-soft);stroke:var(--pri)"/><text x="315" y="47" text-anchor="middle" style="fill:var(--pri-strong)">0,4</text>
+<rect x="60" y="80" width="300" height="30" rx="8" style="fill:var(--card);stroke:var(--line)"/>
+<text x="210" y="100" text-anchor="middle" style="fill:var(--text)">cùng một MLP adaLN (không thêm tham số)</text>
+<line x1="35" y1="58" x2="100" y2="80" style="stroke:var(--grey)"/><line x1="315" y1="58" x2="320" y2="80" style="stroke:var(--grey)"/>
+<text x="210" y="138" text-anchor="middle" style="fill:var(--text)">mỗi token một bộ (scale, shift, gate) riêng</text>
+<text x="210" y="158" text-anchor="middle" style="fill:var(--muted)">→ mô hình biết token nào đã chốt</text>
+</g>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">4</span>Được gì, mất gì</h3>
+<p><b>Được:</b> không backward lúc suy luận → độ trễ như mô hình gốc. Bền hơn khi d lớn, vì mô hình đã học thẳng phân phối có điều kiện thay vì dựa vào xấp xỉ tuyến tính. Chỉ vài dòng code, không đổi runtime robot.</p>
+<p><b>Mất:</b> chỉ khớp được prefix <b>cứng</b> d bước (không có soft masking cho vùng giữa). Phải fine-tune lại. Phải chọn trước d sẽ bốc theo phân phối nào, nghĩa là phải đoán trước độ trễ lúc triển khai.</p>
+<p class="go">Đi sâu: mục 8 (kết quả), 10 (phản biện).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 170" role="img" aria-label="Bảng cân: được và mất của RTC huấn luyện">
+<g style="font-size:12px">
+<rect x="10" y="20" width="215" height="130" rx="10" style="fill:var(--pri-soft)"/>
+<text x="117" y="42" text-anchor="middle" style="fill:var(--pri-strong);font-weight:700">Được</text>
+<text x="24" y="68" style="fill:var(--text)">• suy luận không tốn thêm</text>
+<text x="24" y="92" style="fill:var(--text)">• bền hơn khi d lớn</text>
+<text x="24" y="116" style="fill:var(--text)">• vài dòng code</text>
+<text x="24" y="140" style="fill:var(--text)">• cùng runtime robot</text>
+<rect x="245" y="20" width="215" height="130" rx="10" style="fill:var(--accent-soft)"/>
+<text x="352" y="42" text-anchor="middle" style="fill:var(--accent);font-weight:700">Mất</text>
+<text x="259" y="68" style="fill:var(--text)">• chỉ prefix cứng</text>
+<text x="259" y="92" style="fill:var(--text)">• phải fine-tune</text>
+<text x="259" y="116" style="fill:var(--text)">• phải đoán trước d</text>
+<text x="259" y="140" style="fill:var(--text)">• hơi kém ở d = 0–1</text>
+</g>
+</svg>
+</div>
+
+<h3>Ba bằng chứng nên thuộc</h3>
+<div class="stat">
+  <div><div class="v">≈ 0,72 vs ≈ 0,61</div><div class="k">Kinetix ở d = 4: RTC huấn luyện vs RTC suy luận (Hình 3, đọc từ hình); naive ≈ 0,49</div></div>
+  <div><div class="v">108 vs 135 ms</div><div class="k">độ trễ đầu-cuối trên π0.6, server H100 từ xa, 5 bước: d ≈ 5 vs d ≈ 7 (Sec V-B)</div></div>
+  <div><div class="v">ngang nhau</div><div class="k">robot thật (espresso, gấp hộp): thành công và thời gian của hai bản RTC gần bằng, cả hai nhanh hơn đồng bộ rõ (Hình 5)</div></div>
+</div>
+
+<h3>Tự kiểm tra 4 câu</h3>
+<details class="q"><summary>1. Paper này giải vấn đề gì mà paper RTC trước để lại?</summary>Chi phí suy luận của inpainting bằng gradient (backward ở mỗi bước, làm tăng độ trễ) và việc RTC suy luận kém dần khi độ trễ lớn.</details>
+<details class="q"><summary>2. "Giả lập độ trễ lúc huấn luyện" là làm gì cụ thể?</summary>Mỗi mẫu bốc một d; d hành động đầu của chunk thật được đưa vào sạch (τ = 1), phần sau làm nhiễu như thường; loss chỉ tính trên phần sau. Mô hình học \(p(\mathbf A_{t+d:H}\mid\mathbf o_t,\mathbf A_{t:t+d})\).</details>
+<details class="q"><summary>3. Vì sao cần τ riêng cho từng token? Có thêm tham số không?</summary>Để mô hình phân biệt token đã chốt (sạch) với token đang khử nhiễu, và biết d. Với adaLN-zero, chỉ cần để scale/shift/gate tính theo từng token: không thêm tham số.</details>
+<details class="q"><summary>4. Bản này mất gì so với RTC suy luận?</summary>Mất soft masking (chỉ khớp d bước đầu, không bám vùng giữa), phải fine-tune, và phải chọn phân phối độ trễ khi huấn luyện. Ở d = 0–1 trên Kinetix nó hơi kém hơn một chút.</details>
+</section>
+
+<!-- ============ 1 ============ -->
+<section class="sec" id="roadmap">
+<h2>1. Lộ trình đọc & checklist <span class="lv m">Phải nắm</span></h2>
+<div class="key"><b class="t">Lần đọc đầu: 4 chặng</b>★ Đọc nhanh → 4. So với RTC suy luận → 6.1 + 6.2 + 6.3 (ý chính, loss, adaLN theo token) → 8. Kết quả. Paper ngắn, nên có thể đọc PDF song song ngay từ đầu.</div>
+<div class="legend-lv">
+  <span><span class="lv m" style="margin:0">Phải nắm</span> trọng tâm mentor hỏi, cần nói lại được</span>
+  <span><span class="lv s" style="margin:0">Nên biết</span> giúp hiểu sâu và phản biện</span>
+  <span><span class="lv k" style="margin:0">Đọc lướt</span> chi tiết, tra khi cần</span>
+</div>
+<div class="tw"><table class="t">
+<tr><th>Bước</th><th>Đọc phần nào trên trang</th><th>Ứng với PDF</th><th class="num">Thời gian</th></tr>
+<tr><td>1</td><td>0, ★, 4. So với RTC suy luận</td><td>Abstract, Sec I, II</td><td class="num">25 phút</td></tr>
+<tr><td>2</td><td>5. Vấn đề + widget ngân sách độ trễ</td><td>Sec I, IV (đoạn đầu)</td><td class="num">20 phút</td></tr>
+<tr><td>3</td><td>6.1–6.3: ý chính, dẫn loss, adaLN theo token + widget</td><td>Sec III, IV, Eq. 1–2, Hình 1–2</td><td class="num">50 phút</td></tr>
+<tr><td>4</td><td>6.4–6.6: phân phối độ trễ, lấy mẫu, lật quy ước</td><td>Sec IV, V-A, V-B, Algorithm 1</td><td class="num">40 phút</td></tr>
+<tr><td>5</td><td>7. Code PyTorch (đã huấn luyện thử)</td><td>Algorithm 1 (trang 6)</td><td class="num">40 phút</td></tr>
+<tr><td>6</td><td>8. Kết quả, 13. Ghép hai paper</td><td>Sec V, Hình 3, 5</td><td class="num">30 phút</td></tr>
+<tr><td>7</td><td>9. Code, 11. Câu hỏi vặn, 10. Phản biện</td><td>Sec VI</td><td class="num">40 phút</td></tr>
+</table></div>
+
+<h3>Checklist "mình đã hiểu RTC training-time"</h3>
+<div class="prog"><i id="progBar"></i></div>
+<div class="chk" id="chk">
+  <label><input type="checkbox" data-k="c1"><span>Nói được hai lý do paper đưa ra để bỏ inpainting lúc suy luận (chi phí, kém khi d lớn).</span></label>
+  <label><input type="checkbox" data-k="c2"><span>Viết được phân phối mô hình học: \(p(\mathbf A_{t+d:H}\mid\mathbf o_t,\mathbf A_{t:t+d})\), chỉ ra prefix và postfix trên Hình 1.</span></label>
+  <label><input type="checkbox" data-k="c3"><span>Viết loss flow matching với τ theo từng token và mask postfix; tự tính đầu vào và mục tiêu cho một ví dụ nhỏ.</span></label>
+  <label><input type="checkbox" data-k="c4"><span>Chỉ ra lỗi dấu ở Eq. 2 của paper và vì sao code (A − ε) mới đúng.</span></label>
+  <label><input type="checkbox" data-k="c5"><span>Giải thích adaLN-zero và vì sao "τ theo token" không thêm tham số.</span></label>
+  <label><input type="checkbox" data-k="c6"><span>Kể ba thay đổi (τ theo token, prefix sạch τ = 1, mask loss) và hai điểm trong hàm lấy mẫu (ghi đè prefix, τ = 1 cho prefix).</span></label>
+  <label><input type="checkbox" data-k="c7"><span>Nói được paper bốc d thế nào ở mô phỏng (mũ giảm trên {0,…,4}) và ở robot thật (đều 0–10), và vì sao "d nhỏ hơi kém".</span></label>
+  <label><input type="checkbox" data-k="c8"><span>Viết lại phiên bản Qwen-VLA: prefix phải có τ<sub>q</sub> = 0, mục tiêu ε − A, Euler trừ.</span></label>
+  <label><input type="checkbox" data-k="c9"><span>Đọc Hình 3 và Hình 5: thiết lập, baseline, chỗ nào hơn, chỗ nào chỉ ngang.</span></label>
+  <label><input type="checkbox" data-k="c10"><span>So được hai paper theo 6 tiêu chí (chi phí, soft mask, huấn luyện, d lớn, d nhỏ, linh hoạt).</span></label>
+  <label><input type="checkbox" data-k="c11"><span>Biết khi mở codebase phải sửa những hàm nào để thêm training-time RTC.</span></label>
+  <label><input type="checkbox" data-k="c12"><span>Nêu 3 điểm phản biện và tự kiểm chúng trong PDF.</span></label>
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="sec" id="glossary">
+<h2>2. Bảng thuật ngữ <span class="lv s">Nên biết</span></h2>
+<p>Các từ của trang RTC inference-time (H, s, d, đồng bộ/bất đồng bộ, inpainting, ΠGDM, soft masking…) không nhắc lại.</p>
+<details class="more"><summary>Mở bảng thuật ngữ</summary>
+<div class="tw"><table class="t">
+<tr><th>Thuật ngữ</th><th>Nghĩa ngắn gọn</th><th>Gặp ở</th></tr>
+<tr><td>Action prefix \(\mathbf A_{t:t+d}\)</td><td>d hành động đầu của chunk mới, lấy từ chunk cũ (đỏ ở Hình 1)</td><td>Sec III</td></tr>
+<tr><td>Action postfix \(\mathbf A_{t+d:H}\)</td><td>Phần còn lại của chunk mới, cần sinh (vàng + xanh ở Hình 1). Paper viết chỉ số H là "tới cuối chunk"</td><td>Sec IV</td></tr>
+<tr><td>Training-time action conditioning</td><td>Cho mô hình nhìn thấy hành động đã biết ngay từ lúc huấn luyện, thay vì ép bằng guidance lúc chạy</td><td>Tên paper</td></tr>
+<tr><td>Simulated inference delay</td><td>Bốc ngẫu nhiên d cho mỗi mẫu huấn luyện để mô phỏng độ trễ lúc chạy</td><td>Sec IV</td></tr>
+<tr><td>Per-token timestep</td><td>Mỗi token hành động có τ riêng (shape (B, H) thay vì (B,))</td><td>Sec IV, bước 1</td></tr>
+<tr><td>adaLN-zero</td><td>Cách DiT đưa điều kiện (τ) vào: từ τ sinh scale, shift, gate cho LayerNorm và nhánh dư; lớp sinh được khởi tạo bằng 0</td><td>Sec IV, Peebles &amp; Xie</td></tr>
+<tr><td>Loss mask</td><td>Mặt nạ 0/1 chỉ giữ loss trên postfix</td><td>Sec IV, bước 3</td></tr>
+<tr><td>Drop-in replacement</td><td>Thay thẳng vào chỗ cũ mà không đổi giao diện: vào (prefix, d), ra chunk</td><td>Sec IV</td></tr>
+<tr><td>π0.6, π*0.6</td><td>Mô hình VLA đời sau của Physical Intelligence; π*0.6 là bản học thêm từ kinh nghiệm (paper chỉ dẫn model card và arXiv 2511.14759)</td><td>Sec V</td></tr>
+<tr><td>SmolVLA, A2C2, VLASH</td><td>Các cách chạy bất đồng bộ khác: SmolVLA không xử lý chỗ nối; A2C2 thêm một đầu sửa nhẹ; VLASH điều kiện trên <b>một</b> hành động tương lai</td><td>Sec II</td></tr>
+<tr><td>Wilson score interval</td><td>Khoảng tin cậy cho tỉ lệ thành công; Hình 5 dùng mức 68% (≈ ±1 độ lệch chuẩn)</td><td>Hình 3, 5</td></tr>
+</table></div>
+</details>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="sec" id="basics">
+<h2>3. Nền tối thiểu <span class="lv m">Phải nắm</span></h2>
+<p>Chỉ những gì <b>mới</b> so với trang RTC inference-time.</p>
+<div class="basics">
+  <div><b class="h">Phân phối có điều kiện = đoán phần sau khi đã biết phần đầu</b>\(p(B\mid A)\): "biết A rồi thì B phân bố thế nào". Biết robot vừa bắt đầu vòng lên trên thì gần như chắc nó sẽ tiếp tục vòng trên. RTC suy luận <i>ép</i> mô hình thường về phía điều kiện; bản này <i>học thẳng</i> điều kiện.<span class="why">Cần vì: đây là toàn bộ ý tưởng của paper (Sec IV).</span></div>
+  <div><b class="h">adaLN-zero = núm chỉnh do τ vặn</b>Trong mỗi khối DiT, τ được biến thành vector rồi qua một lớp Linear để sinh 6 số cho mỗi chiều ẩn: shift, scale (chỉnh sau LayerNorm), gate (nhân nhánh attention/MLP trước khi cộng dư), mỗi thứ 2 lần. "Zero": lớp Linear này khởi tạo bằng 0, nên ban đầu khối là phép đồng nhất.<span class="why">Cần vì: "τ theo token" chỉ là đổi shape của đầu vào lớp này.</span></div>
+  <div><b class="h">Mask loss = chấm bài phần học sinh tự viết</b>Câu đã cho sẵn thì không chấm. Loss chỉ lấy trung bình trên các ô postfix; ô prefix nhân 0.<span class="why">Cần vì: mô hình không được "thưởng" vì chép lại phần đã cho.</span></div>
+  <div><b class="h">Phân phối bốc d = đề luyện nên khó cỡ nào</b>Đều trên {0,…,9}: mọi độ trễ như nhau. Mũ giảm: d nhỏ hay gặp hơn. Bốc thế nào thì mô hình giỏi ở vùng đó; d lớn hơn mọi giá trị từng bốc thì mô hình chưa từng thấy.<span class="why">Cần vì: paper dùng hai cách khác nhau cho mô phỏng và robot thật.</span></div>
+  <div><b class="h">Fine-tune từ checkpoint = học thêm, không học lại</b>Bắt đầu từ mô hình đã huấn luyện thường, học thêm vài epoch/bước với loss mới. Paper làm vậy ở cả mô phỏng (từ epoch 24) và robot thật (từ π0.6 base, 8.000 bước).<span class="why">Cần vì: chứng tỏ không cần pretrain lại từ đầu.</span></div>
+  <div><b class="h">Tại sao ghi đè thường không đủ</b>Paper trước (Hình 8 phải) thử "ghi đè phần đóng băng ở mỗi bước khử nhiễu" (kiểu Diffuser): có ích nhưng thua guidance. Lý do: mô hình thường chưa bao giờ thấy chunk nửa sạch nửa nhiễu mà vẫn bị gắn chung một τ, nên nó không biết tin phần sạch.<span class="why">Cần vì: paper này "sửa" đúng cách lấy mẫu đó bằng huấn luyện (mục 6.5).</span></div>
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="sec" id="bridge">
+<h2>4. Từ RTC suy luận sang RTC huấn luyện <span class="lv m">Phải nắm</span></h2>
+<div class="tw"><table class="t">
+<tr><th>Điểm so sánh</th><th>RTC inference-time (2506.07339)</th><th>RTC training-time (2512.05964)</th><th></th></tr>
+<tr><td>Bài toán, ký hiệu H, s, d</td><td>Chạy bất đồng bộ, chunk mới phải khớp chunk cũ</td><td>Y hệt ("same problem formulation as RTC")</td><td class="keep">giữ</td></tr>
+<tr><td>Runtime robot (Algorithm 1 paper trước)</td><td>Hai luồng, hàng đợi độ trễ</td><td>Không đổi gì; chỉ thay GuidedInference</td><td class="keep">giữ</td></tr>
+<tr><td>Quy ước τ</td><td>τ = 0 nhiễu, 1 sạch</td><td>Giống; Eq. 1: \(\mathbf A^\tau = \tau\mathbf A + (1-\tau)\boldsymbol\epsilon\)</td><td class="keep">giữ</td></tr>
+<tr><td><b>Khớp với chunk cũ bằng gì</b></td><td>Guidance ΠGDM lúc suy luận (VJP mỗi bước)</td><td>Mô hình được huấn luyện để nhận prefix sạch</td><td class="chg">đổi</td></tr>
+<tr><td><b>Vùng được khớp</b></td><td>Cả H − s ô chồng lấn: d ô cứng + vùng giữa mềm (Eq. 5)</td><td>Chỉ d ô prefix, cứng</td><td class="chg">hẹp hơn</td></tr>
+<tr><td><b>Huấn luyện</b></td><td>Không cần</td><td>Fine-tune với 3 thay đổi + bốc d ngẫu nhiên</td><td class="chg">đổi</td></tr>
+<tr><td><b>Chi phí suy luận</b></td><td>Backward mỗi bước: π0.5 76 → 97 ms</td><td>Như mô hình gốc</td><td class="chg">rẻ hơn</td></tr>
+<tr><td>Siêu tham số</td><td>β, kiểu giảm W, s<sub>min</sub>, b</td><td>Phân phối bốc d (khi huấn luyện), s<sub>min</sub>, b</td><td class="chg">đổi</td></tr>
+<tr><td>Mô hình thử nghiệm</td><td>Kinetix (MLP-Mixer, H = 8) + π0.5</td><td>Kinetix (cùng thiết lập) + π0.6</td><td class="unk">đổi mô hình thật</td></tr>
+</table></div>
+<div class="co note"><b class="t">Câu chốt</b>Paper trước: "mô hình không biết gì về chunk cũ, ta ép nó lúc chạy". Paper này: "dạy mô hình biết về chunk cũ, lúc chạy chỉ việc đưa vào". Cùng một giao diện: vào (quan sát, prefix, d), ra chunk mới.</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="sec" id="problem">
+<h2>5. Vấn đề: cái giá của RTC suy luận (Sec I, IV) <span class="lv m">Phải nắm</span></h2>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec I)</span>"However, the inference-time inpainting method used by RTC introduces additional computational overhead — and hence latency — that somewhat defeats the purpose of a real-time execution framework. Empirically, we also find that inference-time inpainting is fundamentally limited in its ability to handle high inference delays."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Hai lời phàn nàn. <b>(1) Vòng luẩn quẩn chi phí:</b> RTC sinh ra để chịu được độ trễ, nhưng chính nó lại làm độ trễ tăng (thêm backward mỗi bước), nên d tăng và phải đóng băng nhiều hơn. <b>(2) Giới hạn khi d lớn:</b> prefix càng dài, guidance càng phải "làm việc vất vả" để kéo chunk khớp, mà nó chỉ dựa vào xấp xỉ tuyến tính (Jacobian) của mô hình.</div></div>
+
+<div class="widget" id="wBudget">
+<h4>Ngân sách độ trễ: gốc vs RTC suy luận vs RTC huấn luyện</h4>
+<div class="ctrl">
+  <label>Ảnh + prefill VLM (ms) <input type="number" id="bgFix" value="62" min="0" step="1" style="width:70px"></label>
+  <label>Mỗi bước khử nhiễu (ms) <input type="number" id="bgStep" value="2.8" min="0" step="0.1" style="width:70px"></label>
+  <label>Số bước n <input type="number" id="bgN" value="5" min="1" step="1" style="width:60px"></label>
+  <label>Hệ số chậm của RTC suy luận <input type="number" id="bgK" value="2.5" min="1" step="0.1" style="width:60px"></label>
+</div>
+<div class="ctrl">
+  <label>Mạng + tiền xử lý (ms) <input type="number" id="bgNet" value="11.33" min="0" step="0.5" style="width:70px"></label>
+  <label>Tần số (Hz) <input type="number" id="bgHz" value="50" min="1" step="1" style="width:60px"></label>
+  <label>H <input type="number" id="bgH" value="50" min="2" step="1" style="width:60px"></label>
+  <button class="b o" type="button" id="bgP1">π0.5 (paper trước)</button>
+  <button class="b o" type="button" id="bgP2">Qwen-VLA (tự đặt)</button>
+</div>
+<div class="out" id="bgOut"></div>
+<p style="font-size:.86rem;color:var(--muted);margin:.5em 0 0">Preset π0.5 lấy từ Bảng 2–3 của paper trước (62 ms ảnh + prefill, 14 ms cho 5 bước, RTC chậm 2,5× mỗi bước, mạng + resize + khác ≈ 11,33 ms ở máy bàn). Preset Qwen-VLA dùng H = 16 (có trong paper Qwen-VLA) và <b>số tự đặt</b> cho mọi thứ còn lại (100 ms, 8 ms/bước, 10 bước, 10 Hz), vì paper Qwen-VLA không báo độ trễ. Hệ số 2,5× đo trên π0.5; với mô hình khác có thể khác.</p>
+</div>
+<p>Paper này đo lại trên π0.6 (server H100 từ xa, 5 bước): 108 ms đầu-cuối cho bản huấn luyện (d ≈ 5) so với 135 ms cho bản suy luận (d ≈ 7). Chênh 27 ms, cùng cỡ với 21 ms của π0.5 ở paper trước.</p>
+<div class="co warn"><b class="t">Lời giải thích "work harder" là giả thuyết của paper</b>Sec V-A viết: <i>"This is likely because, as the size of the prefix grows, the inpainting algorithm has to 'work harder' … training-time algorithm is more robust than the pure inference-time algorithm, which relies on a linearization obtained from the Jacobian of the model."</i> Chữ "likely": paper không có thí nghiệm riêng chứng minh nguyên nhân, chỉ có Hình 3 cho thấy khoảng cách nới rộng khi d tăng.</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="sec" id="method">
+<h2>6. Phương pháp (Sec III–IV, Hình 1–2, Algorithm 1) <span class="lv m">Phải nắm</span></h2>
+
+<h3 id="idea">6.1 Ý chính: học thẳng phân phối có điều kiện <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec IV)</span>"The core insight of this work is that we can condition the policy on action prefixes at training time by simulating inference delay. … Formally, we can learn \(p(\mathbf A_{t+d:H}\mid\mathbf o_t, \mathbf A_{t:t+d})\), where \(\mathbf A_{t:t+d}\) is an action prefix and \(\mathbf A_{t+d:H}\) is an action postfix, both taken from the same ground-truth action chunk."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Dữ liệu huấn luyện đã có sẵn cả chunk thật. Cắt nó làm hai ở vị trí d: phần đầu đóng vai "những gì robot đã cam kết chạy", phần sau là thứ mô hình phải sinh. Không cần dữ liệu mới, không cần chunk cũ thật từ lúc chạy: prefix và postfix đến từ <b>cùng một</b> chunk thật, nên chúng luôn khớp nhau hoàn hảo.</div></div>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Hình 1, chú thích)</span>"We must satisfy the constraint \(t + d \le t - s + H \rightarrow d \le H - s\) to have a valid action prefix. Note that inference-time RTC uses all H − s overlapping actions (red and yellow) to guide the generation of the current chunk, whereas training-time RTC only uses the first d actions (red)."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Chunk cũ bắt đầu ở t − s, kết thúc ở t − s + H. Chunk mới bắt đầu ở t. Phần chồng lấn dài H − s; d ô đầu (đỏ) là prefix. Vùng vàng (chồng lấn nhưng không phải prefix) mà bản suy luận khớp mềm thì bản huấn luyện <b>bỏ qua</b>. Đây là "độ linh hoạt" bị mất.</div></div>
+
+<h3 id="derive">6.2 Dẫn công thức loss từng bước (Eq. 1–2, Algorithm 1) <span class="lv m">Phải nắm</span></h3>
+<h4>Bước 1. Flow matching thường (Eq. 1–2 của paper)</h4>
+\[\mathbf A_t^\tau = \tau\mathbf A_t + (1-\tau)\boldsymbol\epsilon,\quad \boldsymbol\epsilon\sim\mathcal N(\mathbf 0,\mathbf I),\qquad \mathcal L(\theta) = \mathbb E\,\big\|\mathbf v_\theta(\mathbf A_t^\tau,\mathbf o_t,\tau) - (\mathbf A_t - \boldsymbol\epsilon)\big\|^2.\]
+<div class="co crit"><b class="t">Lỗi dấu trong PDF</b>Eq. 2 trong PDF in mục tiêu là \((\boldsymbol\epsilon - \mathbf A_t)\). Với đường \(\tau\mathbf A + (1-\tau)\boldsymbol\epsilon\), vận tốc đúng là \(d\mathbf A^\tau/d\tau = \mathbf A - \boldsymbol\epsilon\), và code Algorithm 1 của chính paper viết <code>action_chunk - noise</code>, tức \(\mathbf A - \boldsymbol\epsilon\). Hàm lấy mẫu cũng <b>cộng</b> v khi τ đi từ 0 lên 1, chỉ đúng nếu v = A − ε. Đây là cùng kiểu lỗi dấu bạn đã gặp ở GR00T N1. Trang này dùng \(\mathbf A - \boldsymbol\epsilon\).</div>
+
+<h4>Bước 2. Cho τ thành một vector theo token</h4>
+<p>Bốc một độ trễ d. Đặt \(\tau_i = 1\) nếu \(i &lt; d\) (prefix), còn lại \(\tau_i = \tau\) (cùng một giá trị bốc như thường). Điểm đầu vào được tính từng token:</p>
+\[(\mathbf A^{\boldsymbol\tau})_i = \tau_i\,\mathbf a_i + (1-\tau_i)\,\boldsymbol\epsilon_i \;=\;\begin{cases}\mathbf a_i & i &lt; d\quad\text{(sạch, nhiễu bị triệt tiêu)}\\ \tau\mathbf a_i + (1-\tau)\boldsymbol\epsilon_i & i \ge d\end{cases}\]
+
+<h4>Bước 3. Chỉ tính loss trên postfix</h4>
+\[\mathcal L(\theta) = \mathbb E_{d,\tau,\boldsymbol\epsilon}\;\frac{1}{|\text{postfix}|}\sum_{i\ge d}\big\|\mathbf v_\theta(\mathbf A^{\boldsymbol\tau}, \mathbf o_t, \boldsymbol\tau)_i - (\mathbf a_i - \boldsymbol\epsilon_i)\big\|^2.\]
+<p>Code Algorithm 1 chia cho tổng số ô postfix <b>của cả batch</b> (<code>sum(loss * postfix_mask) / sum(postfix_mask)</code>), nên mẫu có prefix ngắn đóng góp nhiều ô hơn. Đây là chi tiết code, paper không bàn.</p>
+
+<h4>Ví dụ tính tay (1 chiều, H = 6, d = 2, τ = 0,3)</h4>
+<div class="tw"><table class="t">
+<tr><th>i</th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr>
+<tr><td>hành động thật a<sub>i</sub></td><td class="num">0,2</td><td class="num">0,5</td><td class="num">0,9</td><td class="num">1,2</td><td class="num">1,0</td><td class="num">0,6</td></tr>
+<tr><td>nhiễu ε<sub>i</sub></td><td class="num">−0,4</td><td class="num">1,1</td><td class="num">0,3</td><td class="num">−0,8</td><td class="num">0,5</td><td class="num">−1,0</td></tr>
+<tr><td>τ<sub>i</sub></td><td class="num">1</td><td class="num">1</td><td class="num">0,3</td><td class="num">0,3</td><td class="num">0,3</td><td class="num">0,3</td></tr>
+<tr><td>đầu vào τ<sub>i</sub>a<sub>i</sub> + (1−τ<sub>i</sub>)ε<sub>i</sub></td><td class="num">0,2</td><td class="num">0,5</td><td class="num">0,48</td><td class="num">−0,20</td><td class="num">0,65</td><td class="num">−0,52</td></tr>
+<tr><td>mục tiêu a<sub>i</sub> − ε<sub>i</sub></td><td class="num">(0,6)</td><td class="num">(−0,6)</td><td class="num">0,6</td><td class="num">2,0</td><td class="num">0,5</td><td class="num">1,6</td></tr>
+<tr><td>có tính loss?</td><td class="num">không</td><td class="num">không</td><td class="num">có</td><td class="num">có</td><td class="num">có</td><td class="num">có</td></tr>
+</table></div>
+<p>Kiểm ô i = 2: 0,3 × 0,9 + 0,7 × 0,3 = 0,27 + 0,21 = 0,48. Ô i = 3: 0,36 + 0,7 × (−0,8) = 0,36 − 0,56 = −0,20. Prefix đi vào nguyên giá trị thật 0,2 và 0,5. Mục tiêu ở prefix vẫn được mạng dự đoán nhưng bị bỏ khỏi loss.</p>
+
+<h3 id="arch">6.3 Ba thay đổi & adaLN theo token (Sec IV, Hình 2) <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec IV, bước 1)</span>"Modify the model architecture to allow for a different flow matching timestep for each action timestep. For a diffusion-transformer-like architecture, which uses adaLN-zero conditioning for the flow matching timestep, this is trivial — simply allow the scale, shift, and gate to differ between tokens. This does not change the number of learnable parameters."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Bình thường: τ có shape (B,), embedding (B, D), lớp adaLN cho (B, 6D), rồi <b>broadcast</b> giống nhau cho cả H token. Bây giờ: τ có shape (B, H), embedding (B, H, D), adaLN cho (B, H, 6D), mỗi token một bộ. Cùng một lớp Linear, chỉ thêm một chiều tensor. Trong code: chỉ cần bỏ bước "unsqueeze rồi broadcast".</div></div>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec IV, bước 2–3)</span>"Use ground-truth, non-noisy actions for the prefix, and set the corresponding flow matching timesteps to 1. Do not change anything for the postfix. … Mask the loss function so that loss is only computed on outputs corresponding to the postfix."</div>
+<div class="n"><span class="lab">Nghĩa là</span>τ = 1 trong quy ước này là "hoàn toàn sạch", khớp với việc prefix không có nhiễu. Hình 2 chú thích thêm: "The flow matching timestep differs between tokens, which indicates the inference delay to the model": mô hình đếm được bao nhiêu token mang τ = 1, tức là biết d, mà không cần đưa d vào riêng.</div></div>
+<div class="widget" id="wTok">
+<h4>Các token đi vào action expert</h4>
+<div class="ctrl">
+  <label>d = <b id="tkDv">2</b> <input type="range" id="tkD" min="0" max="5" value="2"></label>
+  <label>τ (paper) = <b id="tkTv">0,30</b> <input type="range" id="tkT" min="0" max="0.95" step="0.05" value="0.3"></label>
+  <label>Quy ước <select id="tkConv"><option value="p">Paper RTC (τ = 1 sạch)</option><option value="q">Qwen-VLA (τ = 0 sạch)</option></select></label>
+</div>
+<svg class="svgbox" id="tkSvg" viewBox="0 0 720 250" role="img" aria-label="Các token hành động với tau riêng và mặt nạ loss"></svg>
+<div class="out" id="tkOut"></div>
+</div>
+
+<h3 id="delay">6.4 Chọn phân phối độ trễ (Sec IV, V-A, V-B) <span class="lv s">Nên biết</span></h3>
+<div class="tw"><table class="t">
+<tr><th>Thí nghiệm</th><th>Paper bốc d thế nào</th><th>Ghi chú</th></tr>
+<tr><td>Kinetix (H = 8)</td><td>Trên {0, 1, 2, 3, 4}, trọng số <b>giảm theo hàm mũ</b>: "higher delays need less training supervision"</td><td>Không cho cơ số/tốc độ giảm cụ thể. Cũng nói: tách checkpoint riêng cho từng d "likely" tốt hơn</td></tr>
+<tr><td>Robot thật (π0.6, 50 Hz)</td><td>"Uniformly between 0 and 10", "supports a maximum latency of 200 ms"</td><td>Code mẫu dùng <code>randint(0, max_delay)</code>: lấy 0 … max_delay − 1. Nếu max_delay = 10 thì d lớn nhất là 9 (180 ms), không phải 10. Paper không ghi max_delay thật</td></tr>
+</table></div>
+<div class="widget" id="wDist">
+<h4>Bốc một lô huấn luyện: ô nào được "chấm điểm"?</h4>
+<div class="ctrl">
+  <label>Phân phối <select id="dsKind"><option value="u">Đều trên {0, …, max − 1}</option><option value="e">Mũ giảm trên {0, …, max − 1}</option></select></label>
+  <label>max_delay = <b id="dsMv">5</b> <input type="range" id="dsM" min="1" max="8" value="5"></label>
+  <label>Tốc độ giảm (chỉ cho "mũ") = <b id="dsRv">0,5</b> <input type="range" id="dsR" min="0.1" max="1" step="0.05" value="0.5"></label>
+  <button class="b o" type="button" id="dsNew">Bốc lô mới</button>
+</div>
+<div id="dsGrid"></div>
+<div class="bars" id="dsBars"></div>
+<div class="out" id="dsOut"></div>
+<p style="font-size:.86rem;color:var(--muted);margin:.5em 0 0">H = 8 như Kinetix. Lưới: 12 mẫu trong một lô (cam = prefix, xanh = postfix có loss). Thanh: xác suất ô i nằm trong postfix, tức \(P(d \le i)\). Tốc độ giảm là <b>số tự đặt</b>: paper không công bố trọng số cụ thể.</p>
+</div>
+<p>Widget cho thấy ý của paper ở Sec V-A: <i>"slightly less training compute is spent learning to generate the first and second actions"</i>. Ô 0 chỉ được chấm khi d = 0; ô 1 khi d ≤ 1… Đó là lời giải thích của paper cho việc bản huấn luyện hơi kém ở d = 0–1 (≈ 0,91 so với ≈ 0,92 ở d = 0).</p>
+
+<h3 id="sampling">6.5 Suy luận: ghi đè prefix, gọi mô hình như thường (Algorithm 1, <code>sample_actions</code>) <span class="lv m">Phải nắm</span></h3>
+<p>Hàm lấy mẫu trong Algorithm 1 chỉ khác flow matching thường ở <b>3 dòng</b> (paper tô đỏ):</p>
+<ol class="steps">
+<li>Tạo <code>prefix_mask</code> = các vị trí i &lt; d.</li>
+<li>Đầu mỗi bước Euler: thay các ô prefix của \(\mathbf x_t\) bằng prefix đã chốt (<code>where(prefix_mask, action_prefix, x_t)</code>).</li>
+<li>τ đưa vào mô hình: 1,0 ở prefix, τ hiện tại ở postfix. Rồi gọi mô hình <b>một lần</b>, \(\mathbf x \leftarrow \mathbf x + \Delta\tau\,\mathbf v\), không có backward.</li>
+</ol>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec IV)</span>"With these modifications, action generation takes as input an action prefix \(\mathbf A_{t:t+d}\) and the delay itself d and produces as output an action postfix \(\mathbf A_{t+d:H}\). As such, it adheres to the same interface as the action generation component of inference-time RTC … and thus acts as a seamless drop-in replacement."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Trong Algorithm 1 của paper trước, chỉ cần thay dòng <code>A_new = GuidedInference(π, o, A_prev, d, s)</code> bằng <code>sample_actions(o, A_prev[:d], d)</code>. Luồng điều khiển, hàng đợi độ trễ, cách đổi chunk giữ nguyên. Phần A_prev sau d ô (vùng giữa) không dùng tới.</div></div>
+<div class="co note"><b class="t">Chi tiết nhỏ trong code (mình tự nhận ra, paper không nói)</b>Vòng lặp ghi đè prefix ở <b>đầu</b> mỗi bước rồi cộng v cho cả chunk. Sau bước cuối không ghi đè lại, nên prefix trả về bị lệch một chút (thêm Δτ·v). Không ảnh hưởng gì vì d ô đầu của chunk mới không bao giờ được chạy (xem mục 7.1 trang trước). Bản PyTorch ở mục 7 giữ nguyên hành vi này.</div>
+
+<h3 id="flip">6.6 Lật sang quy ước Qwen-VLA (τ = 1 nhiễu) <span class="lv m">Phải nắm</span></h3>
+<div class="tw"><table class="t">
+<tr><th>Đại lượng</th><th>Paper (τ = 0 nhiễu, 1 sạch)</th><th>Qwen-VLA (τ<sub>q</sub> = 1 nhiễu, 0 sạch)</th></tr>
+<tr><td>τ của prefix</td><td><b>1,0</b></td><td><b>0,0</b> (đây là chỗ dễ sai nhất)</td></tr>
+<tr><td>Đầu vào postfix</td><td>\(\tau\mathbf a + (1-\tau)\boldsymbol\epsilon\)</td><td>\((1-\tau_q)\mathbf a + \tau_q\boldsymbol\epsilon\)</td></tr>
+<tr><td>Mục tiêu</td><td>\(\mathbf a - \boldsymbol\epsilon\)</td><td>\(\boldsymbol\epsilon - \mathbf a\)</td></tr>
+<tr><td>Mask loss</td><td colspan="2">Giống nhau: chỉ postfix. Với Qwen-VLA còn nhân thêm mask kênh/bước đệm 0 sẵn có \(M_{h,k}\) (cả hai mask nhân với nhau)</td></tr>
+<tr><td>Lấy mẫu</td><td>τ: 0 → 1, ghi đè prefix, τ<sub>prefix</sub> = 1, cộng v</td><td>τ<sub>q</sub>: 1 → 0, ghi đè prefix, τ<sub>q,prefix</sub> = 0, <b>trừ</b> v<sub>q</sub></td></tr>
+</table></div>
+<div class="co warn"><b class="t">Bẫy với Qwen-VLA</b>Nếu bê nguyên code paper và đặt τ = 1 cho prefix trong quy ước Qwen, mô hình sẽ hiểu prefix là <b>nhiễu thuần</b>, ngược hoàn toàn ý định. Code PyTorch mục 7 có hàm <code>sample_actions_qwen</code> và kiểm rằng hai quy ước cho kết quả giống hệt. Ngoài ra, phân phối bốc τ của Qwen-VLA (Beta/Sigmoid-Normal) dùng nguyên cho postfix; chỉ prefix bị ép.</div>
+
+<h3 id="sim">6.7 Bấm thử: 4 cách nối chunk trên mô hình đồ chơi <span class="lv s">Nên biết</span></h3>
+<p>Cùng "thế giới" vật cản như trang trước (H = 16, n = 5, hai mode). Bốn cách: không xét chunk cũ (naive), RTC suy luận (ΠGDM + soft mask), ghi đè prefix trên mô hình <b>chưa</b> huấn luyện cho việc này (kiểu Diffuser), và RTC huấn luyện. Vì mô hình đồ chơi là Gaussian, "mô hình đã học điều kiện" được tính chính xác bằng công thức Gaussian có điều kiện (với một chút dung sai cho prefix lệch).</p>
+<div class="widget" id="wSim">
+<h4>So 4 cách nối chunk</h4>
+<div class="ctrl">
+  <label>Độ trễ d = <b id="smDv">4</b> <input type="range" id="smD" min="1" max="7" value="4"></label>
+  <label>s<sub>min</sub> = <b id="smSv">4</b> <input type="range" id="smS" min="1" max="8" value="4"></label>
+  <label>Hạt giống <input type="number" id="smSeed" value="3" min="1" step="1" style="width:70px"></label>
+  <button class="b o" type="button" id="smRand">Đổi ngẫu nhiên</button>
+</div>
+<div class="ctrl" id="smMeth"></div>
+<svg class="svgbox" id="smSvg" viewBox="0 0 720 300" role="img" aria-label="Quỹ đạo vị trí theo thời gian của 4 cách nối chunk"></svg>
+<div class="tw"><table class="t" id="smTab"></table></div>
+</div>
+<div class="co warn"><b class="t">Đọc kết quả mô phỏng cho đúng</b>Trong mô phỏng này, ghi đè trên mô hình thường hay chạm vật cản khi d lớn (mô hình không biết tin phần sạch), còn RTC huấn luyện thì không. Nhưng RTC suy luận ở đây <b>không</b> thua RTC huấn luyện khi d lớn như trong Hình 3 của paper, vì mô hình đồ chơi là "hoàn hảo" (Gaussian giải tích) nên xấp xỉ tuyến tính của ΠGDM gần như đúng, và soft masking còn giúp nó mượt hơn. Lợi thế khi d lớn mà paper đo được đến từ mạng nơ-ron thật, nơi xấp xỉ tuyến tính kém hơn. Đây cũng là một câu trả lời tốt nếu mentor hỏi "vì sao training-time lại hơn?".</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="sec" id="algo">
+<h2>7. Code (Algorithm 1, trang 6) <span class="lv m">Phải nắm</span></h2>
+<div class="two">
+<div>
+<p><b>Loss huấn luyện</b> (chỗ đổi so với flow matching thường đánh dấu ★)</p>
+<pre><code>tau   = rand(B)                       # như thường
+noise = randn(B, H, M)
+d     = randint(0, max_delay, (B,))   # ★ bốc độ trễ
+pre   = arange(H)[None] &lt; d[:, None]  # ★ (B, H)
+tau   = where(pre, 1.0, tau[:, None]) # ★ τ theo token
+x     = tau[..., None]*A + (1-tau[..., None])*noise
+v     = model(obs, x, tau)            # ★ tau shape (B, H)
+loss  = (v - (A - noise))**2
+post  = ~pre[..., None]               # ★
+loss  = (loss*post).sum() / post.sum()  # ★</code></pre>
+</div>
+<div>
+<p><b>Lấy mẫu</b> cạnh vòng Qwen-VLA</p>
+<pre><code># paper (τ: 0 → 1)
+x = randn(H, M); tau = 0.0
+pre = arange(H) &lt; d
+for _ in range(n):
+    x  = where(pre, prefix, x)         # ★ ghi đè
+    tm = where(pre, 1.0, tau)          # ★
+    x  = x + (1/n) * model(obs, x, tm)
+    tau += 1/n
+
+# Qwen-VLA (τq: 1 → 0)
+y = randn(H, K)
+for k in range(n):
+    tq = 1 - k/n
+    y  = where(pre, prefix, y)         # ★
+    tm = where(pre, 0.0, tq)           # ★ sạch = 0
+    y  = y - (1/n) * model(obs, y, tm)</code></pre>
+</div>
+</div>
+<p>So với GuidedInference của RTC suy luận: không còn <code>requires_grad</code>, không có Eq. 3, sai số có trọng số W, VJP, hệ số β. Chỉ còn 2 dòng ghi đè/τ.</p>
+
+<h3>Code PyTorch giản lược, đã huấn luyện thử <span class="lv s">Nên biết</span></h3>
+<div class="co warn"><b class="t">Không phải code của tác giả</b>Code gốc trong paper là JAX (Algorithm 1). Bản dưới dịch sát hàm <code>compute_loss</code> và <code>sample_actions</code> sang PyTorch, thêm một action expert DiT tí hon có adaLN-zero theo từng token, dữ liệu đồ chơi hai mode (đi vòng trên / vòng dưới), và hàm <code>sample_actions_qwen</code>. Mình đã chạy trên CPU (khoảng 1–2 phút): huấn luyện một mô hình thường (d luôn = 0) và một mô hình training-time RTC (d ~ đều {0,…,4}), mỗi cái 600 bước.</div>
+<div class="tw"><table class="t">
+<tr><th>Kết quả chạy thật (2.000 chunk thử)</th><th class="num">d = 1</th><th class="num">d = 2</th><th class="num">d = 4</th></tr>
+<tr><td>Naive (bỏ qua prefix): cùng mode với prefix / lệch ngay sau chỗ nối</td><td class="num">0,50 / 0,98</td><td class="num">0,50 / 1,31</td><td class="num">0,50 / 1,48</td></tr>
+<tr><td>Ghi đè prefix, mô hình thường</td><td class="num">0,58 / 0,82</td><td class="num">0,77 / 0,62</td><td class="num">1,00 / 0,08</td></tr>
+<tr class="hl"><td>Training-time RTC</td><td class="num">1,00 / 0,07</td><td class="num">1,00 / 0,07</td><td class="num">1,00 / 0,07</td></tr>
+</table></div>
+<p style="font-size:.9rem;color:var(--muted)">"Cùng mode" = tỉ lệ chunk sinh ra đi cùng phía (trên/dưới) với chunk thật mà prefix lấy từ đó; 0,5 là đoán bừa. "Lệch sau nối" = |hành động sinh ra ở vị trí d − hành động thật ở vị trí d|. Ghi đè trên mô hình thường chỉ ổn khi prefix đủ dài để "lộ" mode; training-time RTC đúng ngay từ d = 1. Hai quy ước τ cho kết quả <code>allclose = True</code>. Đây là thí nghiệm đồ chơi để hiểu cơ chế, không phải số của paper.</p>
+<details class="more"><summary>Mở code (khoảng 150 dòng)</summary>
+<pre><code id="torchCode"># RTC training-time, phiên bản giản lược để học (KHÔNG phải code của tác giả).
+# Dịch Algorithm 1 (JAX) của paper sang PyTorch + một action expert DiT tí hon
+# có adaLN-zero theo TỪNG TOKEN. Quy ước như paper: tau = 0 nhiễu, tau = 1 sạch.
+import math
+import torch
+import torch.nn as nn
+
+H, AD, OBS = 8, 1, 2            # H: chunk, AD: số chiều hành động, OBS: số chiều quan sát
+DIM = 64
+
+
+class TokenAdaLNBlock(nn.Module):
+    """Khối DiT: adaLN-zero sinh (shift, scale, gate) từ embedding của tau.
+    Điểm mấu chốt của paper: tau có shape (B, H) nên mỗi token có bộ (shift, scale, gate) riêng.
+    Không thêm tham số nào so với bản tau chung."""
+    def __init__(self):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(DIM, elementwise_affine=False)
+        self.attn = nn.MultiheadAttention(DIM, 4, batch_first=True)
+        self.norm2 = nn.LayerNorm(DIM, elementwise_affine=False)
+        self.mlp = nn.Sequential(nn.Linear(DIM, 4 * DIM), nn.GELU(), nn.Linear(4 * DIM, DIM))
+        self.ada = nn.Linear(DIM, 6 * DIM)
+        nn.init.zeros_(self.ada.weight); nn.init.zeros_(self.ada.bias)   # "zero": khối ban đầu là hàm đồng nhất
+
+    def forward(self, x, c):                      # x: (B, H, DIM), c: (B, H, DIM) embedding theo token
+        s1, b1, g1, s2, b2, g2 = self.ada(c).chunk(6, dim=-1)
+        h = self.norm1(x) * (1 + s1) + b1
+        x = x + g1 * self.attn(h, h, h, need_weights=False)[0]
+        h = self.norm2(x) * (1 + s2) + b2
+        return x + g2 * self.mlp(h)
+
+
+def tau_embed(tau):                               # tau: (B, H) -&gt; (B, H, DIM), sin/cos như DiT
+    half = DIM // 2
+    f = torch.exp(-math.log(1000.0) * torch.arange(half) / half)
+    a = tau[..., None] * 1000.0 * f
+    return torch.cat([a.sin(), a.cos()], dim=-1)
+
+
+class ActionExpert(nn.Module):
+    def __init__(self, n_blocks=3):
+        super().__init__()
+        self.inp = nn.Linear(AD, DIM)
+        self.pos = nn.Parameter(torch.zeros(1, H, DIM))
+        self.obs = nn.Linear(OBS, DIM)
+        self.temb = nn.Sequential(nn.Linear(DIM, DIM), nn.SiLU(), nn.Linear(DIM, DIM))
+        self.blocks = nn.ModuleList([TokenAdaLNBlock() for _ in range(n_blocks)])
+        self.out = nn.Linear(DIM, AD)
+
+    def forward(self, obs, x_t, time):            # obs: (B, OBS), x_t: (B, H, AD), time: (B, H)
+        x = self.inp(x_t) + self.pos + self.obs(obs)[:, None]
+        c = self.temb(tau_embed(time))
+        for blk in self.blocks:
+            x = blk(x, c)
+        return self.out(x)                         # vận tốc dự đoán (B, H, AD)
+
+
+# ---------- Algorithm 1 của paper, dịch sang PyTorch ----------
+def compute_loss(model, observation, action_chunk, max_delay):
+    b, ah, ad = action_chunk.shape
+    time = torch.rand(b)
+    noise = torch.randn(b, ah, ad)
+    delay = torch.randint(0, max_delay, (b,))     # Unif[0, max_delay): KHÔNG bao giờ ra max_delay
+    prefix_mask = torch.arange(ah)[None, :] &lt; delay[:, None]          # (b, ah)
+    time = torch.where(prefix_mask, 1.0, time[:, None])               # prefix: tau = 1 (sạch)
+    x_t = time[:, :, None] * action_chunk + (1 - time[:, :, None]) * noise
+    pred_v_t = model(observation, x_t, time)
+    loss = (pred_v_t - (action_chunk - noise)) ** 2                   # mục tiêu A - eps (code đúng)
+    postfix_mask = (~prefix_mask)[:, :, None]
+    return (loss * postfix_mask).sum() / (postfix_mask.sum() + 1e-8)
+
+
+@torch.no_grad()
+def sample_actions(model, observation, action_prefix, delay, num_steps=5):
+    b, ah, ad = action_prefix.shape
+    x_t = torch.randn(b, ah, ad)
+    time, dt = 0.0, 1.0 / num_steps
+    prefix_mask = torch.arange(ah)[None, :] &lt; delay                   # delay: số nguyên
+    for _ in range(num_steps):
+        x_t = torch.where(prefix_mask[:, :, None], action_prefix, x_t)   # ghi đè prefix sạch
+        time_masked = torch.where(prefix_mask, 1.0, torch.full_like(prefix_mask, time, dtype=torch.float))
+        v_t = model(observation, x_t, time_masked)
+        x_t = x_t + dt * v_t
+        time += dt
+    return x_t
+
+
+@torch.no_grad()
+def sample_actions_qwen(model_q, observation, action_prefix, delay, num_steps=5):
+    """Cùng thuật toán theo quy ước Qwen-VLA: tau_q = 1 nhiễu, 0 sạch, mạng học vq = nhiễu - sạch.
+    Prefix sạch nên đặt tau_q = 0 (không phải 1!), và Euler TRỪ vận tốc."""
+    b, ah, ad = action_prefix.shape
+    y = torch.randn(b, ah, ad)
+    prefix_mask = torch.arange(ah)[None, :] &lt; delay
+    for k in range(num_steps):
+        tq = 1.0 - k / num_steps
+        y = torch.where(prefix_mask[:, :, None], action_prefix, y)
+        tq_masked = torch.where(prefix_mask, 0.0, torch.full_like(prefix_mask, tq, dtype=torch.float))
+        y = y - (1.0 / num_steps) * model_q(observation, y, tq_masked)
+    return y
+
+
+# ---------- dữ liệu đồ chơi: hai "kiểu" (mode) đi vòng trên / vòng dưới ----------
+def make_batch(b):
+    obs = torch.randn(b, OBS) * 0.5
+    mode = torch.randint(0, 2, (b,)).float() * 2 - 1                  # +1 hoặc -1
+    i = torch.arange(H).float()
+    chunk = (obs[:, :1] + obs[:, 1:2] * i / H                          # đường nền theo quan sát
+             + mode[:, None] * 1.5 * torch.sin(math.pi * (i + 1) / (H + 1))   # vòng trên / dưới
+             + 0.05 * torch.randn(b, H))
+    return obs, chunk[:, :, None], mode
+
+
+def train(max_delay, steps=600, seed=0):
+    torch.manual_seed(seed)
+    m = ActionExpert()
+    opt = torch.optim.AdamW(m.parameters(), lr=1e-3)
+    for _ in range(steps):
+        obs, chunk, _ = make_batch(128)
+        loss = compute_loss(m, obs, chunk, max_delay)
+        opt.zero_grad(); loss.backward(); opt.step()
+    return m
+
+
+if __name__ == "__main__":
+    base = train(max_delay=1)          # max_delay = 1 -&gt; delay luôn 0: flow matching thường
+    rtc = train(max_delay=5)           # delay ~ Unif{0,...,4}: training-time RTC
+
+    torch.manual_seed(123)
+    obs, chunk, mode = make_batch(2000)
+    for d in [1, 2, 4]:
+        rows = []
+        for name, m, overwrite in [("naive (bỏ qua prefix)", base, False),
+                                   ("ghi đè, mô hình thường", base, True),
+                                   ("training-time RTC", rtc, True)]:
+            torch.manual_seed(7)
+            out = sample_actions(m, obs, chunk, d if overwrite else 0)
+            # cùng mode với prefix? (dấu độ lệch ở giữa chunk so với đường nền)
+            i = torch.arange(H).float()
+            base_line = obs[:, :1] + obs[:, 1:2] * i / H
+            same = ((out[:, H // 2, 0] - base_line[:, H // 2]).sign() == mode).float().mean()
+            err = (out[:, d, 0] - chunk[:, d, 0]).abs().mean()   # lệch so với hành động thật ngay sau prefix
+            rows.append(f"{name}: cùng mode {same:.2f}, lệch sau nối {err:.2f}")
+        print(f"d={d} | " + " | ".join(rows))
+
+    # Kiểm hai quy ước cho cùng kết quả (mạng Qwen = cùng mạng, đổi biến tau_q = 1 - tau, v_q = -v)
+    rtc_q = lambda o, y, tq: -rtc(o, y, 1.0 - tq)
+    torch.manual_seed(5); a = sample_actions(rtc, obs[:4], chunk[:4], 2)
+    torch.manual_seed(5); q = sample_actions_qwen(rtc_q, obs[:4], chunk[:4], 2)
+    print("Hai quy ước cho cùng kết quả:", torch.allclose(a, q, atol=1e-5))
+</code></pre>
+</details>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="sec" id="results">
+<h2>8. Thí nghiệm & kết quả (Sec V, Hình 3–5) <span class="lv m">Phải nắm</span></h2>
+<div class="co warn"><b class="t">Về con số</b>Paper chỉ có biểu đồ, không có bảng. Số "≈" do mình đọc từ ảnh trang PDF phóng to (sai số khoảng ±0,01 cho tỉ lệ, ±3 s cho thời gian). Số trong chữ của paper (108 ms, 135 ms, 8.000 bước, batch 512…) là số chính xác.</div>
+
+<h3 id="kinetix">8.1 Mô phỏng Kinetix (Sec V-A, Hình 3) <span class="lv m">Phải nắm</span></h3>
+<div class="tw"><table class="t">
+<tr><th>Thiết lập</th><th>Chi tiết (từ PDF)</th></tr>
+<tr><td>Môi trường, policy</td><td>Như paper trước: 12 tác vụ động Kinetix, flow matching H = 8, MLP-Mixer 4 lớp, dữ liệu từ hỗn hợp chuyên gia; 2048 lượt mỗi điểm; d = 0 … 4; s = max(d, 1)</td></tr>
+<tr><td>Naive async và RTC suy luận</td><td>Dùng <b>chung một checkpoint</b>, huấn luyện thường 32 epoch</td></tr>
+<tr><td>RTC huấn luyện</td><td>Lấy checkpoint ở <b>epoch 24</b>, fine-tune thêm 8 epoch với prefix → tổng 32 epoch, "matched in training compute". d bốc trên {0,…,4} với trọng số giảm theo hàm mũ</td></tr>
+<tr><td>Không có trong hình</td><td>BID, TE, đồng bộ, RTC hard masking (có ở paper trước)</td></tr>
+</table></div>
+<div class="widget" id="wKin">
+<h4>Hình 3: tỉ lệ giải được trung bình 12 môi trường</h4>
+<div class="ctrl" id="kinBtns"></div>
+<div class="bars" id="kinBars"></div>
+<div class="out" id="kinOut"></div>
+</div>
+<ul>
+<li>Từ d = 2, RTC huấn luyện hơn RTC suy luận, và khoảng cách nới rộng: ≈ +0,02 (d = 2), ≈ +0,06 (d = 3), ≈ +0,11 (d = 4).</li>
+<li>Ở d = 0 và 1, RTC huấn luyện thấp hơn <b>rất nhẹ</b> (≈ 0,91 so với ≈ 0,92; ≈ 0,89 so với ≈ 0,90). Paper giải thích bằng việc ô đầu ít được giám sát (mục 6.4).</li>
+<li>So số RTC suy luận ở đây (≈ 0,92 / 0,90 / 0,85 / 0,74 / 0,61) với Hình 5 của paper trước (≈ 0,92 / 0,89 / 0,84 / 0,75 / 0,62): gần như trùng, hợp lý vì cùng thiết lập.</li>
+</ul>
+
+<h3 id="real">8.2 Robot thật với π0.6 (Sec V-B, Hình 4–5) <span class="lv m">Phải nắm</span></h3>
+<div class="tw"><table class="t">
+<tr><th>Thiết lập</th><th>Chi tiết (từ PDF)</th></tr>
+<tr><td>Mô hình gốc</td><td>π0.6 base, <b>không</b> được pretrain với prefix. Hai checkpoint fine-tune từ đó cho từng tác vụ, mỗi cái 8.000 bước gradient, batch 512: một bản thường (dùng cho đồng bộ và RTC suy luận), một bản có prefix (RTC huấn luyện)</td></tr>
+<tr><td>Bốc d</td><td>Đều trong khoảng 0–10, "hỗ trợ tối đa 200 ms ở robot 50 Hz"</td></tr>
+<tr><td>Tác vụ</td><td>Từ π*0.6: <b>pha espresso</b> (xay, nén, chiết, rót) và <b>gấp hộp các-tông</b>. "Same experimental setup as π*0.6"</td></tr>
+<tr><td>Suy luận</td><td>Server H100 từ xa, 5 bước khử nhiễu. Đầu-cuối trung bình: <b>108 ms (d ≈ 5)</b> cho RTC huấn luyện, <b>135 ms (d ≈ 7)</b> cho RTC suy luận</td></tr>
+<tr><td>Đo</td><td>Tỉ lệ thành công (khoảng Wilson 68%) và thời lượng (±1 SEM). <b>Số lượt chạy không được ghi</b></td></tr>
+</table></div>
+<div class="tw"><table class="t">
+<tr><th>Hình 5 (đọc từ hình)</th><th class="num">Đồng bộ</th><th class="num">RTC suy luận</th><th class="num">RTC huấn luyện</th></tr>
+<tr><td>Espresso: thành công</td><td class="num">≈ 0,81</td><td class="num">≈ 0,88</td><td class="num">≈ 0,92</td></tr>
+<tr><td>Espresso: thời lượng</td><td class="num">≈ 142 s</td><td class="num">≈ 114 s</td><td class="num">≈ 111 s</td></tr>
+<tr><td>Gấp hộp: thành công</td><td class="num">≈ 0,50</td><td class="num">≈ 0,56</td><td class="num">≈ 0,66</td></tr>
+<tr><td>Gấp hộp: thời lượng</td><td class="num">≈ 170 s</td><td class="num">≈ 133 s</td><td class="num">≈ 131 s</td></tr>
+</table></div>
+<div class="widget" id="wReal">
+<h4>Hình 5: chọn tác vụ và chỉ số</h4>
+<div class="ctrl" id="realBtns"></div>
+<div class="bars" id="realBars"></div>
+<div class="out" id="realOut"></div>
+</div>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec V-B)</span>"We find that training-time RTC maintains both performance and speed parity with inference-time RTC without any computational overhead. Both variants of RTC clearly improve speed over the synchronous inference baseline, which exhibits visible pauses in between chunks."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Kết luận chính thức là <b>ngang nhau</b> (parity), không phải "hơn". Cột RTC huấn luyện cao hơn một chút ở cả hai tác vụ, nhưng thanh sai số 68% chồng nhau. Phần chắc chắn là: hai bản RTC nhanh hơn đồng bộ rõ (thời lượng giảm ≈ 20–23%), và bản huấn luyện rẻ hơn 27 ms mỗi lần gọi.</div></div>
+<div class="co crit"><b class="t">Mâu thuẫn trong chính paper</b>Phần mở đầu (Sec I) viết "we show <b>improved performance</b> over inference-time RTC on two highly complex tasks", còn Abstract và Sec V-B viết "<b>parity</b>". Khi present, dùng chữ "ngang nhau, rẻ hơn".</div>
+
+<h3 id="compare">8.3 Đặt hai paper cạnh nhau <span class="lv s">Nên biết</span></h3>
+<div class="tw"><table class="t">
+<tr><th></th><th>Paper 1 (π0.5, RTX 4090)</th><th>Paper 2 (π0.6, H100 từ xa)</th></tr>
+<tr><td>Độ trễ RTC suy luận</td><td>97 ms mô hình; 108,76 ms đầu-cuối (máy bàn) → paper ghi d ≈ 6</td><td>135 ms đầu-cuối → d ≈ 7</td></tr>
+<tr><td>Độ trễ không có overhead</td><td>76 ms mô hình (baseline)</td><td>108 ms đầu-cuối (RTC huấn luyện) → d ≈ 5</td></tr>
+<tr><td>Cách đổi ms ra d</td><td>Khớp làm tròn <b>lên</b> (5,4 → 6)</td><td>108/20 = 5,4 → 5; 135/20 = 6,75 → 7: khớp làm tròn <b>gần nhất</b></td></tr>
+<tr><td>Baseline trên robot thật</td><td>Đồng bộ, TE thưa, TE dày</td><td>Đồng bộ, RTC suy luận</td></tr>
+<tr><td>Metric</td><td>Throughput, tiến độ tích lũy</td><td>Tỉ lệ thành công, thời lượng</td></tr>
+<tr><td>Quy mô</td><td>480 episode, 28 giờ</td><td>Không ghi</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="sec" id="code">
+<h2>9. Nằm ở đâu trong code <span class="lv m">Phải nắm</span></h2>
+<div class="co warn"><b class="t">Viết theo kiến trúc chung</b>Vẫn chưa biết codebase của nhóm. Mô tả dưới đây cho khuôn "VLM + action expert DiT flow matching" (Qwen-VLA, GR00T làm ví dụ); tên hàm chỉ là gợi ý để tìm. Nhớ hỏi mentor tên codebase.</div>
+<p>Khác paper trước (chỉ đụng vòng suy luận), bản này đụng <b>ba chỗ ở phía huấn luyện</b> và một chỗ ở phía suy luận:</p>
+<div class="tw"><table class="t">
+<tr><th>Chỗ</th><th>Hiện tại thường là</th><th>Đổi thành</th></tr>
+<tr><td><b>Embedding τ / adaLN</b> trong action expert</td><td>τ shape (B,) → embedding (B, D) → adaLN (B, 6D), unsqueeze rồi broadcast cho mọi token</td><td>τ shape (B, H) → embedding (B, H, D) → adaLN (B, H, 6D), không broadcast. Kiểm thêm mọi chỗ khác τ đi vào (GR00T N1: action encoder cũng nhận τ)</td></tr>
+<tr><td><b>Hàm loss</b> (kiểu <code>compute_loss</code>, <code>forward</code> của action head lúc train)</td><td>Bốc τ, tạo điểm nhiễu cho cả chunk, MSE trên mọi ô (nhân mask đệm nếu có)</td><td>Bốc d mỗi mẫu; τ = sạch ở prefix; nhân thêm mask postfix vào loss</td></tr>
+<tr><td><b>Config huấn luyện</b></td><td>—</td><td>Thêm <code>max_delay</code> và kiểu phân phối; chọn theo độ trễ đo được lúc triển khai (d<sub>max</sub> ≥ d thật, và ≤ H − s)</td></tr>
+<tr><td><b>Vòng lấy mẫu</b></td><td>Lặp n bước Euler, τ chung</td><td>Thêm tham số <code>action_prefix, delay</code>; ghi đè prefix và τ<sub>prefix</sub> ở mỗi bước. Runtime bất đồng bộ như paper trước</td></tr>
+</table></div>
+<div class="co note"><b class="t">Riêng với Qwen-VLA (suy luận của mình, kiểm khi có code)</b>
+(1) Quy ước ngược: prefix τ<sub>q</sub> = 0. (2) Qwen-VLA dùng joint self-attention: token VLM nằm chung chuỗi với token hành động trong DiT. Cần xem AdaLN của Qwen-VLA áp lên cả token VLM hay chỉ token hành động; nếu áp cả hai, phải quyết token VLM nhận τ nào khi τ đã theo token. Paper Qwen-VLA không nói. (3) Qwen-VLA đã có mask theo bước h (\(M_{h,k}\)): mask postfix chỉ cần nhân thêm vào đó. (4) Không thêm tham số nên checkpoint cũ nạp được nguyên, chỉ cần fine-tune.</div>
+<h3>Checklist khi mở codebase: tìm gì trước</h3>
+<div class="chk" id="chk2">
+  <label><input type="checkbox" data-k="k1"><span>Tìm chỗ tạo timestep embedding và adaLN: grep <code>timestep|t_emb|adaLN|modulate|shift|scale|gate</code>. Ghi lại shape của τ ở từng bước.</span></label>
+  <label><input type="checkbox" data-k="k2"><span>Xem τ có đi vào chỗ nào khác ngoài adaLN không (action encoder, token riêng cho τ…). Mỗi chỗ đều phải chịu được τ shape (B, H).</span></label>
+  <label><input type="checkbox" data-k="k3"><span>Tìm hàm loss của action head: grep <code>flow|velocity|noise|mse|loss</code>; xác định quy ước τ và dấu mục tiêu (<code>actions - noise</code> hay <code>noise - actions</code>).</span></label>
+  <label><input type="checkbox" data-k="k4"><span>Tìm mask có sẵn (đệm kênh, đệm bước, <code>action_mask|valid|pad</code>) để nhân thêm mask postfix.</span></label>
+  <label><input type="checkbox" data-k="k5"><span>Kiểm attention giữa các token hành động là hai chiều (postfix phải nhìn được prefix; nếu nhân quả theo thời gian thì vẫn được vì prefix nằm trước).</span></label>
+  <label><input type="checkbox" data-k="k6"><span>Tìm vòng lấy mẫu (<code>sample_actions|get_action|num_inference</code>) để thêm ghi đè prefix.</span></label>
+  <label><input type="checkbox" data-k="k7"><span>Đo độ trễ thật và tần số robot để chọn <code>max_delay</code>; nhớ <code>randint(0, max_delay)</code> không lấy max.</span></label>
+  <label><input type="checkbox" data-k="k8"><span>Xem đã có sẵn chưa: grep <code>prefix|delay|rtc|real_time|action_condition</code>.</span></label>
+</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sec" id="critique">
+<h2>10. Hạn chế & phản biện (Sec VI) <span class="lv s">Nên biết</span></h2>
+<h3>Paper tự nhận</h3>
+<ul>
+<li>Kém linh hoạt hơn bản suy luận: chỉ điều kiện trên prefix "cứng" ứng với độ trễ, không "mềm" kéo thêm các hành động sau prefix.</li>
+<li>Phải chọn cẩn thận phân phối độ trễ khi huấn luyện, dựa trên độ trễ dự kiến lúc triển khai.</li>
+<li>Mong muốn công trình sau kết hợp ưu điểm của cả hai.</li>
+</ul>
+<h3>Ba điểm mạnh nhất để nói khi present</h3>
+<ol>
+<li><b>Bằng chứng robot thật chỉ cho thấy "ngang", và còn mỏng.</b> Hai tác vụ, không ghi số lượt chạy, thanh sai số 68% chồng nhau; không có naive async hay TE. Trong khi phần mở đầu lại viết "improved performance". Lợi ích chắc chắn duy nhất ở robot thật là rẻ hơn 27 ms.</li>
+<li><b>Lợi thế khi d lớn chỉ thấy trên Kinetix, và nguyên nhân là giả thuyết.</b> Kinetix có H = 8 nên d tối đa 4, policy là MLP-Mixer nhỏ. Câu "inpainting phải work harder, dựa vào linearization" có chữ "likely", không có thí nghiệm tách nguyên nhân (ví dụ tăng số bước khử nhiễu cho bản suy luận). Mô phỏng đồ chơi ở mục 6.7 cho thấy khi mô hình "hoàn hảo" thì bản suy luận không thua.</li>
+<li><b>Ràng buộc vào phân phối độ trễ lúc huấn luyện.</b> Nếu triển khai với độ trễ lớn hơn mọi d đã bốc (mô hình to hơn, mạng xa hơn), mô hình gặp cấu hình chưa từng thấy; phải fine-tune lại. Bản suy luận thì đổi d tự do. Paper không thử d ngoài phân phối huấn luyện.</li>
+</ol>
+<h3>Các điểm nhỏ hơn (tự kiểm trong PDF trước khi nói)</h3>
+<ul>
+<li><b>Lỗi dấu Eq. 2</b>: in \((\boldsymbol\epsilon - \mathbf A_t)\), code dùng \(\mathbf A - \boldsymbol\epsilon\) (mục 6.2).</li>
+<li><b>"No modifications to the model architecture"</b> (Abstract) nhưng bước 1 lại là "modify the model architecture to allow for a different flow matching timestep for each action timestep". Đúng hơn: không đổi số tham số, có đổi luồng tính τ.</li>
+<li><b>Bốc d "between 0 and 10"</b> nhưng code mẫu <code>randint(0, max_delay)</code> loại trừ max; "hỗ trợ 200 ms" chỉ đúng nếu d = 10 được bốc.</li>
+<li><b>Cách đổi ms ra d không thống nhất</b> giữa hai paper (mục 8.3).</li>
+<li><b>Trọng số mũ giảm ở Kinetix không công bố</b>, nên không tái tạo chính xác được Hình 3 từ chữ trong paper (code Kinetix công khai thì có thể có).</li>
+<li><b>So sánh tính toán ở Kinetix</b>: "matched in training compute" theo số epoch; nhưng bản suy luận vẫn tốn thêm tính toán lúc chạy. So "công bằng" theo nghĩa nào thì nên nói rõ.</li>
+<li>Bản huấn luyện và bản suy luận ở robot thật là <b>hai checkpoint khác nhau</b> (fine-tune riêng), nên khác biệt có thể một phần do ngẫu nhiên của fine-tune.</li>
+</ul>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="sec" id="mentor">
+<h2>11. Câu hỏi mentor có thể vặn <span class="lv m">Phải nắm</span></h2>
+<details class="q"><summary>1. Nếu chỉ để bỏ backward, sao không ghi đè prefix lên mô hình thường (như Diffuser) cho rẻ?</summary>Paper trước đã thử (Hình 8 phải): có ích nhưng thua guidance. Mô hình thường chưa từng thấy chunk nửa sạch nửa nhiễu với một τ chung, nên nó không biết tin phần sạch. Paper này giữ đúng cách lấy mẫu "ghi đè" nhưng huấn luyện mô hình cho nó, và đánh dấu bằng τ = 1. Thí nghiệm đồ chơi mục 7: ghi đè trên mô hình thường ở d = 1 chỉ cùng mode 58%, bản huấn luyện 100%.</details>
+<details class="q"><summary>2. "τ theo từng token" có thật không thêm tham số? Đổi ở đâu?</summary>Đúng, cùng lớp sinh scale/shift/gate, chỉ đổi shape đầu vào từ (B,) thành (B, H): mỗi token một bộ thay vì broadcast. Cần kiểm mọi chỗ τ đi vào (GR00T còn đưa τ vào action encoder). Số tham số không đổi nên nạp được checkpoint cũ.</details>
+<details class="q"><summary>3. Mô hình biết d bằng cách nào khi ta không đưa d vào?</summary>Qua số token có τ = 1 (Hình 2: "the flow matching timestep differs between tokens, which indicates the inference delay to the model"). Kết hợp với positional embedding, mô hình biết token nào đã chốt.</details>
+<details class="q"><summary>4. Vì sao hơi kém ở d = 0–1?</summary>Giả thuyết của paper: ô đầu chỉ được tính loss khi d nhỏ hơn chỉ số của nó, nên ô 0 và 1 ít được giám sát hơn (widget 6.4). Ở Kinetix, d bốc theo mũ giảm (d nhỏ hay gặp) nên chênh rất nhỏ (≈ 0,01). Paper gợi ý tách checkpoint theo d sẽ tốt hơn.</details>
+<details class="q"><summary>5. Vì sao lại tốt hơn khi d lớn? Bản suy luận khớp được cả vùng giữa cơ mà?</summary>Paper đoán: prefix dài thì guidance phải kéo mạnh, mà nó dựa vào xấp xỉ tuyến tính (Jacobian) với chỉ 5 bước, có kẹp β; bản huấn luyện học thẳng phân phối có điều kiện nên không có lỗi xấp xỉ đó. Đây là giả thuyết; mô phỏng với mô hình hoàn hảo thì không thấy khác biệt, cho thấy nguồn gốc nằm ở mạng thật.</details>
+<details class="q"><summary>6. Trên robot thật, training-time có tốt hơn inference-time không?</summary>Paper tự kết luận "parity": thành công và thời lượng gần bằng (espresso ≈ 0,92 vs ≈ 0,88; gấp hộp ≈ 0,66 vs ≈ 0,56) nhưng thanh sai số chồng nhau và số lượt chạy không được ghi. Cái chắc chắn: rẻ hơn 27 ms (108 vs 135). Phần mở đầu viết "improved" là nói quá.</details>
+<details class="q"><summary>7. Nếu mô hình to hơn làm độ trễ lúc triển khai vượt d<sub>max</sub> đã huấn luyện?</summary>Mô hình gặp prefix dài hơn mọi lần huấn luyện: ngoài phân phối, có thể hỏng. Cách xử lý: fine-tune lại với max_delay lớn hơn (phải ≤ H − s), hoặc giảm độ trễ. Bản suy luận không có ràng buộc này. Paper không thí nghiệm trường hợp đó.</details>
+<details class="q"><summary>8. Áp vào Qwen-VLA cần đổi gì?</summary>τ theo token trong timestep embedding + AdaLN của DiT (và quyết token VLM trong joint attention nhận τ nào); prefix τ<sub>q</sub> = 0 (không phải 1), mục tiêu ε − A; loss nhân mask postfix với mask đệm sẵn có; lấy mẫu ghi đè prefix, τ<sub>q,prefix</sub> = 0, Euler trừ. Fine-tune từ checkpoint có sẵn. Chọn max_delay từ độ trễ đo được, nhớ ràng buộc d ≤ 16 − s.</details>
+<details class="q"><summary>9. Khác VLASH và A2C2 thế nào?</summary>Theo Sec II: A2C2 thêm một đầu sửa nhẹ (correction head); VLASH điều kiện trên <b>một</b> hành động tương lai; paper này điều kiện trên <b>cả prefix</b> d hành động. SmolVLA có chạy bất đồng bộ nhưng không xử lý chỗ nối. (Mình chưa đọc ba paper đó, chỉ biết qua câu tóm tắt của paper này.)</details>
+<details class="q"><summary>10. Có thể kết hợp hai cách không?</summary>Paper chỉ nói "future work … best of both worlds". Một hướng tự nhiên (suy luận của mình): mô hình huấn luyện với prefix cứng, rồi lúc chạy dùng thêm guidance nhẹ cho vùng giữa khi còn dư ngân sách thời gian. Đây là ý để thảo luận, không có trong paper.</details>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="sec" id="quiz">
+<h2>12. Câu hỏi tự kiểm tra & thí nghiệm tự làm <span class="lv s">Nên biết</span></h2>
+<h3>Thí nghiệm tự làm (đoán trước rồi mới bấm/chạy)</h3>
+<div class="tw"><table class="t">
+<tr><th>#</th><th>Làm gì</th><th>Bạn đoán gì sẽ xảy ra?</th></tr>
+<tr><td>1</td><td>Widget 6.4: chọn "Mũ giảm", max_delay = 5, kéo tốc độ giảm từ 0,1 lên 1</td><td>Xác suất ô 0 được chấm điểm tăng hay giảm? Điều đó ảnh hưởng gì tới kết quả ở d = 0?</td></tr>
+<tr><td>2</td><td>Mô phỏng 6.7: d = 6, so "ghi đè, mô hình thường" với "RTC huấn luyện" qua 5 hạt giống</td><td>Cách nào chạm vật cản nhiều hơn? Vì sao ghi đè thôi chưa đủ?</td></tr>
+<tr><td>3</td><td>Code mục 7: đổi <code>train(max_delay=5)</code> thành <code>train(max_delay=2)</code>, rồi thử d = 4</td><td>Mô hình chỉ thấy d ≤ 1 lúc huấn luyện sẽ xử lý prefix dài 4 thế nào?</td></tr>
+</table></div>
+<h3>Câu hỏi</h3>
+<details class="q"><summary>1. H = 6, d = 3, τ = 0,5, a = (1, 2, 3, 4, 5, 6), ε = (0, 0, 0, 2, 2, 2). Viết đầu vào, τ theo token và các ô có loss.</summary>τ = (1, 1, 1, 0,5, 0,5, 0,5). Đầu vào = (1, 2, 3, 0,5·4 + 0,5·2, 0,5·5 + 0,5·2, 0,5·6 + 0,5·2) = (1, 2, 3, 3, 3,5, 4). Mục tiêu ở ô 3–5: a − ε = (2, 3, 4). Loss chỉ trên ô 3, 4, 5.</details>
+<details class="q"><summary>2. Cùng ví dụ, viết theo quy ước Qwen-VLA.</summary>τ<sub>q</sub> = (0, 0, 0, 0,5, 0,5, 0,5). Đầu vào giống hệt (vì (1 − 0,5)a + 0,5ε cũng ra 3; 3,5; 4). Mục tiêu đổi dấu: ε − a = (−2, −3, −4).</details>
+<details class="q"><summary>3. Vì sao prefix và postfix lấy từ cùng một chunk thật thay vì từ hai chunk liên tiếp?</summary>Dữ liệu demo chỉ có chunk thật, không có "chunk cũ do mô hình sinh ra". Lấy cùng chunk đảm bảo prefix và postfix luôn khớp nhau, nên mô hình học được cách tiếp nối hợp lệ. Lúc chạy, prefix đến từ chunk cũ mô hình đã sinh (có thể hơi lệch phân phối dữ liệu).</details>
+<details class="q"><summary>4. π0.6 ở 50 Hz: 108 ms và 135 ms ứng với d bao nhiêu? Với H = 50, s nằm trong khoảng nào cho mỗi bản?</summary>108/20 = 5,4 (paper ghi d ≈ 5; làm tròn lên thì 6); 135/20 = 6,75 → 7. Ràng buộc d ≤ s ≤ H − d: bản huấn luyện 5 ≤ s ≤ 45 (hoặc 6–44), bản suy luận 7 ≤ s ≤ 43.</details>
+<details class="q"><summary>5. Nêu 3 thay đổi lúc huấn luyện và 2 thay đổi lúc lấy mẫu.</summary>Huấn luyện: τ theo token (adaLN không broadcast), prefix sạch với τ = 1, loss chỉ trên postfix (cộng thêm: bốc d ngẫu nhiên). Lấy mẫu: ghi đè prefix ở mỗi bước, τ của prefix = 1.</details>
+<details class="q"><summary>6. Paper trước dùng H − s ô chồng lấn, paper này dùng d ô. Chỉ ra trên Hình 1.</summary>Chồng lấn: từ t tới t − s + H (đỏ + vàng, dài H − s). Prefix: từ t tới t + d (đỏ). Bản huấn luyện bỏ vùng vàng.</details>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="sec" id="story">
+<h2>13. Ghép hai paper thành một mạch <span class="lv s">Nên biết</span></h2>
+<p>Dùng cho bộ slide gộp sau này. Một câu chuyện 5 nhịp:</p>
+<ol class="steps">
+<li><b>Vấn đề:</b> VLA chậm hơn nhịp điều khiển (≈ 100 ms vs 20 ms) → phải chạy bất đồng bộ → chỗ nối chunk bị giật, vì đa mode (paper 1, Sec 2).</li>
+<li><b>Giải lúc suy luận:</b> đóng băng d hành động, inpainting bằng ΠGDM, soft mask cho vùng chồng lấn, kẹp β. Không huấn luyện lại; bền với độ trễ (paper 1).</li>
+<li><b>Cái giá:</b> backward mỗi bước (+21 ms trên π0.5; +27 ms trên π0.6) và kém dần khi d lớn (paper 1, Bảng 3; paper 2, Sec I).</li>
+<li><b>Giải lúc huấn luyện:</b> giả lập độ trễ, prefix sạch τ = 1, τ theo token, loss trên postfix. Lấy mẫu bằng ghi đè; cùng giao diện (paper 2).</li>
+<li><b>Đánh đổi:</b> rẻ và bền khi d lớn ↔ mất soft mask, phải fine-tune, phải đoán trước phân phối độ trễ.</li>
+</ol>
+<div class="tw"><table class="t">
+<tr><th>Tiêu chí</th><th>RTC suy luận</th><th>RTC huấn luyện</th></tr>
+<tr><td>Cần huấn luyện lại</td><td>Không</td><td>Fine-tune</td></tr>
+<tr><td>Chi phí mỗi lần gọi</td><td>+28% (π0.5), bước khử nhiễu 2,5×</td><td>Như gốc</td></tr>
+<tr><td>Vùng khớp</td><td>d cứng + vùng giữa mềm</td><td>d cứng</td></tr>
+<tr><td>d nhỏ (0–1), Kinetix</td><td>≈ 0,92 / 0,90</td><td>≈ 0,91 / 0,89</td></tr>
+<tr><td>d lớn (4), Kinetix</td><td>≈ 0,61</td><td>≈ 0,72</td></tr>
+<tr><td>Đổi d lúc chạy</td><td>Tự do (miễn d ≤ H − s)</td><td>Chỉ trong phân phối đã huấn luyện</td></tr>
+<tr><td>Yêu cầu mô hình</td><td>Flow/diffusion, lấy được gradient theo đầu vào</td><td>Flow/diffusion, τ theo token</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="sec" id="sources">
+<h2>14. Nguồn <span class="lv k">Đọc lướt</span></h2>
+<ul>
+<li>Paper gốc: K. Black, A. Z. Ren, M. Equi, S. Levine, <i>Training-Time Action Conditioning for Efficient Real-Time Chunking</i>, arXiv 2512.05964 (bản v2, 09/12/2025). Mọi con số lấy từ PDF này; số trong Hình 3 và 5 đọc từ ảnh trang phóng to (ghi "≈").</li>
+<li>RTC inference-time: K. Black, M. Y. Galliker, S. Levine, arXiv 2506.07339 (trang đọc hiểu trước). Code mô phỏng Kinetix: <a href="https://github.com/Physical-Intelligence/real-time-chunking-kinetix">github.com/Physical-Intelligence/real-time-chunking-kinetix</a></li>
+<li>DiT và adaLN-zero: Peebles &amp; Xie, <i>Scalable Diffusion Models with Transformers</i>, ICCV 2023, arXiv 2212.09748</li>
+<li>π*0.6: arXiv 2511.14759 · π0: arXiv 2410.24164 · π0.5: arXiv 2504.16054</li>
+<li>Liên quan (chỉ biết qua Sec II của paper): SmolVLA arXiv 2506.01844 · A2C2 ("Leave No Observation Behind") arXiv 2509.23224 · VLASH arXiv 2512.01031</li>
+<li>Kinetix: arXiv 2410.23208 · ΠGDM: Song et al., ICLR 2023 · Pokle et al., arXiv 2310.04432 · Flow matching: arXiv 2210.02747</li>
+</ul>
+</section>
+
+</main>
+</div>
+<footer>RTC training-time · Đọc hiểu paper — tài liệu học tập cá nhân, thư mục VLA Modeling</footer>
+
+<script>
+(function(){
+"use strict";
+/* ---------- theme ---------- */
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function vn(x,d){if(!isFinite(x))return '∞';return (+x).toFixed(d===undefined?1:d).replace('-','−').replace('.',',');}
+function $(id){return document.getElementById(id);}
+
+/* ---------- checklists ---------- */
+function checklist(boxSel,key,barId){
+  var boxes=[].slice.call(document.querySelectorAll(boxSel));
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){saved={};}
+  function upd(){
+    var n=0;boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);if(b.checked)n++;});
+    if(barId)$(barId).style.width=(100*n/boxes.length)+'%';
+  }
+  boxes.forEach(function(b){
+    b.checked=!!saved[b.dataset.k];
+    b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem(key,JSON.stringify(saved));}catch(e){}upd();});
+  });
+  upd();
+}
+checklist('#chk input','rtctr-chk','progBar');
+checklist('#chk2 input','rtctr-chk2',null);
+
+/* ---------- TOC scroll spy ---------- */
+var links=[].slice.call(document.querySelectorAll('#toc a'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){
+  var y=window.scrollY+120,idx=0;
+  targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});
+  links.forEach(function(a,i){a.classList.toggle('on',i===idx);});
+}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+var SIM2=(function(){
+  var SC=3,H=16,T=64,S0=0.02*SC,B=SC,TOB=32,PHI=[[],[]],SJ=[0.22*SC,0.18*SC],i,j,q;
+  for(i=0;i<H;i++){PHI[0].push(1-Math.exp(-i/4));PHI[1].push(Math.sin(Math.PI*i/(H-1)));}
+  var SIG=[];for(i=0;i<H;i++){SIG.push([]);for(j=0;j<H;j++){var v=(i===j?S0*S0:0);for(q=0;q<2;q++)v+=SJ[q]*SJ[q]*PHI[q][i]*PHI[q][j];SIG[i].push(v);}}
+  function inv(M){var n=M.length;if(!n)return [];var A=M.map(function(r,i){return r.concat(Array.from({length:n},function(_,j){return i===j?1:0;}));}),c,r,k;
+    for(c=0;c<n;c++){var p=c;for(r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;var t=A[c];A[c]=A[p];A[p]=t;var d=A[c][c];for(k=0;k<2*n;k++)A[c][k]/=d;
+      for(r=0;r<n;r++)if(r!==c){var f=A[r][c];if(f)for(k=0;k<2*n;k++)A[r][k]-=f*A[c][k];}}
+    return A.map(function(r){return r.slice(n);});}
+  function mm(A,Bm){return A.map(function(r){return Bm[0].map(function(_,j){var s=0;for(var k=0;k<r.length;k++)s+=r[k]*Bm[k][j];return s;});});}
+  function sub(M,I,J){return I.map(function(i){return J.map(function(j){return M[i][j];});});}
+  function mv(M,v){return M.map(function(r){var s=0;for(var k=0;k<v.length;k++)s+=r[k]*v[k];return s;});}
+  // flow "model" for a Gaussian mixture with shared covariance C (dim m)
+  function makeFlow(C){var m=C.length,cache={};
+    function mats(tau){var key=tau.toFixed(6);if(cache[key])return cache[key];
+      var S=C.map(function(r,i){return r.map(function(v,j){return tau*tau*v+(i===j?(1-tau)*(1-tau):0);});});
+      var P=inv(S),K=mm(C,P).map(function(r){return r.map(function(v){return v*tau;});});return cache[key]={P:P,K:K};}
+    function post(M,x,tau){var Q=mats(tau),lw=[],dk=[],k,i,j;
+      for(k=0;k<M.mu.length;k++){var dd=x.map(function(xi,i){return xi-tau*M.mu[k][i];});dk.push(dd);var s=0;for(i=0;i<m;i++){var a=0;for(j=0;j<m;j++)a+=Q.P[i][j]*dd[j];s+=dd[i]*a;}lw.push(Math.log(M.pi[k]+1e-300)-s/2);}
+      var mx=Math.max.apply(null,lw),w=lw.map(function(l){return Math.exp(l-mx);}),Z=w.reduce(function(a,b){return a+b;},0);w=w.map(function(v){return v/Z;});
+      var out=new Array(m).fill(0);for(k=0;k<M.mu.length;k++)for(i=0;i<m;i++){var a=M.mu[k][i];for(j=0;j<m;j++)a+=Q.K[i][j]*dk[k][j];out[i]+=w[k]*a;}return out;}
+    return post;}
+  var postFull=makeFlow(SIG);
+  function bump(t){return Math.exp(-Math.pow((t-TOB)/8,2));}
+  function modes(t,x){var mu=[];[1,-1].forEach(function(k){var m=[];for(var i=0;i<H;i++)m.push(k*B*bump(t+i)+(x-k*B*bump(t))*Math.exp(-(i+1)/3));mu.push(m);});
+    var pu=1/(1+Math.exp(-12*x/SC));return {mu:mu,pi:[pu,1-pu]};}
+  function euler(post,M,eps,n,opt){var x=eps.slice(),m=x.length,i;opt=opt||{};
+    for(var st=0;st<n;st++){var tau=st/n;
+      if(opt.over)for(i=0;i<opt.d;i++)x[i]=opt.pre[i];
+      var a1=post(M,x,tau),vv=a1.map(function(a,i){return (a-x[i])/(1-tau);});
+      if(opt.guide){var e=a1.map(function(a,i){return (opt.guide.Y[i]-a)*opt.guide.W[i];}),h=1e-5,g=[];
+        for(var qq=0;qq<m;qq++){var xp=x.slice();xp[qq]+=h;var ap=post(M,xp,tau),s=0;for(i=0;i<m;i++)s+=e[i]*(ap[i]-a1[i])/h;g.push(s);}
+        var r2=(1-tau)*(1-tau)/(tau*tau+(1-tau)*(1-tau)),wt=tau===0?Infinity:(1-tau)/(tau*r2);wt=Math.min(5,wt);
+        for(i=0;i<m;i++)vv[i]+=wt*g[i];}
+      for(i=0;i<m;i++)x[i]+=vv[i]/n;}
+    if(opt.over)for(i=0;i<opt.d;i++)x[i]=opt.pre[i];
+    return x;}
+  // ideal training-time model: exact conditional p(postfix | prefix)
+  var condCache={};
+  function cond(d){if(condCache[d])return condCache[d];var P=[],Q=[],i;for(i=0;i<H;i++)(i<d?P:Q).push(i);
+    var Spp=sub(SIG,P,P),Sqp=sub(SIG,Q,P),Spq=sub(SIG,P,Q),Sqq=sub(SIG,Q,Q),Ipp=inv(Spp.map(function(r,a){return r.map(function(v,b){return v+(a===b?Math.pow(0.1*SC,2):0);});})),G=mm(Sqp,Ipp),C=Sqq.map(function(r,a){var gs=mm(G,Spq);return r.map(function(v,b){return v-gs[a][b];});});
+    return condCache[d]={P:P,Q:Q,Ipp:Ipp,G:G,post:makeFlow(C)};}
+  function sampleCond(M,pre,d,eps){var c=cond(d),lw=[],mu=[];
+    M.mu.forEach(function(m,k){var dp=c.P.map(function(i,a){return pre[a]-m[i];}),s=0,qv=mv(c.Ipp,dp);for(var a=0;a<dp.length;a++)s+=dp[a]*qv[a];lw.push(Math.log(M.pi[k]+1e-300)-s/2);
+      var corr=mv(c.G,dp);mu.push(c.Q.map(function(i,a){return m[i]+corr[a];}));});
+    var mx=Math.max.apply(null,lw),w=lw.map(function(l){return Math.exp(l-mx);}),Z=w[0]+w[1];
+    var post=euler(c.post,{mu:mu,pi:w.map(function(v){return v/Z;})},eps.slice(d),5,null);
+    return pre.slice(0,d).concat(post);}
+  function softW(d,s){var W=[];for(var i=0;i<H;i++){if(i<d)W.push(1);else if(i>=H-s)W.push(0);else{var c=(H-s-i)/(H-s-d+1);W.push(c*(Math.exp(c)-1)/(Math.E-1));}}return W;}
+  function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function run(method,d,smin,seed){
+    var r=rng(seed*7919+13),noise=function(){var e=[];for(var i=0;i<H;i++){var u=r()||1e-9,v=r();e.push(Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v));}return e;};
+    var y=[],sw=[],t=0,x=0,s=Math.max(d,smin),cur=euler(postFull,modes(0,0),noise(),5,null),cstart=0,k;
+    while(t<T){
+      while(t-cstart<s&&t<T){x=cur[t-cstart];y.push(x);t++;}
+      if(t>=T)break;
+      var tInf=t,prev=cur.slice(s).concat(new Array(s).fill(0)),M=modes(tInf,x),eps=noise(),nw;
+      if(method==='naive')nw=euler(postFull,M,eps,5,null);
+      else if(method==='infer')nw=euler(postFull,M,eps,5,{guide:{Y:prev,W:softW(d,s)}});
+      else if(method==='over')nw=euler(postFull,M,eps,5,{over:true,d:d,pre:prev});
+      else nw=sampleCond(M,prev,d,eps);
+      for(k=0;k<d&&t<T;k++){x=cur[t-cstart];y.push(x);t++;}
+      cur=nw;cstart=tInf;sw.push(tInf+d);}
+    return {y:y,sw:sw};}
+  return {run:run,SC:SC,T:T,TOB:TOB,H:H};
+})();
+
+
+/* ---------- 5. latency budget ---------- */
+function budget(){
+  var fx=+$('bgFix').value||0,st=+$('bgStep').value||0,n=Math.max(1,Math.round(+$('bgN').value||1)),k=+$('bgK').value||1,net=+$('bgNet').value||0,hz=+$('bgHz').value||1,H=Math.round(+$('bgH').value||2);
+  var dt=1000/hz,rows=[['Gốc (đồng bộ / naive)',fx+n*st+net,'var(--grey)'],['RTC suy luận',fx+n*st*k+net,'var(--accent)'],['RTC huấn luyện',fx+n*st+net,'var(--blue)']];
+  var mx=Math.max.apply(null,rows.map(function(r){return r[1];}));
+  var html='<div class="bars" style="margin-bottom:8px">'+rows.map(function(r){var d=Math.ceil(r[1]/dt-1e-9);
+    return '<div class="row"><div class="nm">'+r[0]+'</div><div class="bb"><div class="bar" style="background:'+r[2]+';width:'+(85*r[1]/mx)+'%"><span>'+vn(r[1],1)+' ms → d = '+d+'</span></div></div></div>';}).join('')+'</div>';
+  var di=Math.ceil(rows[1][1]/dt-1e-9),dtr=Math.ceil(rows[2][1]/dt-1e-9);
+  html+='Δt = '+vn(dt,1)+' ms. RTC suy luận tốn thêm <b>'+vn(rows[1][1]-rows[2][1],1)+' ms</b> mỗi lần gọi → phải đóng băng <b>'+di+'</b> bước thay vì <b>'+dtr+'</b>. ';
+  html+='Ràng buộc d ≤ H − d: d tối đa '+Math.floor(H/2)+'. ';
+  if(di>Math.floor(H/2)&&dtr<=Math.floor(H/2))html+='<span class="delta-dn">Với H = '+H+', RTC suy luận vượt giới hạn, RTC huấn luyện thì vẫn chạy được.</span>';
+  else if(dtr>Math.floor(H/2))html+='<span class="delta-dn">Cả hai đều vượt giới hạn: mô hình quá chậm so với H = '+H+'.</span>';
+  else html+='<span class="delta-up">Cả hai đều hợp lệ</span>; khoảng s cho phép: suy luận '+di+'–'+(H-di)+', huấn luyện '+dtr+'–'+(H-dtr)+'.';
+  $('bgOut').innerHTML=html;
+}
+['bgFix','bgStep','bgN','bgK','bgNet','bgHz','bgH'].forEach(function(id){$(id).addEventListener('input',budget);});
+function bgSet(a){['bgFix','bgStep','bgN','bgK','bgNet','bgHz','bgH'].forEach(function(id,i){$(id).value=a[i];});budget();}
+$('bgP1').addEventListener('click',function(){bgSet([62,2.8,5,2.5,11.33,50,50]);});
+$('bgP2').addEventListener('click',function(){bgSet([100,8,10,2.5,20,10,16]);});
+budget();
+
+/* ---------- 6.3 token widget ---------- */
+var TA=[0.2,0.5,0.9,1.2,1.0,0.6],TE=[-0.4,1.1,0.3,-0.8,0.5,-1.0];
+function tok(){
+  var d=+$('tkD').value,t=+$('tkT').value,q=$('tkConv').value==='q';$('tkDv').textContent=d;$('tkTv').textContent=vn(t,2);
+  var W=720,cw=108,x0=36,g='',i,rows=[];
+  g+='<text x="'+x0+'" y="16" style="font-size:11.5px;fill:var(--muted)">đầu ra: vận tốc, có tính loss?</text>';
+  g+='<text x="'+x0+'" y="212" style="font-size:11.5px;fill:var(--muted)">đầu vào: giá trị token (a = hành động thật, ε = nhiễu)</text>';
+  g+='<rect x="'+x0+'" y="92" width="'+(6*cw-8)+'" height="40" rx="10" style="fill:var(--blue-soft);stroke:var(--blue)"/><text x="'+(x0+3*cw-4)+'" y="117" text-anchor="middle" style="font-size:12.5px;fill:var(--blue)">action expert (DiT, adaLN theo token)</text>';
+  for(i=0;i<6;i++){
+    var x=x0+i*cw,pre=i<d,tp=pre?1:t,tq=1-tp,val=tp*TA[i]+(1-tp)*TE[i],tgt=q?(TE[i]-TA[i]):(TA[i]-TE[i]);
+    var tshow=q?tq:tp;
+    g+='<rect x="'+x+'" y="22" width="'+(cw-8)+'" height="34" rx="6" style="fill:'+(pre?'var(--grey)':'var(--pri)')+';opacity:'+(pre?.35:.85)+'"/>';
+    g+='<text x="'+(x+cw/2-4)+'" y="38" text-anchor="middle" style="font-size:11px;fill:'+(pre?'var(--text)':'#fff')+'">'+(pre?'không loss':'mục tiêu '+vn(tgt,2))+'</text>';
+    g+='<text x="'+(x+cw/2-4)+'" y="51" text-anchor="middle" style="font-size:10.5px;fill:'+(pre?'var(--muted)':'#fff')+'">'+(q?'ε − a':'a − ε')+'</text>';
+    g+='<line x1="'+(x+cw/2-4)+'" x2="'+(x+cw/2-4)+'" y1="58" y2="90" style="stroke:var(--grey)"/>';
+    g+='<rect x="'+(x+14)+'" y="140" width="'+(cw-36)+'" height="22" rx="11" style="fill:'+(pre?'var(--accent-soft)':'var(--pri-soft)')+';stroke:'+(pre?'var(--accent)':'var(--pri)')+'"/>';
+    g+='<text x="'+(x+cw/2-4)+'" y="155" text-anchor="middle" style="font-size:11px;fill:'+(pre?'var(--accent)':'var(--pri-strong)')+'">'+(q?'τq':'τ')+' = '+vn(tshow,2)+'</text>';
+    g+='<rect x="'+x+'" y="170" width="'+(cw-8)+'" height="30" rx="6" style="fill:'+(pre?'var(--accent)':'var(--code-bg)')+';stroke:'+(pre?'var(--accent)':'var(--grey)')+';'+(pre?'':'stroke-dasharray:3 2')+'"/>';
+    g+='<text x="'+(x+cw/2-4)+'" y="190" text-anchor="middle" style="font-size:12px;fill:'+(pre?'#fff':'var(--text)')+';font-weight:700">'+vn(val,3)+'</text>';
+    g+='<text x="'+(x+cw/2-4)+'" y="236" text-anchor="middle" style="font-size:10.5px;fill:var(--muted)">i = '+i+(pre?' (prefix)':'')+'</text>';
+    rows.push('i = '+i+': '+(pre?'a<sub>'+i+'</sub> = '+vn(TA[i],2):(q?vn(1-tq,2)+'·'+vn(TA[i],2)+' + '+vn(tq,2)+'·('+vn(TE[i],2)+')':vn(tp,2)+'·'+vn(TA[i],2)+' + '+vn(1-tp,2)+'·('+vn(TE[i],2)+')')+' = '+vn(val,3)));
+  }
+  $('tkSvg').innerHTML=g;
+  $('tkOut').innerHTML='Dữ liệu ví dụ: a = (0,2; 0,5; 0,9; 1,2; 1,0; 0,6), ε = (−0,4; 1,1; 0,3; −0,8; 0,5; −1,0). Đầu vào từng token:<br>'+rows.join('<br>')+'<br>'+
+   (q?'<b>Quy ước Qwen-VLA:</b> prefix mang τ<sub>q</sub> = 0 (sạch), postfix τ<sub>q</sub> = 1 − τ = '+vn(1-t,2)+'; mục tiêu ε − a. Giá trị đầu vào giống hệt quy ước paper, chỉ nhãn τ và dấu mục tiêu đổi.'
+     :'<b>Quy ước paper:</b> prefix mang τ = 1 (sạch), postfix τ = '+vn(t,2)+'; mục tiêu a − ε (code), không phải ε − a như Eq. 2 in.')+
+   ' Loss = trung bình bình phương sai số trên '+(6-d)+' ô postfix.';
+}
+['tkD','tkT','tkConv'].forEach(function(id){$(id).addEventListener('input',tok);});tok();
+
+/* ---------- 6.4 delay distribution ---------- */
+var dsSeed=1;
+function dsRng(){dsSeed=(dsSeed*16807)%2147483647;return (dsSeed-1)/2147483646;}
+function dist(){
+  var kind=$('dsKind').value,M=+$('dsM').value,r=+$('dsR').value,H=8,i,j;$('dsMv').textContent=M;$('dsRv').textContent=vn(r,2);
+  var w=[];for(i=0;i<M;i++)w.push(kind==='u'?1:Math.exp(-r*i));var Z=w.reduce(function(a,b){return a+b;},0);w=w.map(function(v){return v/Z;});
+  var grid='<div style="display:grid;grid-template-columns:96px repeat('+H+',22px);gap:3px;margin:8px 0;font-size:.75rem;align-items:center">';
+  for(j=0;j<12;j++){var u=dsRng(),c=0,d=0;for(i=0;i<M;i++){c+=w[i];if(u<=c){d=i;break;}d=i;}
+    grid+='<span style="color:var(--muted)">mẫu '+(j+1)+': d='+d+'</span>';
+    for(i=0;i<H;i++)grid+='<span style="height:16px;border-radius:3px;background:'+(i<d?'var(--accent)':'var(--pri)')+';opacity:'+(i<d?.9:.55)+'"></span>';}
+  grid+='</div>';$('dsGrid').innerHTML=grid;
+  var bars='',cum=0,ps=[];for(i=0;i<H;i++){var p=0;for(j=0;j<M;j++)if(j<=i)p+=w[j];ps.push(p);
+    bars+='<div class="row"><div class="nm">ô i = '+i+'</div><div class="bb"><div class="bar" style="background:var(--pri);width:'+(85*p)+'%"><span>P(d ≤ '+i+') = '+vn(p,2)+'</span></div></div></div>';}
+  $('dsBars').innerHTML=bars;
+  $('dsOut').innerHTML='Phân phối d: '+w.map(function(v,i){return 'P(d='+i+') = '+vn(v,2);}).join(', ')+'. Ô 0 chỉ được tính loss trong '+vn(100*ps[0],0)+'% mẫu, ô '+(H-1)+' trong '+vn(100*ps[H-1],0)+'% mẫu. '+
+    (M>H/2?'<span class="delta-dn">Với H = 8 và s ≥ d, d hợp lệ tối đa là 4: các d &gt; 4 không xảy ra lúc chạy.</span>':'');
+}
+['dsKind','dsM','dsR'].forEach(function(id){$(id).addEventListener('input',dist);});
+$('dsNew').addEventListener('click',function(){dsSeed=1+Math.floor(Math.random()*1e6);dist();});dist();
+
+/* ---------- 6.7 simulator ---------- */
+var METH=[
+  {k:'naive',n:'Bất đồng bộ ngây thơ',c:'var(--accent)'},
+  {k:'over',n:'Ghi đè, mô hình thường',c:'#8d6e63'},
+  {k:'infer',n:'RTC suy luận',c:'var(--pri)'},
+  {k:'train',n:'RTC huấn luyện',c:'var(--blue)'}
+];
+var smOn={naive:false,over:true,infer:false,train:true},smSel='train',smCache={};
+METH.forEach(function(m){
+  var l=document.createElement('label');l.style.cursor='pointer';
+  l.innerHTML='<input type="checkbox"'+(smOn[m.k]?' checked':'')+'> <i style="display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:3px;background:'+m.c+'"></i> '+m.n;
+  l.querySelector('input').addEventListener('change',function(e){smOn[m.k]=e.target.checked;if(e.target.checked)smSel=m.k;simDraw();});
+  $('smMeth').appendChild(l);
+});
+function simDraw(){
+  var d=+$('smD').value,smin=Math.max(+$('smS').value,d),seed=Math.max(1,Math.round(+$('smSeed').value||1));
+  $('smDv').textContent=d;$('smSv').textContent=+$('smS').value;
+  var W=720,Hh=300,L=46,R=12,Tp=14,Bt=34,T=SIM2.T,SC=SIM2.SC,H=SIM2.H;
+  function X(t){return L+(W-L-R)*t/(T-1);} function Y(v){return Tp+(Hh-Tp-Bt)*(1.8-v)/3.6;}
+  var g='<defs><clipPath id="smClip"><rect x="'+L+'" y="'+Tp+'" width="'+(W-L-R)+'" height="'+(Hh-Tp-Bt)+'"/></clipPath></defs><rect x="'+X(SIM2.TOB-2)+'" y="'+Y(0.3)+'" width="'+(X(SIM2.TOB+2)-X(SIM2.TOB-2))+'" height="'+(Y(-0.3)-Y(0.3))+'" rx="6" style="fill:var(--grey);opacity:.4"/>';
+  g+='<text x="'+X(SIM2.TOB)+'" y="'+(Y(0)+4)+'" text-anchor="middle" style="font-size:11px;fill:var(--text)">vật cản</text>';
+  [-1.5,-1,-0.5,0,0.5,1,1.5].forEach(function(v){g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" style="stroke:var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" style="font-size:10.5px;fill:var(--muted)">'+vn(v,1)+'</text>';});
+  for(var t=0;t<T;t+=8)g+='<text x="'+X(t)+'" y="'+(Hh-Bt+16)+'" text-anchor="middle" style="font-size:10.5px;fill:var(--muted)">'+t+'</text>';
+  g+='<text x="'+((L+W)/2)+'" y="'+(Hh-4)+'" text-anchor="middle" style="font-size:11px;fill:var(--muted)">bước thực thi</text>';
+  var rows='<tr><th>Cách</th><th class="num">Giật (|gia tốc| max)</th><th class="num">Chạm vật cản?</th><th class="num">Chi phí mỗi lần gọi</th></tr>',selRes=null;
+  var valid=d<=H-smin;
+  METH.forEach(function(m){
+    var key=m.k+'|'+d+'|'+smin+'|'+seed,res=smCache[key]||(smCache[key]=SIM2.run(m.k,d,smin,seed));
+    var y=res.y,ma=0,i;for(i=2;i<y.length;i++)ma=Math.max(ma,Math.abs(y[i]-2*y[i-1]+y[i-2]));
+    var hit=false;for(i=SIM2.TOB-2;i<=SIM2.TOB+2&&i<y.length;i++)if(Math.abs(y[i])<0.3*SC)hit=true;
+    rows+='<tr'+(m.k===smSel&&smOn[m.k]?' class="hl"':'')+'><td><i style="display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:3px;background:'+m.c+'"></i> '+m.n+'</td><td class="num">'+vn(ma/SC,2)+'</td><td class="num">'+(hit?'<span class="delta-dn">có</span>':'không')+'</td><td class="num">'+(m.k==='infer'?'forward + backward':'1 forward')+'</td></tr>';
+    if(!smOn[m.k])return;if(m.k===smSel)selRes=res;
+    var p='';y.forEach(function(v,i){p+=(i?'L':'M')+X(i).toFixed(1)+','+Y(v/SC).toFixed(1);});
+    g+='<path clip-path="url(#smClip)" d="'+p+'" style="fill:none;stroke:'+m.c+';stroke-width:'+(m.k===smSel?2.6:1.8)+'"/>';
+  });
+  if(selRes)selRes.sw.forEach(function(t){if(t<T)g+='<line x1="'+X(t)+'" x2="'+X(t)+'" y1="'+Tp+'" y2="'+(Hh-Bt)+'" style="stroke:var(--text);opacity:.12"/>';});
+  $('smSvg').innerHTML=g;$('smTab').innerHTML=rows+(valid?'':'<tr><td colspan="4" class="delta-dn">s = '+smin+' &gt; H − d = '+(H-d)+': vi phạm ràng buộc; kết quả chỉ để tham khảo.</td></tr>');
+}
+['smD','smS','smSeed'].forEach(function(id){$(id).addEventListener('input',simDraw);});
+$('smRand').addEventListener('click',function(){$('smSeed').value=1+Math.floor(Math.random()*500);simDraw();});
+simDraw();
+
+/* ---------- 8 bars ---------- */
+function barWidget(btnId,barsId,outId,labels,series,notes,scaleFn,fmt){
+  var box=$(btnId),cur=0;
+  labels.forEach(function(l,i){var b=document.createElement('button');b.type='button';b.className='b'+(i===0?' on':' o');b.textContent=l;b.addEventListener('click',function(){cur=i;draw();});box.appendChild(b);});
+  function draw(){
+    [].slice.call(box.children).forEach(function(b,i){b.className='b'+(i===cur?' on':' o');});
+    $(barsId).innerHTML=series.map(function(r){var v=r[2][cur];return '<div class="row"><div class="nm">'+r[0]+'</div><div class="bb"><div class="bar" style="background:'+r[1]+';width:'+scaleFn(v,cur)+'%"><span>'+fmt(v,cur)+'</span></div></div></div>';}).join('');
+    $(outId).innerHTML=notes[cur];
+  }
+  draw();
+}
+barWidget('kinBtns','kinBars','kinOut',['d = 0','d = 1','d = 2','d = 3','d = 4'],[
+  ['RTC huấn luyện','var(--blue)',[0.91,0.89,0.86,0.81,0.72]],
+  ['RTC suy luận','var(--pri)',[0.92,0.90,0.85,0.74,0.61]],
+  ['Naive async','var(--accent)',[0.91,0.75,0.71,0.59,0.49]]
+],[
+ 'd = 0: vòng kín hoàn toàn, ba cách gần bằng nhau. RTC huấn luyện thấp hơn rất nhẹ (≈ 0,01).',
+ 'd = 1: naive tụt mạnh. Hai bản RTC gần như bằng nhau, bản suy luận nhỉnh hơn ≈ 0,01.',
+ 'd = 2: bản huấn luyện bắt đầu vượt (≈ +0,02).',
+ 'd = 3: khoảng cách ≈ +0,06.',
+ 'd = 4 (tối đa khi H = 8): ≈ 0,72 so với ≈ 0,61; naive ≈ 0,49. Đây là con số mạnh nhất của paper.'
+],function(v){return 85*v;},function(v){return '≈ '+vn(v,2);});
+barWidget('realBtns','realBars','realOut',['Espresso: thành công','Espresso: thời lượng','Gấp hộp: thành công','Gấp hộp: thời lượng'],[
+  ['Đồng bộ','var(--red)',[0.81,142,0.50,170]],
+  ['RTC suy luận','var(--pri)',[0.88,114,0.56,133]],
+  ['RTC huấn luyện','var(--blue)',[0.92,111,0.66,131]]
+],[
+ 'Thành công pha espresso: tăng dần từ đồng bộ tới RTC huấn luyện, nhưng khoảng Wilson 68% của ba cột chồng nhau. Paper kết luận "parity".',
+ 'Thời lượng espresso: hai bản RTC nhanh hơn đồng bộ khoảng 20–22%; giữa hai bản RTC chênh ≈ 3 s.',
+ 'Gấp hộp khó hơn: ≈ 0,50 / 0,56 / 0,66. Chênh lớn nhất giữa hai bản RTC (≈ 0,10), nhưng thanh sai số vẫn chồng nhau.',
+ 'Thời lượng gấp hộp: ≈ 170 s → ≈ 133 s → ≈ 131 s.'
+],function(v,c){return c%2?85*v/180:85*v;},function(v,c){return c%2?'≈ '+v+' s':'≈ '+vn(v,2);});
+})();
+</script>
+</body>
+</html>

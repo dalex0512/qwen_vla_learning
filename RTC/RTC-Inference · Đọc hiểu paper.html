@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RTC inference-time · Đọc hiểu paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+
+/* layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+
+/* paper viết / nghĩa là */
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+
+/* callouts */
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+
+/* tables */
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+
+/* misc */
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* checklist */
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+
+/* steps */
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* details */
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+
+/* arch svg */
+.n{cursor:pointer}
+.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.n.emb rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.frz rect.b0{fill:var(--blue-soft);stroke:var(--blue)}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.n text{fill:var(--text);font-size:13px;text-anchor:middle;pointer-events:none}
+.n text.s{fill:var(--muted);font-size:11.5px}
+.ar{stroke:var(--grey);stroke-width:1.8;fill:none}
+.lbl{fill:var(--muted);font-size:11.5px}
+#archInfo{min-height:96px}
+
+/* bars */
+.bars .row{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{display:flex;flex-direction:column;gap:2px}
+.bars .bar{height:11px;border-radius:4px;position:relative;min-width:2px}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-4px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .dp{background:var(--grey)}
+.bars .gr{background:var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:120px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cells{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.cells span{width:26px;height:26px;border-radius:5px;background:var(--pri-soft);border:1px solid var(--pri);font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cells span.used{background:var(--accent);border-color:var(--accent);color:#fff}
+.cells span.over{background:var(--red);border-color:var(--red);color:#fff}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+
+/* ===== thêm cho trang Qwen-VLA ===== */
+details.more{border:1px dashed var(--line);border-radius:12px;padding:8px 14px;margin:12px 0;background:var(--card)}
+details.more>summary{cursor:pointer;font-weight:600;color:var(--pri);font-size:.93rem}
+details.more>summary::marker{color:var(--pri)}
+details.more[open]>summary{margin-bottom:8px}
+.key{border:2px solid var(--pri);border-radius:14px;padding:12px 18px;margin:14px 0;background:var(--pri-soft)}
+.key b.t{display:block;color:var(--pri-strong);margin-bottom:2px}
+.idea{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:center;border-top:1px solid var(--line);padding:16px 0}
+.idea h3{margin:0 0 6px}
+.idea .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;font-size:.95rem}
+.idea .go{font-size:.85rem;color:var(--muted)}
+.stat div div{border:0;padding:0;border-radius:0}
+.idea svg text{font-size:13px}
+@media (max-width:760px){.idea{grid-template-columns:1fr}}
+.lv{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;vertical-align:middle;margin-left:8px;letter-spacing:.02em;line-height:1.6}
+.lv.m{background:var(--accent);color:#fff}
+.lv.s{background:var(--blue-soft);color:var(--blue)}
+.lv.k{background:var(--code-bg);color:var(--muted);border:1px solid var(--line)}
+nav.toc a i.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+i.d.m{background:var(--accent)} i.d.s{background:var(--blue)} i.d.k{background:var(--grey);opacity:.6}
+.legend-lv{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.9rem;margin:10px 0}
+.basics{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.basics>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.basics>div b.h{display:block;color:var(--pri-strong);margin-bottom:4px}
+.basics>div .why{display:block;margin-top:6px;font-size:.86rem;color:var(--muted)}
+table.t td.keep{color:var(--pri-strong);font-weight:600;white-space:nowrap}
+table.t td.chg{color:var(--accent);font-weight:600;white-space:nowrap}
+table.t td.unk{color:var(--muted);font-weight:600;white-space:nowrap}
+.prompt{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--code-bg);border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:10px;padding:12px 14px;white-space:pre-wrap;line-height:1.6}
+.prompt .v{background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:0 3px}
+.ctrl select,.ctrl input[type=text],.ctrl input[type=number]{font:inherit;font-size:.9rem;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+.grid{display:grid;gap:2px;margin:10px 0;max-width:100%;overflow-x:auto}
+.grid span{width:13px;height:13px;border-radius:2px;background:var(--code-bg);border:1px solid var(--line)}
+.grid span.on{background:var(--pri);border-color:var(--pri)}
+.grid span.pad{background:var(--card);border:1px dashed var(--grey);opacity:.6}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+@media (max-width:760px){.stages{grid-template-columns:1fr 1fr}}
+.stg{border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;background:var(--card);text-align:center;font-size:.85rem}
+.stg.sel{border-color:var(--accent)}
+.stg .nm{font-weight:700;color:var(--pri-strong);font-size:.95rem}
+.stg .blk{border-radius:7px;padding:3px 4px;margin:5px 0;font-size:.8rem;border:1.5px solid}
+.stg .blk.fz{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.stg .blk.tr{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stg .inp{color:var(--muted);font-size:.78rem}
+.stg .ck{margin-top:6px;font-size:.76rem;font-weight:600}
+.arrowrow{display:flex;justify-content:space-around;color:var(--grey);font-size:.8rem;margin:-4px 0 4px}
+.bars .q{background:var(--accent)}
+.bars .g6{background:var(--blue)}
+.delta-up{color:var(--pri-strong);font-weight:600}
+.delta-dn{color:var(--red);font-weight:600}
+.n.vlm rect.b0{fill:var(--accent-soft);stroke:var(--accent)}
+.n.dit rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.rl rect.b0{stroke-dasharray:5 4}
+.say{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:14px 0}
+.say b.t{display:block;color:var(--accent);margin-bottom:4px}
+
+/* ===== thêm cho trang RTC ===== */
+#smSvg,#btSvg,#sfSvg{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px}
+#smMeth label{font-size:.88rem}
+.out .tw{margin:0 0 8px}
+pre code#torchCode{font-size:.82rem}
+.two>div{min-width:0}
+mjx-container[display="true"]{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0;position:relative}
+mjx-container:not([display]){max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle;position:relative}
+.chk code{word-break:break-all}
+.bars .bb{min-width:0;padding-right:118px}
+@media (max-width:600px){.bars .bb{padding-right:96px}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>RTC inference-time · Đọc hiểu paper</h1>
+  <p><b>Real-Time Execution of Action Chunking Flow Policies</b> — Kevin Black, Manuel Y. Galliker, Sergey Levine (Physical Intelligence, UC Berkeley) · NeurIPS 2025 · arXiv 2506.07339 (v2, 05/12/2025)</p>
+  <p>Trang đọc hiểu cho người mới, bài <b>đọc sâu</b> đầu tiên. Lộ trình: LIBERO → GR00T N1 → Qwen-VLA → <b>RTC inference-time</b> → RTC training-time → MoE.</p>
+  <div class="meta">
+    <span class="pill">Chạy chunk bất đồng bộ</span><span class="pill">Đóng băng d hành động</span><span class="pill">Inpainting bằng ΠGDM</span><span class="pill">Soft masking</span><span class="pill">Không huấn luyện lại</span><span class="pill">π0.5 · H = 50 · 50 Hz · n = 5</span><span class="pill">76 → 97 ms</span>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#tldr"><i class="d m"></i>0. Tóm tắt 1 phút</a>
+  <a href="#quick" style="font-weight:700;color:var(--pri-strong)"><i class="d m"></i>★ Đọc nhanh 15 phút</a>
+  <a href="#roadmap"><i class="d m"></i>1. Lộ trình & checklist</a>
+  <a href="#glossary"><i class="d s"></i>2. Bảng thuật ngữ</a>
+  <a href="#basics"><i class="d m"></i>3. Nền tối thiểu</a>
+  <a href="#bridge"><i class="d m"></i>4. Từ Qwen-VLA sang RTC</a>
+  <a href="#problem"><i class="d m"></i>5. Vấn đề: nối chunk</a>
+  <a class="sub" href="#delaycalc">5.1 Tính d từ độ trễ</a>
+  <a class="sub" href="#sim">5.2 Mô phỏng nối chunk</a>
+  <a href="#method"><i class="d m"></i>6. Phương pháp</a>
+  <a class="sub" href="#idea">6.1 Ý chính: inpainting</a>
+  <a class="sub" href="#pigdm">6.2 Dẫn công thức ΠGDM</a>
+  <a class="sub" href="#beta">6.3 Kẹp trọng số β</a>
+  <a class="sub" href="#soft">6.4 Soft masking</a>
+  <a class="sub" href="#flip">6.5 Lật sang quy ước Qwen-VLA</a>
+  <a href="#algo"><i class="d m"></i>7. Thuật toán & code</a>
+  <a class="sub" href="#alg1">7.1 Hai luồng chạy song song</a>
+  <a class="sub" href="#guided">7.2 GuidedInference</a>
+  <a class="sub" href="#torch">7.3 Code PyTorch giản lược</a>
+  <a href="#results"><i class="d m"></i>8. Thí nghiệm & kết quả</a>
+  <a class="sub" href="#kinetix">8.1 Mô phỏng Kinetix</a>
+  <a class="sub" href="#real">8.2 Robot thật với π0.5</a>
+  <a class="sub" href="#cost">8.3 Độ trễ & chi phí</a>
+  <a class="sub" href="#ablation">8.4 Ablation phụ lục</a>
+  <a href="#code"><i class="d m"></i>9. Nằm ở đâu trong code</a>
+  <a href="#critique"><i class="d s"></i>10. Hạn chế & phản biện</a>
+  <a href="#next"><i class="d s"></i>11. Nối sang RTC training-time</a>
+  <a href="#mentor"><i class="d m"></i>12. Câu hỏi mentor có thể vặn</a>
+  <a href="#quiz"><i class="d s"></i>13. Tự kiểm tra & thí nghiệm</a>
+  <a href="#sources"><i class="d k"></i>14. Nguồn</a>
+</nav>
+
+<main>
+
+<!-- ============ 0 ============ -->
+<section class="sec" id="tldr">
+<h2>0. Tóm tắt 1 phút <span class="lv m">Phải nắm</span></h2>
+<p>Ba paper trước đều trả lời câu hỏi <i>"mô hình nên đoán hành động gì?"</i>. Paper này hỏi một câu khác: <i>"mô hình đoán chậm thì robot làm gì trong lúc chờ?"</i>. Nó không đổi mô hình, không huấn luyện lại, chỉ đổi <b>cách gọi mô hình khi chạy</b>. Năm ý cần nhớ:</p>
+<div class="tldr">
+  <div><b>① Mô hình chậm hơn robot</b>π0.5 cần khoảng 76–97 ms để sinh một chunk, trong khi robot cần một hành động mỗi 20 ms (50 Hz). Trong lúc mô hình đang tính, robot đã đi thêm <strong>d</strong> bước. d gọi là <strong>độ trễ suy luận</strong> (inference delay).</div>
+  <div><b>② Hai cách cũ đều dở</b><strong>Đồng bộ</strong>: robot đứng chờ mỗi lần gọi mô hình → giật, chậm. <strong>Bất đồng bộ ngây thơ</strong>: vừa chạy vừa tính, xong thì nhảy sang chunk mới → chỗ nối có thể lệch hẳn (chunk cũ định vòng trên vật cản, chunk mới vòng dưới).</div>
+  <div><b>③ Ý chính: tô tiếp (inpainting)</b>d hành động đầu của chunk mới chắc chắn sẽ lấy từ chunk cũ, nên <strong>đóng băng</strong> chúng. Chunk mới phải được "vẽ tiếp" sao cho khớp với phần đóng băng, giống tô phần ảnh bị che sao cho liền với phần còn lại.</div>
+  <div><b>④ Cách tô: dẫn hướng bằng gradient</b>Ở mỗi bước khử nhiễu, đoán trước chunk sạch, đo nó lệch chunk cũ bao nhiêu, rồi cộng thêm một lực kéo (gradient, tính bằng một lần backward). Trọng số khớp giảm dần theo thời gian (<strong>soft masking</strong>), có kẹp trần <strong>β = 5</strong>.</div>
+  <div><b>⑤ Kết quả</b>Trên 12 tác vụ động trong Kinetix, RTC bền nhất khi d tăng. Trên robot thật với π0.5 (6 tác vụ, 480 lượt chạy), RTC có throughput cao nhất ở mọi độ trễ và <strong>không giảm</strong> khi thêm +100/+200 ms. Cái giá: mỗi bước khử nhiễu chậm 2,5×, tổng 76 → 97 ms.</div>
+</div>
+
+<div class="say"><b class="t">Nếu chỉ có 30 giây để nói với mentor</b>
+VLA lớn sinh một chunk mất cỡ 100 ms, robot thì chạy 50 Hz, nên phải vừa chạy chunk cũ vừa tính chunk mới. Vấn đề là chỗ nối: chunk mới có thể chọn chiến lược khác và làm robot giật. RTC coi việc sinh chunk mới là bài toán inpainting: đóng băng d hành động chắc chắn sẽ chạy trong lúc chờ, rồi ở mỗi bước Euler cộng thêm một số hạng dẫn hướng kiểu ΠGDM, kéo chunk mới khớp với chunk cũ, với trọng số giảm dần theo hàm mũ trên vùng chồng lấn. Không cần huấn luyện lại, áp được cho mọi policy flow/diffusion. Trên π0.5, RTC giữ nguyên throughput khi thêm 200 ms độ trễ, còn đồng bộ thì giảm dần và temporal ensembling làm robot rung tới mức tự dừng bảo vệ.</div>
+
+<div class="co link"><b class="t">Đọc trang này cùng PDF</b>
+Mỗi mục ghi rõ Section, Hình, Bảng, Phụ lục tương ứng trong PDF (bản v2, 25 trang; trang 16–22 là checklist NeurIPS, không cần đọc). Phần chính chỉ có trang 2–9; phụ lục A.2–A.5 (trang 23–25) có nhiều con số quan trọng.</div>
+</section>
+
+<!-- ============ QUICK ============ -->
+<section class="sec" id="quick">
+<h2>★ Đọc nhanh 15 phút <span class="lv m">Phải nắm</span></h2>
+<p>Mục này kể đủ 4 ý của paper bằng lời thường, gần như không có công thức. Đọc xong và trả lời được 4 câu ở cuối là bạn đã nắm khung để trình bày. Các mục sau là phần đi sâu.</p>
+
+<div class="idea">
+<div>
+<h3><span class="num">1</span>Đầu bếp nấu chậm, khách ăn nhanh</h3>
+<p>Hình dung một đầu bếp (mô hình) nấu mỗi mẻ 50 món (chunk H = 50), và một vị khách (robot) ăn đều đặn mỗi 20 ms một món. Nấu một mẻ mất ~100 ms, tức là trong lúc nấu, khách đã ăn thêm <b>5–6 món</b> từ mẻ cũ.</p>
+<p>Nếu đầu bếp đợi khách ăn xong phần được dọn rồi mới nấu mẻ sau, khách phải ngồi chờ: đó là <b>đồng bộ</b>. Nếu bắt đầu nấu từ sớm để khách không phải chờ: đó là <b>bất đồng bộ</b>. RTC làm theo kiểu thứ hai.</p>
+<p class="go">Đi sâu: mục 3 (nền) và 5.1 (bấm thử tính d).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 190" role="img" aria-label="Dòng thời gian: robot chạy chunk cũ trong lúc mô hình tính chunk mới, mất d bước">
+<text x="10" y="22" style="font-size:12px;fill:var(--muted)">robot (mỗi ô = 20 ms)</text>
+<g id="qa1"></g>
+<rect x="10" y="30" width="450" height="26" rx="4" style="fill:none;stroke:var(--line)"/>
+<g>
+<rect x="10" y="30" width="150" height="26" style="fill:var(--grey);opacity:.35"/>
+<rect x="160" y="30" width="120" height="26" style="fill:var(--accent);opacity:.85"/>
+<rect x="280" y="30" width="180" height="26" style="fill:var(--pri);opacity:.75"/>
+<text x="85" y="48" text-anchor="middle" style="font-size:12px;fill:var(--text)">đã chạy s bước</text>
+<text x="220" y="48" text-anchor="middle" style="font-size:12px;fill:#fff;font-weight:700">d bước chunk cũ</text>
+<text x="370" y="48" text-anchor="middle" style="font-size:12px;fill:#fff;font-weight:700">chunk mới</text>
+</g>
+<text x="10" y="92" style="font-size:12px;fill:var(--muted)">mô hình</text>
+<rect x="160" y="100" width="120" height="26" rx="4" style="fill:var(--blue-soft);stroke:var(--blue)"/>
+<text x="220" y="118" text-anchor="middle" style="font-size:12px;fill:var(--blue)">đang tính (δ ms)</text>
+<line x1="160" y1="140" x2="160" y2="62" style="stroke:var(--text);stroke-dasharray:4 3"/>
+<line x1="280" y1="140" x2="280" y2="62" style="stroke:var(--text);stroke-dasharray:4 3"/>
+<text x="160" y="158" text-anchor="middle" style="font-size:11.5px;fill:var(--text)">bắt đầu tính,</text>
+<text x="160" y="173" text-anchor="middle" style="font-size:11.5px;fill:var(--text)">chụp quan sát o</text>
+<text x="280" y="158" text-anchor="middle" style="font-size:11.5px;fill:var(--text)">chunk mới xong,</text>
+<text x="280" y="173" text-anchor="middle" style="font-size:11.5px;fill:var(--text)">đổi sang ngay</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">2</span>Chỗ nối là chỗ hỏng</h3>
+<p>Mẻ mới được nấu theo "ảnh chụp" lúc bắt đầu nấu, nên nó không biết robot đã đi tiếp d bước theo mẻ cũ. Tệ hơn, hành động hợp lệ thường có <b>nhiều kiểu</b> (vòng trên hay vòng dưới vật cản). Mẻ cũ chọn vòng trên, mẻ mới có thể chọn vòng dưới.</p>
+<p>Nhảy thẳng sang mẻ mới → robot giật mạnh (gia tốc rất lớn, "lạ" so với dữ liệu huấn luyện). Lấy <b>trung bình</b> hai mẻ (temporal ensembling) → đi thẳng vào giữa, đâm vật cản. Trung bình của hai cách đúng chưa chắc là cách đúng.</p>
+<p class="go">Đi sâu: mục 5.2 (mô phỏng có thể bấm), Hình 2 trong PDF.</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 190" role="img" aria-label="Chunk cũ đi trên vật cản, chunk mới đi dưới, trung bình đâm vào vật cản">
+<rect x="250" y="70" width="70" height="50" rx="10" style="fill:var(--grey);opacity:.45"/>
+<text x="285" y="100" text-anchor="middle" style="font-size:12px;fill:var(--text)">vật cản</text>
+<path d="M20,110 C120,105 180,80 240,55 S330,40 450,60" style="fill:none;stroke:var(--text);stroke-width:2.5"/>
+<path d="M150,100 C200,125 230,150 260,150 S360,150 450,130" style="fill:none;stroke:var(--red);stroke-width:2.5"/>
+<path d="M150,95 C210,98 240,100 285,98 S380,95 450,95" style="fill:none;stroke:#8d6e63;stroke-width:2.2;stroke-dasharray:6 4"/>
+<line x1="210" y1="66" x2="215" y2="118" style="stroke:var(--accent);stroke-width:2.5"/>
+<text x="20" y="130" style="font-size:12px;fill:var(--text)">chunk cũ (đi trên)</text>
+<text x="330" y="168" style="font-size:12px;fill:var(--red)">chunk mới (đi dưới)</text>
+<text x="335" y="88" style="font-size:12px;fill:#8d6e63">trung bình (TE)</text>
+<text x="222" y="40" style="font-size:12px;fill:var(--accent);font-weight:700">nhảy chunk = cú giật</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">3</span>Coi chunk mới như bức ảnh bị che một phần</h3>
+<p>Ta biết chắc d hành động đầu của chunk mới sẽ không được dùng (chúng đã chạy từ chunk cũ). Vậy cứ <b>đóng băng</b> chúng bằng đúng giá trị của chunk cũ, rồi yêu cầu mô hình "vẽ tiếp" phần còn lại cho liền mạch. Đây là <b>inpainting</b>, việc mà mô hình diffusion/flow vốn làm giỏi với ảnh.</p>
+<p>Phần sau phần đóng băng (đoạn chunk cũ vẫn còn kế hoạch) cũng được bám theo nhưng <b>lỏng dần</b>: càng xa trong tương lai càng ít bắt buộc, vì mô hình cần chỗ để phản ứng với quan sát mới. Cuối chunk thì tự do hoàn toàn.</p>
+<p class="go">Đi sâu: mục 6.1, 6.4, Hình 3 trong PDF.</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 170" role="img" aria-label="Trọng số khớp: 1 trên vùng đóng băng, giảm dần trên vùng giữa, 0 ở cuối">
+<text x="10" y="18" style="font-size:12px;fill:var(--muted)">mức bám chunk cũ</text>
+<path d="M20,40 L140,40 C200,40 230,110 330,118 L450,118" style="fill:none;stroke:var(--pri);stroke-width:3"/>
+<line x1="20" y1="120" x2="450" y2="120" style="stroke:var(--line)"/>
+<rect x="20" y="128" width="120" height="22" style="fill:var(--accent);opacity:.85"/>
+<rect x="140" y="128" width="190" height="22" style="fill:var(--accent);opacity:.35"/>
+<rect x="330" y="128" width="120" height="22" style="fill:var(--code-bg);stroke:var(--line)"/>
+<text x="80" y="143" text-anchor="middle" style="font-size:11.5px;fill:#fff;font-weight:700">đóng băng (d)</text>
+<text x="235" y="143" text-anchor="middle" style="font-size:11.5px;fill:var(--text)">bám lỏng dần (H − d − s)</text>
+<text x="390" y="143" text-anchor="middle" style="font-size:11.5px;fill:var(--text)">mới hoàn toàn (s)</text>
+<text x="22" y="34" style="font-size:11.5px;fill:var(--pri)">1</text>
+<text x="440" y="112" style="font-size:11.5px;fill:var(--pri)">0</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">4</span>Kéo nhẹ ở mỗi bước nặn, không sửa mô hình</h3>
+<p>Nhớ lại flow matching: bắt đầu từ cục đất (nhiễu), nặn n = 5 bước là ra chunk. Ở mỗi bước, RTC hỏi: <i>"nếu nặn thẳng một mạch tới cuối thì ra chunk gì?"</i>, so với chunk cũ ở vùng cần khớp, rồi đẩy cục đất hiện tại theo hướng làm giảm sai lệch đó.</p>
+<p>Hướng đẩy tính bằng <b>một lần backward</b> qua action expert (giống tính gradient lúc huấn luyện, nhưng theo đầu vào chứ không theo trọng số). Lực đẩy được <b>kẹp trần β = 5</b> để vài bước khử nhiễu không làm chunk "bay" mất.</p>
+<p class="go">Đi sâu: mục 6.2 (dẫn công thức), 6.3, 7.</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 170" role="img" aria-label="Mỗi bước Euler: vận tốc của mô hình cộng lực kéo về chunk cũ">
+<defs><marker id="qk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<circle cx="60" cy="110" r="9" style="fill:var(--grey)"/><text x="60" y="140" text-anchor="middle" style="font-size:12px;fill:var(--text)">Aτ hiện tại</text>
+<line x1="68" y1="105" x2="250" y2="60" style="stroke:var(--grey);stroke-width:2" marker-end="url(#qk)"/>
+<text x="150" y="62" text-anchor="middle" style="font-size:12px;fill:var(--muted)">vận tốc mô hình v</text>
+<line x1="250" y1="60" x2="330" y2="110" style="stroke:var(--pri);stroke-width:2.5" marker-end="url(#qk)"/>
+<text x="330" y="78" style="font-size:12px;fill:var(--pri)">+ lực kéo (guidance)</text>
+<circle cx="380" cy="128" r="9" style="fill:var(--accent)"/><text x="380" y="155" text-anchor="middle" style="font-size:12px;fill:var(--accent)">chunk cũ (mục tiêu Y)</text>
+<circle cx="335" cy="113" r="6" style="fill:var(--pri)"/>
+</svg>
+</div>
+
+<h3>Ba bằng chứng nên thuộc</h3>
+<div class="stat">
+  <div><div class="v">0,84 → 0,88</div><div class="k">throughput RTC (task/phút) ở +0 ms và +200 ms: không giảm. Đồng bộ: 0,72 → 0,51 (Hình 6 phải, số đọc từ hình)</div></div>
+  <div><div class="v">76 → 97 ms</div><div class="k">thời gian mô hình π0.5 khi thêm RTC; mỗi bước khử nhiễu 14 → 35 ms, prefill VLM không đổi (Bảng 3, phụ lục)</div></div>
+  <div><div class="v">TE = 0</div><div class="k">temporal ensembling không chạy nổi ở +100/+200 ms: robot rung tới mức tự dừng bảo vệ (Hình 6)</div></div>
+</div>
+
+<h3>Tự kiểm tra 4 câu</h3>
+<details class="q"><summary>1. Vì sao không chạy đồng bộ cho đơn giản?</summary>Robot phải đứng chờ mỗi lần gọi mô hình: chậm hơn và chuyển động có những khoảng dừng không có trong dữ liệu huấn luyện (lệch phân phối). Với điều khiển bằng lực (như Kinetix), robot thậm chí không có khái niệm "đứng yên giữ vị trí".</details>
+<details class="q"><summary>2. Vì sao "vừa chạy vừa tính rồi nhảy sang chunk mới" lại gây giật?</summary>Chunk mới được tính từ quan sát lúc bắt đầu, không biết d bước robot vừa đi, và có thể chọn một "kiểu" hành động khác (vòng trên thay vì vòng dưới). Chỗ nối bị lệch tạo gia tốc rất lớn.</details>
+<details class="q"><summary>3. "Đóng băng" và "tô tiếp" trong RTC là gì?</summary>Đóng băng: d hành động đầu của chunk mới được ép bằng d hành động tương ứng của chunk cũ, vì chúng chắc chắn được thực thi trong lúc chờ. Tô tiếp: sinh phần còn lại sao cho liền mạch với phần đóng băng, giống inpainting ảnh.</details>
+<details class="q"><summary>4. RTC có huấn luyện lại mô hình không? Nó tốn gì?</summary>Không. Nó chỉ thêm một số hạng dẫn hướng vào mỗi bước Euler lúc suy luận. Cái giá là mỗi bước cần một lần backward qua action expert: với π0.5, bước khử nhiễu chậm 2,5×, tổng 76 → 97 ms.</details>
+</section>
+
+<!-- ============ 1 ============ -->
+<section class="sec" id="roadmap">
+<h2>1. Lộ trình đọc & checklist <span class="lv m">Phải nắm</span></h2>
+<div class="key"><b class="t">Lần đọc đầu: 4 chặng</b>★ Đọc nhanh → 5. Vấn đề (bấm mô phỏng) → 6.1 + 6.2 (ý chính và dẫn công thức) → 8.2 Robot thật. Bảng ký hiệu, code đầy đủ và các phần phụ đã gập vào nút <b>"Xem chi tiết"</b>.</div>
+<div class="legend-lv">
+  <span><span class="lv m" style="margin:0">Phải nắm</span> trọng tâm mentor hỏi, cần nói lại được</span>
+  <span><span class="lv s" style="margin:0">Nên biết</span> giúp hiểu sâu và phản biện</span>
+  <span><span class="lv k" style="margin:0">Đọc lướt</span> chi tiết, tra khi cần</span>
+</div>
+<div class="tw"><table class="t">
+<tr><th>Bước</th><th>Đọc phần nào trên trang</th><th>Ứng với PDF</th><th class="num">Thời gian</th></tr>
+<tr><td>1</td><td>0, ★, 3. Nền tối thiểu</td><td>Abstract, Hình 1, Sec 1</td><td class="num">30 phút</td></tr>
+<tr><td>2</td><td>4. Từ Qwen-VLA sang RTC, 5. Vấn đề + 2 widget</td><td>Sec 2, Hình 2</td><td class="num">40 phút</td></tr>
+<tr><td>3</td><td>6.1, 6.2 dẫn công thức (làm tay ví dụ số)</td><td>Sec 3, 3.1, Eq. 1–4</td><td class="num">60 phút</td></tr>
+<tr><td>4</td><td>6.3 β, 6.4 soft masking + widget, 6.5 lật quy ước</td><td>Sec 3.2, Eq. 5, Hình 3, 4, 7, A.2</td><td class="num">45 phút</td></tr>
+<tr><td>5</td><td>7. Thuật toán, code giả, code PyTorch</td><td>Sec 3.3, Algorithm 1</td><td class="num">45 phút</td></tr>
+<tr><td>6</td><td>8. Thí nghiệm & kết quả</td><td>Sec 4, Hình 5, 6, Bảng 1–4 phụ lục</td><td class="num">40 phút</td></tr>
+<tr><td>7</td><td>9. Code, 12. Câu hỏi vặn, 10. Phản biện</td><td>Sec 5, 6</td><td class="num">40 phút</td></tr>
+<tr><td>8 (tùy)</td><td>8.4 ablation, 11. nối sang paper 2</td><td>A.4, Hình 8</td><td class="num">20 phút</td></tr>
+</table></div>
+
+<h3>Checklist "mình đã hiểu RTC inference-time"</h3>
+<div class="prog"><i id="progBar"></i></div>
+<div class="chk" id="chk">
+  <label><input type="checkbox" data-k="c1"><span>Định nghĩa được H, s, d, Δt, δ và ràng buộc d ≤ s ≤ H − d; tính được d cho π0.5 ở +0/+100/+200 ms.</span></label>
+  <label><input type="checkbox" data-k="c2"><span>Nói được vì sao đồng bộ, bất đồng bộ ngây thơ và temporal ensembling đều dở (mỗi cách một lý do).</span></label>
+  <label><input type="checkbox" data-k="c3"><span>Giải thích "inpainting" trong RTC: cái gì bị che, cái gì là mục tiêu Y, mask W.</span></label>
+  <label><input type="checkbox" data-k="c4"><span>Viết lại Eq. 1–4 và nói nghĩa từng số hạng; tự tính \(\widehat{\mathbf A}^1\) và trọng số \((1-\tau)/(\tau r_\tau^2)\) cho n = 5.</span></label>
+  <label><input type="checkbox" data-k="c5"><span>Giải thích vector–Jacobian product là gì và vì sao chỉ tốn một lần backward.</span></label>
+  <label><input type="checkbox" data-k="c6"><span>Giải thích vì sao cần β và vì sao với n = 5 thì β ≥ 4,25 chỉ ảnh hưởng bước đầu.</span></label>
+  <label><input type="checkbox" data-k="c7"><span>Tính được W theo Eq. 5 cho một bộ (H, d, s) và giải thích vì sao soft masking tốt hơn hard masking khi d nhỏ.</span></label>
+  <label><input type="checkbox" data-k="c8"><span>Viết lại vòng suy luận RTC theo quy ước τ của Qwen-VLA (τ = 1 nhiễu), đúng dấu.</span></label>
+  <label><input type="checkbox" data-k="c9"><span>Kể được hai luồng trong Algorithm 1 và cách ước lượng d (max của 10 độ trễ gần nhất).</span></label>
+  <label><input type="checkbox" data-k="c10"><span>Đọc được Hình 5 và Hình 6: baseline, thiết lập độ trễ, metric throughput.</span></label>
+  <label><input type="checkbox" data-k="c11"><span>Kể được các con số RTC cần biết khi mở codebase, và chỗ RTC can thiệp.</span></label>
+  <label><input type="checkbox" data-k="c12"><span>Nêu 3 điểm phản biện và giải thích vì sao paper RTC training-time ra đời.</span></label>
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="sec" id="glossary">
+<h2>2. Bảng thuật ngữ <span class="lv s">Nên biết</span></h2>
+<p>Từ đã gặp ở các trang trước (VLA, VLM, action chunk, flow matching, Euler, DiT, KV cache) chỉ nhắc rất ngắn.</p>
+<details class="more"><summary>Mở bảng thuật ngữ</summary>
+<div class="tw"><table class="t">
+<tr><th>Thuật ngữ</th><th>Nghĩa ngắn gọn</th><th>Gặp ở</th></tr>
+<tr><td>Action chunk \(\mathbf A_t\)</td><td>Chuỗi H hành động tương lai mô hình sinh một lần từ quan sát \(\mathbf o_t\)</td><td>Sec 2</td></tr>
+<tr><td>Prediction horizon H</td><td>Số hành động trong một chunk (π0.5: 50; Kinetix: 8; Qwen-VLA: 16)</td><td>Sec 2</td></tr>
+<tr><td>Execution horizon s</td><td>Số hành động của một chunk thực sự được chạy trước khi đổi sang chunk sau</td><td>Sec 2</td></tr>
+<tr><td>Δt, tần số điều khiển</td><td>Chu kỳ của bộ điều khiển. 50 Hz ⇔ Δt = 20 ms</td><td>Sec 2</td></tr>
+<tr><td>δ (latency)</td><td>Thời gian từ lúc nhận quan sát tới lúc có chunk mới (tính bằng ms)</td><td>Sec 2</td></tr>
+<tr><td>Inference delay d</td><td>δ đổi ra số bước điều khiển; paper định nghĩa d = ⌊δ/Δt⌋</td><td>Sec 2</td></tr>
+<tr><td>Đồng bộ (synchronous)</td><td>Chạy hết s hành động, dừng lại chờ mô hình tính chunk sau</td><td>Sec 2, 4.2</td></tr>
+<tr><td>Bất đồng bộ (asynchronous)</td><td>Bắt đầu tính chunk sau từ sớm, chạy song song với việc thực thi chunk hiện tại</td><td>Sec 2</td></tr>
+<tr><td>Naive async</td><td>Bất đồng bộ nhưng chunk mới không biết gì về chunk cũ; xong là đổi ngay</td><td>Sec 4.1</td></tr>
+<tr><td>Temporal ensembling (TE)</td><td>Thực thi trung bình mọi dự đoán của các chunk cho cùng một bước (từ ACT, Zhao et al.)</td><td>Sec 2, 4</td></tr>
+<tr><td>BID (Bidirectional Decoding)</td><td>Sinh nhiều chunk một lúc rồi chọn chunk khớp chunk cũ nhất (rejection sampling)</td><td>Sec 4.1, 5</td></tr>
+<tr><td>Mode / đa phương thức (multimodal)</td><td>Có nhiều cách làm hợp lệ khác hẳn nhau (vòng trái / vòng phải). "Mode-jumping": hai chunk liền nhau chọn hai kiểu khác nhau</td><td>Sec 1, 2</td></tr>
+<tr><td>Inpainting</td><td>Sinh phần bị che của một đối tượng sao cho khớp phần đã biết</td><td>Sec 3</td></tr>
+<tr><td>Guidance (dẫn hướng)</td><td>Cộng thêm một số hạng vào vận tốc ở mỗi bước khử nhiễu để kéo kết quả về phía mong muốn</td><td>Sec 3.1</td></tr>
+<tr><td>ΠGDM</td><td>Pseudoinverse-Guided Diffusion Models (Song et al. 2023): một cách guidance cho bài toán ngược, không cần huấn luyện. Pokle et al. chuyển nó sang flow</td><td>Sec 3.1</td></tr>
+<tr><td>Vector–Jacobian product (VJP)</td><td>Tích \(\mathbf e^\top \frac{\partial f}{\partial x}\): đúng thứ một lần backward tính ra, không cần dựng cả ma trận Jacobian</td><td>Sec 3.1</td></tr>
+<tr><td>Hard / soft masking</td><td>Mask chỉ gồm 0/1 (chỉ khớp d bước đầu) / mask nhận giá trị thực, giảm dần trên vùng chồng lấn</td><td>Sec 3.2</td></tr>
+<tr><td>Guidance weight clipping β</td><td>Trần của hệ số nhân lực kéo; paper đặt β = 5</td><td>Sec 3.1, A.2</td></tr>
+<tr><td>Throughput</td><td>Tỉ lệ hoàn thành tác vụ chia cho thời lượng episode, trung bình trên các episode (đơn vị task/phút)</td><td>Hình 6</td></tr>
+<tr><td>Kinetix</td><td>Bộ mô phỏng vật lý 2D chạy bằng JAX; điều khiển bằng lực/mô-men</td><td>Sec 4.1</td></tr>
+<tr><td>Protective stop</td><td>Robot tự dừng khẩn khi phát hiện chuyển động/lực bất thường</td><td>Hình 6</td></tr>
+<tr><td>Cascade control</td><td>Điều khiển nhiều tầng: policy ra vị trí khớp, bộ PID tầng dưới đổi thành mô-men</td><td>Sec 5</td></tr>
+<tr><td>MPC</td><td>Model Predictive Control: lập kế hoạch trên một cửa sổ thời gian trượt, chạy song song với thực thi</td><td>Sec 5</td></tr>
+</table></div>
+</details>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="sec" id="basics">
+<h2>3. Nền tối thiểu <span class="lv m">Phải nắm</span></h2>
+<p>Chỉ các khái niệm <b>mới</b> mà ba trang trước chưa cần. Mỗi khái niệm một ví dụ đời thường và lý do paper cần nó.</p>
+<div class="basics">
+  <div><b class="h">Tần số điều khiển & Δt = nhịp metronome</b>Robot nhận một lệnh mỗi Δt. 50 Hz nghĩa là 50 lệnh mỗi giây, Δt = 20 ms. Thiếu lệnh đúng nhịp thì robot phải đứng lại hoặc làm gì đó không định trước.<span class="why">Cần vì: mọi thứ trong paper được đếm bằng "số bước Δt".</span></div>
+  <div><b class="h">Độ trễ suy luận = thời gian đầu bếp nấu</b>δ gồm thời gian mạng chạy (encode ảnh, prefill VLM, các bước khử nhiễu) cộng mạng LAN, resize ảnh… Đổi ra bước: \(d \approx \delta/\Delta t\). Ví dụ 108,76 ms ở 50 Hz → 5,4 bước.<span class="why">Cần vì: d quyết định bao nhiêu hành động phải "đóng băng".</span></div>
+  <div><b class="h">Đồng bộ vs bất đồng bộ = gọi món khi đói vs gọi món trước</b>Đồng bộ: ăn hết rồi mới gọi món, ngồi chờ. Bất đồng bộ: thấy sắp hết thì gọi trước, vừa ăn vừa chờ món mới. Cần hai "luồng" chạy song song: một luồng phát lệnh, một luồng gọi mô hình.<span class="why">Cần vì: RTC là một cách chạy bất đồng bộ (Algorithm 1).</span></div>
+  <div><b class="h">Chunk chồng lấn & các cách nối cũ</b>Chunk dài H nhưng chỉ chạy s bước, nên hai chunk liên tiếp có <b>H − s</b> bước cùng nói về một khoảng thời gian. Cách nối cũ: đổi thẳng (naive), lấy trung bình (temporal ensembling), sinh nhiều rồi chọn cái khớp nhất (BID).<span class="why">Cần vì: đây là ba baseline của paper.</span></div>
+  <div><b class="h">Đa phương thức = nhiều đường đúng</b>Đi vòng trái hay vòng phải một cái cột đều đúng. Trung bình hai đường lại đâm thẳng vào cột. Mô hình flow/diffusion học được nhiều "mode" như vậy, và mỗi lần lấy mẫu có thể ra mode khác.<span class="why">Cần vì: đây là lý do nối chunk bị giật và TE thất bại.</span></div>
+  <div><b class="h">Inpainting = vá ảnh</b>Che một phần bức ảnh, bắt mô hình vẽ phần bị che sao cho liền với phần còn lại. Ở RTC thì ngược lại: phần "đã biết" là các hành động đóng băng, phần cần vẽ là phần sau của chunk.<span class="why">Cần vì: RTC = inpainting theo trục thời gian.</span></div>
+  <div><b class="h">Guidance = vô-lăng phụ</b>Mô hình tự lái theo vận tốc v của nó. Guidance là một tay lái phụ: ở mỗi bước, cộng thêm một chút để kéo xe về phía mục tiêu (ở đây: khớp chunk cũ). Không sửa trọng số mô hình.<span class="why">Cần vì: ΠGDM là một kiểu guidance; khác classifier-free guidance của ảnh.</span></div>
+  <div><b class="h">Gradient theo đầu vào & VJP = "sửa đầu vào nào để đầu ra bớt sai?"</b>Lúc huấn luyện, backward cho biết sửa <i>trọng số</i> thế nào. Ở đây backward cho biết sửa <i>đầu vào</i> \(\mathbf A^\tau\) thế nào để chunk-sạch-dự-đoán bớt lệch chunk cũ. Một lần backward cho đúng tích "vector sai số × Jacobian" (VJP), không cần ma trận Jacobian đầy đủ.<span class="why">Cần vì: đây là nguồn gốc chi phí 2,5× của RTC.</span></div>
+</div>
+<details class="more"><summary>Xem chi tiết: VJP bằng một ví dụ 2 chiều</summary>
+<p>Cho \(f(x_1,x_2) = (x_1 + x_2,\; 3x_1)\). Jacobian \(J = \begin{pmatrix}1 & 1\\ 3 & 0\end{pmatrix}\). Với vector sai số \(\mathbf e = (2, 1)\): \(\mathbf e^\top J = (2\cdot1 + 1\cdot3,\; 2\cdot1 + 1\cdot0) = (5, 2)\).</p>
+<p>PyTorch tính đúng (5, 2) bằng <code>torch.autograd.grad(f, x, grad_outputs=e)</code> chỉ với <b>một</b> lần backward, dù chunk có H·M chiều (π0.5: 50 × 32 = 1.600 nếu M = 32). Dựng cả Jacobian thì cần 1.600 lần backward.</p>
+</details>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="sec" id="bridge">
+<h2>4. Từ Qwen-VLA sang RTC <span class="lv m">Phải nắm</span></h2>
+<p>RTC <b>không phải một mô hình mới</b>. Nó giữ nguyên mọi thứ trong khuôn "VLM + action expert flow matching" mà bạn đã học, và chỉ thay hai thứ bên ngoài: <b>vòng lặp khử nhiễu</b> lúc suy luận và <b>vòng chạy robot</b>. Mô hình nền trong paper là π0.5 (Physical Intelligence), cùng họ kiến trúc với GR00T và Qwen-VLA.</p>
+<div class="tw"><table class="t">
+<tr><th>Điểm so sánh</th><th>Qwen-VLA / GR00T N1 (đã học)</th><th>RTC (paper này)</th><th></th></tr>
+<tr><td><b>Kiến trúc mô hình</b></td><td>VLM + DiT flow matching</td><td>Dùng nguyên π0.5 (ảnh qua SigLIP, LLM Gemma 2B theo Bảng 3 phụ lục; action expert ~300M theo con số paper nêu cho π0 ở Bảng 1). Không thêm tham số</td><td class="keep">giữ</td></tr>
+<tr><td><b>Huấn luyện</b></td><td>Loss flow matching thường</td><td>Không đổi gì, không huấn luyện lại ("out of the box")</td><td class="keep">giữ</td></tr>
+<tr><td>Action chunk</td><td>Qwen-VLA, GR00T: H = 16</td><td>π0.5: H = 50 ở 50 Hz (1 giây); Kinetix: H = 8</td><td class="keep">giữ ý</td></tr>
+<tr><td>Số bước khử nhiễu</td><td>GR00T: 4 bước; Qwen-VLA: "a few" (không ghi số)</td><td>n = 5</td><td class="keep">giữ ý</td></tr>
+<tr><td><b>Quy ước τ</b></td><td>GR00T: τ = 0 nhiễu, 1 sạch. <b>Qwen-VLA: τ = 1 nhiễu, 0 sạch</b></td><td>τ = 0 nhiễu, τ = 1 sạch (giống GR00T)</td><td class="chg">lật khi áp vào Qwen</td></tr>
+<tr><td><b>Vòng khử nhiễu</b></td><td>Mỗi bước: \(A \leftarrow A + \tfrac1n v\) (hoặc trừ, với Qwen)</td><td>Mỗi bước thêm số hạng guidance cần <b>một backward</b> qua action expert</td><td class="chg">đổi</td></tr>
+<tr><td><b>Vòng chạy robot</b></td><td>Paper không nói; mặc định nhiều nơi là đồng bộ</td><td>Hai luồng song song, bộ đệm độ trễ, đổi chunk ngay khi có</td><td class="chg">đổi</td></tr>
+<tr><td>Độ trễ</td><td>GR00T: 63,9 ms/chunk (16 hành động); Qwen-VLA: không báo</td><td>π0.5: 76 ms gốc, 97 ms có RTC (RTX 4090), + mạng 7–21 ms</td><td class="unk">phải đo</td></tr>
+<tr><td>Phụ thuộc gì ở mô hình</td><td>—</td><td>Chỉ cần mô hình sinh bằng flow hoặc diffusion và lấy được gradient theo đầu vào</td><td class="unk">kiểm trong code</td></tr>
+</table></div>
+<div class="co note"><b class="t">Câu chốt cho phần nối</b>Ba paper trước dạy "mô hình nghĩ gì"; RTC dạy "khi nào gọi mô hình và ghép kết quả thế nào". Vì không đụng tới trọng số, RTC áp được cho bất kỳ checkpoint flow matching nào, kể cả Qwen-VLA, miễn là xử lý đúng quy ước τ (mục 6.5).</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="sec" id="problem">
+<h2>5. Vấn đề: nối chunk khi mô hình chậm (Sec 1–2, Hình 1–2) <span class="lv m">Phải nắm</span></h2>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec 2)</span>"We say that a system is real-time if it is guaranteed to produce a response (in our case: \(\mathbf a_t\)) to an event (receiving \(\mathbf o_t\)) within a fixed time constraint (Δt)."</div>
+<div class="n"><span class="lab">Nghĩa là</span>"Thời gian thực" không có nghĩa là nhanh, mà là <b>luôn có lệnh đúng hạn</b>: mỗi Δt robot phải có một hành động. Nếu mô hình sinh cả chunk nhanh hơn Δt (δ ≤ Δt) thì dễ. Nhưng với VLA thì gần như không thể: π0 (3B) mất 46 ms chỉ cho prefill KV cache trên RTX 4090, trong khi Δt = 20 ms.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec 2)</span>"We define \(d := \lfloor \delta/\Delta t\rfloor\) and call this quantity the inference delay … an asynchronous algorithm must start inference at s − d. So long as d ≤ H − s, then this strategy will satisfy the real-time constraint."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Muốn chạy đúng s hành động mỗi chunk thì phải <b>bắt đầu tính sớm d bước</b>. Chunk mới chỉ dùng được nếu chunk cũ còn đủ hành động để chạy trong lúc chờ: \(s + d \le H\). Trong Algorithm 1 thì quy ước hơi khác: inference bắt đầu sau s hành động, và chunk mới được dùng từ vị trí d của nó (mục 7.1). Cả hai đều dẫn tới ràng buộc Hình 3: \(d \le s \le H - d\).</div></div>
+
+<h3>Ba cách chạy và chỗ hỏng của từng cách</h3>
+<div class="tw"><table class="t">
+<tr><th>Cách</th><th>Làm gì</th><th>Hỏng ở đâu</th></tr>
+<tr><td><b>Đồng bộ</b> (mặc định của π0, OpenVLA, Octo…)</td><td>Chạy s hành động, dừng, chờ mô hình, chạy tiếp</td><td>Robot đứng khựng giữa các chunk: chậm, và "động lực học" khác lúc thu dữ liệu (lệch phân phối). Với điều khiển bằng lực thì không có khái niệm đứng yên</td></tr>
+<tr><td><b>Bất đồng bộ ngây thơ</b></td><td>Tính chunk mới song song, xong thì nhảy sang</td><td>Chunk mới không biết d bước vừa chạy, có thể đổi mode → gia tốc rất lớn, ngoài phân phối. Càng trễ càng tệ (Hình 2: d = 7, nhảy từ \(a_{10}\) sang \(a'_{11}\))</td></tr>
+<tr><td><b>Temporal ensembling</b> (ACT)</td><td>Thực thi trung bình các dự đoán chồng nhau</td><td>Trung bình của hai hành động hợp lệ chưa chắc hợp lệ (đi xuyên vật cản). Giảm gia tốc nhưng ra hành động tồi</td></tr>
+</table></div>
+
+<h3 id="delaycalc">5.1 Bấm thử: từ mili-giây ra số bước d</h3>
+<div class="widget" id="wDelay">
+<h4>Máy tính độ trễ</h4>
+<div class="ctrl">
+  <label>Mạng chạy (ms) <input type="number" id="dlModel" value="97.43" min="0" step="1" style="width:80px"></label>
+  <label>Mạng LAN, resize ảnh, khác (ms) <input type="number" id="dlNet" value="11.33" min="0" step="0.5" style="width:80px"></label>
+  <label>Độ trễ thêm (ms) <select id="dlInj"><option value="0">+0</option><option value="100">+100</option><option value="200">+200</option></select></label>
+</div>
+<div class="ctrl">
+  <label>Tần số (Hz) <input type="number" id="dlHz" value="50" min="1" step="1" style="width:70px"></label>
+  <label>H <input type="number" id="dlH" value="50" min="2" step="1" style="width:70px"></label>
+  <label>s<sub>min</sub> <input type="number" id="dlS" value="25" min="1" step="1" style="width:70px"></label>
+  <button class="b o" type="button" id="dlP1">π0.5 bàn cố định</button>
+  <button class="b o" type="button" id="dlP2">π0.5 di động</button>
+  <button class="b o" type="button" id="dlP3">Qwen-VLA (tự điền)</button>
+</div>
+<div class="out" id="dlOut"></div>
+<p style="font-size:.86rem;color:var(--muted);margin:.5em 0 0">Hai preset π0.5 lấy từ Bảng 2 phụ lục (tổng 108,76 ms và 138,98 ms). Preset Qwen-VLA chỉ là ví dụ: H = 16 có trong paper Qwen-VLA, còn tần số 10 Hz và 150 ms là <b>số tự đặt</b> vì paper Qwen-VLA không báo độ trễ.</p>
+</div>
+<div class="co warn"><b class="t">Chú ý cách làm tròn</b>Paper định nghĩa \(d = \lfloor\delta/\Delta t\rfloor\) (làm tròn xuống). Nhưng các con số paper báo khớp với <b>làm tròn lên</b>: 108,76 ms → 5,4 bước, paper ghi "d ≈ 6"; +100 ms → 10,4, paper ghi "d ≈ 11"; +200 ms → 15,4, paper ghi "d ≈ 16". Về logic, phải đóng băng \(\lceil \delta/\Delta t\rceil\) bước mới an toàn (nếu chunk về ở giữa bước thứ 6 thì bước thứ 6 vẫn phải lấy từ chunk cũ). Footnote 1 nói paper bỏ qua chuyện lệch dưới một bước. Máy tính trên dùng làm tròn lên.</div>
+
+<h3 id="sim">5.2 Bấm thử: mô phỏng nối chunk</h3>
+<p>Một "robot" 1 chiều đi từ trái sang phải, phải vòng <b>trên hoặc dưới</b> một vật cản (hai mode, như Hình 2). Policy là một mô hình flow matching đồ chơi có hai mode, sinh chunk H = 16 bằng n = 5 bước Euler. RTC ở đây là ΠGDM thật (Eq. 2–5, β = 5), gradient tính bằng sai phân hữu hạn.</p>
+<div class="widget" id="wSim">
+<h4>So 5 cách nối chunk</h4>
+<div class="ctrl">
+  <label>Độ trễ d = <b id="smDv">4</b> <input type="range" id="smD" min="1" max="6" value="4"></label>
+  <label>s<sub>min</sub> = <b id="smSv">4</b> <input type="range" id="smS" min="1" max="8" value="4"></label>
+  <label>Hạt giống ngẫu nhiên <input type="number" id="smSeed" value="7" min="1" step="1" style="width:70px"></label>
+  <button class="b o" type="button" id="smRand">Đổi ngẫu nhiên</button>
+</div>
+<div class="ctrl" id="smMeth"></div>
+<svg class="svgbox" id="smSvg" viewBox="0 0 720 300" role="img" aria-label="Quỹ đạo vị trí theo thời gian của các cách nối chunk"></svg>
+<div class="tw"><table class="t" id="smTab"></table></div>
+<p style="font-size:.86rem;color:var(--muted);margin:.4em 0 0">Trục ngang là <b>bước thực thi</b> (bỏ các khoảng dừng của đồng bộ), giống trục "Controller steps" ở Hình 6 trên của paper. Vạch đứng mờ: lúc đổi chunk của cách đang chọn. "Giật" = |gia tốc| lớn nhất (sai phân bậc 2 của vị trí, tính theo thời gian thực, nên các lần dừng của đồng bộ cũng tính). Đây là mô phỏng đồ chơi để thấy hiện tượng, <b>không phải số của paper</b>.</p>
+</div>
+<details class="more"><summary>Xem chi tiết: mô hình đồ chơi trong mô phỏng</summary>
+<p>Tại quan sát (thời điểm t, vị trí x), phân phối chunk là hỗn hợp hai Gaussian: mode "trên" và "dưới". Trung bình mode k: \(\mu_k[i] = k\cdot b(t+i) + (x - k\,b(t))\,e^{-(i+1)/3}\), trong đó \(b\) là một cái "bướu" quanh vật cản; xác suất chọn mode trên là sigmoid(12x) (đang ở trên thì nhiều khả năng tiếp tục đi trên). Trong mỗi mode, các hành động biến thiên <b>có tương quan</b> (một độ lệch mượt chung cho cả chunk), giống quỹ đạo thật.</p>
+<p>Vì phân phối là Gaussian, vận tốc flow tối ưu tính được chính xác: \(\widehat{\mathbf A}^1 = \mathbb E[\mathbf A \mid \mathbf A^\tau]\) và \(v = (\widehat{\mathbf A}^1 - \mathbf A^\tau)/(1-\tau)\). Đây là "mô hình hoàn hảo" thay cho mạng nơ-ron, nên mọi khác biệt giữa các cách chỉ đến từ <b>cách nối</b>.</p>
+<p>Một nhận xét đáng giá: ở τ = 0, đầu vào là nhiễu thuần nên mô hình hoàn hảo cho cùng một \(\widehat{\mathbf A}^1\) với mọi đầu vào, Jacobian bằng 0, và guidance ở bước đầu không có tác dụng (đổi β không đổi gì trong mô phỏng này). Với mạng thật thì Jacobian khác 0 và β có tác dụng (Hình 7 của paper).</p>
+</details>
+<div class="co note"><b class="t">Nên thấy gì khi bấm</b>
+(1) Bất đồng bộ ngây thơ giật mạnh dần khi tăng d. (2) TE ít giật nhưng hay chạm vật cản vì lấy trung bình hai mode. (3) Đồng bộ mượt về vị trí nhưng tốn thêm d bước dừng mỗi chunk. (4) RTC mềm ít giật nhất và không đổi mode giữa chừng; RTC cứng (chỉ khớp d bước) ở giữa. Mô phỏng không hoàn hảo: thử vài hạt giống, sẽ có lần RTC vẫn hỏng, đúng như paper nói "ΠGDM correction is not perfect".</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="sec" id="method">
+<h2>6. Phương pháp (Sec 3) <span class="lv m">Phải nắm</span></h2>
+
+<h3 id="idea">6.1 Ý chính: biến việc nối chunk thành inpainting (Sec 3, Hình 3) <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec 3)</span>"The first d actions from the new chunk cannot be used, since those timesteps will have already passed by the time the new chunk becomes available. Thus, it makes sense to 'freeze' those actions to the values that we know will be executed; our goal is then to fill in the remainder of the new chunk in a way that is consistent with this frozen prefix."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Chunk mới có H ô. d ô đầu đã "bị định đoạt" (chunk cũ sẽ chạy chúng trong lúc chờ), nên điền sẵn chúng bằng giá trị của chunk cũ. Việc của mô hình là điền phần còn lại cho liền mạch, vẫn dùng quan sát mới để phản ứng.</div></div>
+
+<p>Hình 3 trong PDF chia chunk mới (H = 16, d = 4, s = 5) thành ba vùng. Widget ở mục 6.4 vẽ lại hình này với số bạn chọn.</p>
+<div class="tw"><table class="t">
+<tr><th>Vùng</th><th>Chỉ số i (chunk mới)</th><th>Ý nghĩa</th><th>Trọng số W</th></tr>
+<tr><td><b>Đóng băng</b></td><td>0 … d−1</td><td>Chắc chắn sẽ chạy từ chunk cũ trong lúc chờ</td><td>1</td></tr>
+<tr><td><b>Vùng giữa</b></td><td>d … H−s−1 (H − d − s ô)</td><td>Chunk cũ có kế hoạch cho các bước này, nhưng chunk mới được phép sửa</td><td>giảm dần từ 1 về 0 (hàm mũ)</td></tr>
+<tr><td><b>Mới hoàn toàn</b></td><td>H−s … H−1 (s ô)</td><td>Vượt quá cuối chunk cũ, không có gì để khớp</td><td>0</td></tr>
+</table></div>
+<p>Vì sao vùng cuối dài đúng s? Chunk cũ đã chạy s hành động trước khi bắt đầu tính, nên phần còn lại của nó chỉ dài H − s; chunk mới dài H nên dư ra s ô ở cuối.</p>
+
+<h3 id="pigdm">6.2 Dẫn công thức ΠGDM từng bước (Sec 3.1, Eq. 1–4) <span class="lv m">Phải nắm</span></h3>
+<p>Paper chỉ đưa ra công thức cuối và dẫn nguồn (Pokle et al., Song et al.). Phần dưới dẫn lại theo 5 bước, mỗi bước một ví dụ số tính tay được. Quy ước τ ở đây là của paper: <b>τ = 0 nhiễu, τ = 1 sạch</b>.</p>
+
+<h4>Bước 1. Đường đi từ nhiễu tới chunk sạch</h4>
+<p>Paper RTC không viết loss huấn luyện, nhưng dùng flow matching chuẩn (π0; paper RTC training-time viết rõ ở Eq. 1). Điểm trung gian và vận tốc mục tiêu:</p>
+\[\mathbf A^\tau = \tau\,\mathbf A + (1-\tau)\,\boldsymbol\epsilon,\qquad \boldsymbol\epsilon\sim\mathcal N(\mathbf 0,\mathbf I),\qquad \text{vận tốc đúng} = \frac{d\mathbf A^\tau}{d\tau} = \mathbf A - \boldsymbol\epsilon.\]
+<p><b>Ví dụ:</b> một hành động sạch A = 0,6, nhiễu ε = −1,2. Ở τ = 0,4: \(\mathbf A^\tau = 0{,}4\cdot0{,}6 + 0{,}6\cdot(-1{,}2) = -0{,}48\). Vận tốc đúng = 0,6 − (−1,2) = 1,8.</p>
+
+<h4>Bước 2. Suy luận bằng Euler (Eq. 1)</h4>
+\[\mathbf A_t^{\tau+\frac1n} = \mathbf A_t^\tau + \frac1n\,\mathbf v_\pi(\mathbf A_t^\tau, \mathbf o_t, \tau).\]
+<p>Bắt đầu \(\mathbf A^0\) là nhiễu, đi n bước, mỗi bước dài 1/n. <b>Ví dụ</b> (n = 5, mạng đoán đúng v = 1,8): −1,2 → −0,84 → −0,48 → −0,12 → 0,24 → <b>0,6</b>.</p>
+
+<h4>Bước 3. "Nếu đi thẳng một mạch thì ra gì?" (Eq. 3)</h4>
+\[\widehat{\mathbf A}_t^1 = \mathbf A_t^\tau + (1-\tau)\,\mathbf v(\mathbf A_t^\tau, \mathbf o_t, \tau).\]
+<p>Từ vị trí hiện tại, đi tiếp phần thời gian còn lại (1 − τ) với vận tốc hiện tại, ta đoán được chunk sạch cuối cùng. Nếu v đúng bằng A − ε thì đoán này chính xác: \(\tau\mathbf A + (1-\tau)\boldsymbol\epsilon + (1-\tau)(\mathbf A-\boldsymbol\epsilon) = \mathbf A\).</p>
+<p><b>Ví dụ:</b> τ = 0,4, \(\mathbf A^\tau = -0{,}48\), v = 1,8 → \(\widehat{\mathbf A}^1 = -0{,}48 + 0{,}6\cdot1{,}8 = 0{,}6\). Với mạng thật, đoán này chỉ gần đúng, nhất là khi τ nhỏ (còn nhiều nhiễu).</p>
+
+<h4>Bước 4. Đo lệch so với chunk cũ, rồi tìm hướng sửa (Eq. 2)</h4>
+<p>Mục tiêu Y là phần còn lại của chunk cũ, đệm thêm s số 0 cho đủ H. Sai số có trọng số và "lực kéo":</p>
+\[\mathbf e = \big(\mathbf Y - \widehat{\mathbf A}_t^1\big)^{\!\top}\operatorname{diag}(\mathbf W),\qquad \mathbf g = \mathbf e\;\frac{\partial \widehat{\mathbf A}_t^1}{\partial \mathbf A_t^\tau}.\]
+<p>Ý nghĩa: g là <b>hướng sửa \(\mathbf A^\tau\) làm sai số \(\tfrac12\sum_i W_i (Y_i - \widehat A^1_i)^2\) giảm nhanh nhất</b> (đúng bằng trừ gradient của đại lượng đó). Ô nào W = 0 thì không đóng góp. Jacobian \(\partial\widehat{\mathbf A}^1/\partial\mathbf A^\tau\) cho biết "đổi đầu vào một chút thì chunk đoán được đổi thế nào"; nhân với e chính là vector–Jacobian product, một lần backward.</p>
+<p><b>Ví dụ 1 chiều:</b> τ = 0,2, \(A^\tau = 0{,}3\), mạng cho v = 0,5 và \(\partial v/\partial A^\tau = -0{,}5\); chunk cũ Y = 0,9; ô đóng băng W = 1.</p>
+<ol class="steps">
+<li>\(\widehat A^1 = 0{,}3 + 0{,}8\cdot0{,}5 = 0{,}7\).</li>
+<li>e = 1 · (0,9 − 0,7) = 0,2.</li>
+<li>Jacobian \(\partial \widehat A^1/\partial A^\tau = 1 + (1-\tau)\,\partial v/\partial A^\tau\), tức là 1 + 0,8 · (−0,5) = 0,6. Vậy g = 0,2 · 0,6 = 0,12.</li>
+</ol>
+
+<h4>Bước 5. Nhân hệ số, kẹp trần, cộng vào vận tốc (Eq. 2, 4; Algorithm 1 dòng 29)</h4>
+\[\mathbf v_{\Pi\text{GDM}} = \mathbf v + \min\!\Big(\beta,\; \frac{1-\tau}{\tau\, r_\tau^2}\Big)\,\mathbf g,\qquad r_\tau^2 = \frac{(1-\tau)^2}{\tau^2 + (1-\tau)^2},\qquad \mathbf A^{\tau+\frac1n} = \mathbf A^\tau + \frac1n\,\mathbf v_{\Pi\text{GDM}}.\]
+<p>Rút gọn hệ số: \(\dfrac{1-\tau}{\tau r_\tau^2} = \dfrac{\tau^2 + (1-\tau)^2}{\tau(1-\tau)}\). Với τ = 0,2: \(\dfrac{0{,}04 + 0{,}64}{0{,}16} = 4{,}25\).</p>
+<p><b>Ví dụ (tiếp):</b> \(v_{\Pi\text{GDM}} = 0{,}5 + 4{,}25\cdot0{,}12 = 1{,}01\). Bước Euler: \(0{,}3 + 0{,}2\cdot1{,}01 = 0{,}502\), so với không dẫn hướng \(0{,}3 + 0{,}2\cdot0{,}5 = 0{,}4\). Điểm hiện tại bị kéo lên phía 0,9.</p>
+
+<div class="widget" id="wStep">
+<h4>Tính một bước dẫn hướng (1 chiều)</h4>
+<div class="ctrl">
+  <label>τ <input type="number" id="stTau" value="0.2" min="0" max="0.99" step="0.1" style="width:70px"></label>
+  <label>A<sup>τ</sup> <input type="number" id="stA" value="0.3" step="0.1" style="width:70px"></label>
+  <label>v <input type="number" id="stV" value="0.5" step="0.1" style="width:70px"></label>
+  <label>∂v/∂A <input type="number" id="stDv" value="-0.5" step="0.1" style="width:70px"></label>
+  <label>Y <input type="number" id="stY" value="0.9" step="0.1" style="width:70px"></label>
+  <label>W <input type="number" id="stW" value="1" min="0" max="1" step="0.1" style="width:60px"></label>
+  <label>β <input type="number" id="stB" value="5" min="0" step="1" style="width:60px"></label>
+  <label>n <input type="number" id="stN" value="5" min="1" step="1" style="width:60px"></label>
+</div>
+<div class="out" id="stOut"></div>
+</div>
+
+<details class="more"><summary>Xem chi tiết: hệ số \((1-\tau)/(\tau r_\tau^2)\) từ đâu ra</summary>
+<p>Đây là phần "Nên biết", không bắt buộc. ΠGDM giả sử: biết \(\mathbf A^\tau\) thì chunk sạch thật phân bố gần như \(\mathcal N(\widehat{\mathbf A}^1, r_\tau^2\mathbf I)\). Với dữ liệu chuẩn hóa phương sai 1, phương sai đó đúng bằng \(r_\tau^2 = \frac{(1-\tau)^2}{\tau^2+(1-\tau)^2}\): τ nhỏ thì \(r^2 \approx 1\) (rất mù), τ gần 1 thì \(r^2 \approx 0\) (gần như chắc).</p>
+<ol class="steps">
+<li><b>Lực kéo trong "không gian score".</b> Log-xác suất của việc chunk sạch khớp Y là \(-\frac{1}{2r_\tau^2}\|\mathbf Y - \widehat{\mathbf A}^1\|^2_{\mathbf W}\) (bỏ hằng số). Đạo hàm theo \(\mathbf A^\tau\): \(\frac{1}{r_\tau^2}\,\mathbf g\). Đây là phần cần cộng vào score \(\nabla\log p_\tau\).</li>
+<li><b>Đổi score sang vận tốc.</b> Với đường \(\mathbf A^\tau=\tau\mathbf A+(1-\tau)\boldsymbol\epsilon\), công thức Tweedie cho \(\widehat{\mathbf A}^1 = \frac{\mathbf A^\tau + (1-\tau)^2\nabla\log p_\tau}{\tau}\), và \(\mathbf v = \frac{\widehat{\mathbf A}^1 - \mathbf A^\tau}{1-\tau} = \frac{\mathbf A^\tau}{\tau} + \frac{1-\tau}{\tau}\nabla\log p_\tau\). Vậy cộng Δ vào score thì vận tốc tăng \(\frac{1-\tau}{\tau}\Delta\).</li>
+<li><b>Ghép lại:</b> vận tốc tăng \(\frac{1-\tau}{\tau}\cdot\frac{1}{r_\tau^2}\,\mathbf g\), đúng hệ số trong Eq. 2.</li>
+</ol>
+<p>Phần dẫn này là mình tự viết để giải thích (theo cách ΠGDM thường được trình bày), paper RTC không viết ra. Nếu mentor hỏi sâu, nói "hệ số đổi từ guidance trên score sang guidance trên vận tốc, chia cho độ bất định \(r_\tau^2\)" là đủ.</p>
+</details>
+
+<details class="more"><summary>Xem chi tiết: bảng ký hiệu kèm shape</summary>
+<div class="tw"><table class="t">
+<tr><th>Ký hiệu</th><th>Nghĩa</th><th>Shape</th><th>π0.5 thật</th></tr>
+<tr><td>\(\mathbf o_t\)</td><td>Quan sát lúc bắt đầu tính (ảnh, câu lệnh, trạng thái)</td><td>—</td><td>—</td></tr>
+<tr><td>\(\mathbf A^\tau_t\)</td><td>Chunk đang khử nhiễu ở mức τ</td><td>(H, M)</td><td>(50, M)</td></tr>
+<tr><td>\(\mathbf v_\pi\)</td><td>Vận tốc action expert dự đoán</td><td>(H, M)</td><td>(50, M)</td></tr>
+<tr><td>\(\widehat{\mathbf A}^1_t\)</td><td>Đoán chunk sạch (Eq. 3)</td><td>(H, M)</td><td>(50, M)</td></tr>
+<tr><td>\(\mathbf Y\) (\(\mathbf A_{\text{prev}}\) đệm phải)</td><td>Phần còn lại của chunk cũ, đệm 0 tới H</td><td>(H, M); H − s dòng thật</td><td>25 dòng thật nếu s = 25</td></tr>
+<tr><td>\(\mathbf W\)</td><td>Mask/trọng số theo thời gian (Eq. 5), nhân cho mọi chiều hành động</td><td>(H,) → broadcast (H, M)</td><td>(50,)</td></tr>
+<tr><td>\(\mathbf e,\ \mathbf g\)</td><td>Sai số có trọng số, lực kéo (VJP)</td><td>(H, M)</td><td>(50, M)</td></tr>
+<tr><td>τ, n, β</td><td>Mức nhiễu, số bước, trần trọng số</td><td>số</td><td>n = 5, β = 5</td></tr>
+<tr><td>H, s, d</td><td>Độ dài chunk, số hành động đã chạy, độ trễ (bước)</td><td>số nguyên</td><td>50, ≥ 25, ≈ 6–16</td></tr>
+</table></div>
+<p>Paper "lạm dụng ký hiệu" (Sec 3.1): coi Y, A, W là vector dài HM để viết gọn tích \(\mathbf e^\top\operatorname{diag}(\mathbf W)\). M (số chiều hành động của π0.5) paper không ghi.</p>
+</details>
+
+<h3 id="beta">6.3 Kẹp trọng số β (Sec 3.1, Phụ lục A.2, Hình 7) <span class="lv s">Nên biết</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết (A.2)</span>"While image inpainting typically uses a high number of denoising steps (e.g., n = 100), control problems often use very few steps (e.g., n = 5 in our experiments). In this case, we found that high guidance weights led to diverging action chunks … we set β to a conservative value of 5."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Hệ số \(\frac{\tau^2+(1-\tau)^2}{\tau(1-\tau)}\) bằng <b>vô cùng</b> ở τ = 0 (bước đầu tiên luôn ở τ = 0), nên bắt buộc phải kẹp. Với ảnh, 100 bước nhỏ thì lực kéo mạnh cũng không sao; với 5 bước lớn, lực kéo quá mạnh làm chunk "văng" (Hình 7 dưới trái), gia tốc lớn tăng theo β (Hình 7 dưới phải: β = 5 → 150 thì gia tốc cực đại ~1,3 → ~3,0 rad/s², đọc từ hình). Ablation Kinetix (Hình 7 trên phải): tăng β quá 5 không thêm lợi ích.</div></div>
+<div class="widget" id="wBeta">
+<h4>Hệ số dẫn hướng theo τ</h4>
+<div class="ctrl">
+  <label>Số bước n = <b id="btNv">5</b> <input type="range" id="btN" min="2" max="20" value="5"></label>
+  <label>β = <b id="btBv">5</b> <input type="range" id="btB" min="1" max="20" value="5" step="0.25"></label>
+</div>
+<svg class="svgbox" id="btSvg" viewBox="0 0 700 230" role="img" aria-label="Đồ thị hệ số dẫn hướng theo tau, có đường kẹp beta"></svg>
+<div class="out" id="btOut"></div>
+</div>
+<p>Với n = 5, các τ được dùng là 0; 0,2; 0,4; 0,6; 0,8. Hệ số chưa kẹp lần lượt là ∞; 4,25; 2,17; 2,17; 4,25. Vậy <b>β ≥ 4,25 chỉ thay đổi bước đầu tiên</b> (đúng như chú thích Hình 7). Paper còn nhắc một cách khác để tránh vô cùng ở τ = 0: bắt đầu khử nhiễu từ τ > 0 (như Pokle et al.), nhưng họ không thử (footnote 2).</p>
+
+<h3 id="soft">6.4 Soft masking (Sec 3.2, Eq. 5, Hình 3–4) <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec 3.2)</span>"Naively inpainting using only the first d timesteps of the previous action chunk is often insufficient to ensure that the new chunk takes a consistent strategy, particularly when d is small … The ΠGDM correction is not perfect, and a small d leads to a weak guidance signal."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Nếu chỉ khớp d bước (hard masking) và d nhỏ (ví dụ 1–2 bước), lực kéo quá yếu: chunk mới vẫn có thể đổi chiến lược ngay sau phần đóng băng. Giải pháp: khớp <b>toàn bộ H − s</b> bước chồng lấn, nhưng các bước xa hơn khớp lỏng hơn, vì tương lai càng xa càng bất định và mô hình cần chỗ để phản ứng.</div></div>
+\[W_i = \begin{cases}1 & i &lt; d\\[2pt] c_i\,\dfrac{e^{c_i}-1}{e-1} & d \le i &lt; H-s\\[6pt] 0 & i \ge H-s\end{cases}\qquad c_i = \frac{H-s-i}{H-s-d+1},\quad i\in\{0,\dots,H-1\}.\]
+<p><b>Ví dụ tính tay</b> (H = 8, d = 2, s = 3): H − s = 5, mẫu số H − s − d + 1 = 4.</p>
+<div class="tw"><table class="t">
+<tr><th>i</th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th></tr>
+<tr><td>vùng</td><td>đóng băng</td><td>đóng băng</td><td>giữa</td><td>giữa</td><td>giữa</td><td>mới</td><td>mới</td><td>mới</td></tr>
+<tr><td>\(c_i\)</td><td class="num">—</td><td class="num">—</td><td class="num">3/4</td><td class="num">2/4</td><td class="num">1/4</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>\(W_i\)</td><td class="num">1</td><td class="num">1</td><td class="num">0,488</td><td class="num">0,189</td><td class="num">0,041</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+</table></div>
+<p>Kiểm một ô: i = 2 → \(c = 0{,}75\), \(e^{0{,}75} - 1 = 1{,}117\), chia \(e - 1 = 1{,}718\) được 0,650, nhân 0,75 ra <b>0,488</b>. Chú ý W tụt ngay từ 1 xuống 0,488 ở ô đầu vùng giữa, không giảm từ từ từ 1.</p>
+<div class="widget" id="wSoft">
+<h4>Vẽ lại Hình 3 với số của bạn</h4>
+<div class="ctrl">
+  <label>H = <b id="sfHv">16</b> <input type="range" id="sfH" min="6" max="50" value="16"></label>
+  <label>d = <b id="sfDv">4</b> <input type="range" id="sfD" min="0" max="25" value="4"></label>
+  <label>s = <b id="sfSv">5</b> <input type="range" id="sfS" min="1" max="25" value="5"></label>
+  <label>Kiểu giảm <select id="sfMode"><option value="exp">Hàm mũ (paper)</option><option value="lin">Tuyến tính</option><option value="none">Không giảm</option><option value="hard">Hard masking</option></select></label>
+</div>
+<svg class="svgbox" id="sfSvg" viewBox="0 0 720 190" role="img" aria-label="Các ô hành động của chunk mới và trọng số W"></svg>
+<div class="out" id="sfOut"></div>
+</div>
+<p>Bằng chứng soft masking có ích: Hình 5 phải (RTC cứng thấp hơn RTC mềm, rõ nhất ở d = 1–2) và Hình 4 (hard masking không khớp tốt vùng đóng băng, đổi hướng nhanh hơn). Phụ lục A.4, Hình 8 trái so 4 kiểu giảm: hàm mũ tốt nhất, tuyến tính sát ngay sau. Hai kiểu "không giảm" và "giảm ngay" (hard) thấp hơn (đọc từ hình; paper chỉ nói rõ thứ tự của hai kiểu đầu).</p>
+
+<h3 id="flip">6.5 Lật sang quy ước Qwen-VLA (τ = 1 nhiễu) <span class="lv m">Phải nắm</span></h3>
+<p>Qwen-VLA: \(\mathbf Y_{\tau_q} = (1-\tau_q)\mathbf Y_0 + \tau_q\mathbf Y_1\) với \(\mathbf Y_1\) là nhiễu, mạng học \(\mathbf v_q = \mathbf Y_1 - \mathbf Y_0\) (nhiễu − sạch), suy luận đi từ \(\tau_q = 1\) về 0 bằng cách <b>trừ</b>. Đặt \(\tau = 1-\tau_q\) thì hai quy ước là một, với \(\mathbf v_q = -\mathbf v\).</p>
+<div class="tw"><table class="t">
+<tr><th>Đại lượng</th><th>RTC (τ = 0 nhiễu)</th><th>Qwen-VLA (τ<sub>q</sub> = 1 nhiễu)</th></tr>
+<tr><td>Bắt đầu / kết thúc</td><td>τ: 0 → 1</td><td>τ<sub>q</sub>: 1 → 0</td></tr>
+<tr><td>Vận tốc mạng học</td><td>\(\mathbf A - \boldsymbol\epsilon\)</td><td>\(\boldsymbol\epsilon - \mathbf A\) (ngược dấu)</td></tr>
+<tr><td>Đoán chunk sạch</td><td>\(\mathbf A^\tau + (1-\tau)\mathbf v\)</td><td>\(\mathbf Y_{\tau_q} - \tau_q\,\mathbf v_q\)</td></tr>
+<tr><td>Hệ số dẫn hướng</td><td>\(\min\big(\beta, \frac{\tau^2+(1-\tau)^2}{\tau(1-\tau)}\big)\)</td><td>cùng công thức, thay \(\tau = 1-\tau_q\) (đối xứng nên đổi chỗ τ và 1−τ không đổi giá trị)</td></tr>
+<tr><td>Bước Euler có dẫn hướng</td><td>\(\mathbf A \leftarrow \mathbf A + \frac1n(\mathbf v + w\,\mathbf g)\)</td><td>\(\mathbf Y \leftarrow \mathbf Y - \frac1n(\mathbf v_q - w\,\mathbf g)\)</td></tr>
+</table></div>
+<div class="co warn"><b class="t">Bẫy dấu</b>Với Qwen-VLA, guidance phải <b>trừ khỏi</b> \(\mathbf v_q\) (vì cả bước Euler đã mang dấu trừ). Viết nhầm thành \(\mathbf v_q + w\mathbf g\) sẽ đẩy chunk ra <b>xa</b> chunk cũ. Code PyTorch ở mục 7.3 có cả hai phiên bản và kiểm rằng chúng cho kết quả giống hệt nhau. Hệ số w tự nó đối xứng: w(τ) = w(1 − τ), nên chỉ cần lo dấu của g và v.</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="sec" id="algo">
+<h2>7. Thuật toán & code (Sec 3.3, Algorithm 1) <span class="lv m">Phải nắm</span></h2>
+
+<h3 id="alg1">7.1 Hai luồng chạy song song <span class="lv s">Nên biết</span></h3>
+<p>Algorithm 1 có hai phần chạy đồng thời, chia sẻ biến qua một khóa (mutex) và một biến điều kiện:</p>
+<div class="two">
+<div class="co note"><b class="t">GetAction (luồng điều khiển, mỗi Δt)</b>Tăng bộ đếm t, cất quan sát mới nhất vào \(\mathbf o_{\text{cur}}\), báo cho luồng kia, trả về \(\mathbf A_{\text{cur}}[t-1]\). Luồng này không bao giờ chờ mô hình.</div>
+<div class="co note"><b class="t">InferenceLoop (luồng nền, lặp mãi)</b>Chờ tới khi đã chạy ít nhất \(s_{\min}\) hành động. Đặt s = t, cắt \(\mathbf A_{\text{prev}} = \mathbf A_{\text{cur}}[s:H]\), lấy quan sát, ước lượng d = max của hàng đợi độ trễ. Nhả khóa, gọi GuidedInference, lấy khóa lại, đổi chunk, đặt t ← t − s, ghi độ trễ vừa đo (chính là t mới) vào hàng đợi.</div>
+</div>
+<details class="more"><summary>Xem chi tiết: theo dõi bộ đếm t qua một vòng (vì sao s = max(d, s<sub>min</sub>))</summary>
+<ol class="steps">
+<li>Chunk hiện tại vừa được đổi vào, t = d<sub>trước</sub> (đã chạy d<sub>trước</sub> hành động của nó trong lúc nó còn đang được tính, nhưng lấy từ chunk trước đó). Lưu ý: chỉ số 0 của mỗi chunk ứng với lúc <b>bắt đầu tính</b> chunk đó.</li>
+<li>Luồng nền chờ tới khi t ≥ s<sub>min</sub>. Nếu d<sub>trước</sub> đã ≥ s<sub>min</sub> thì không phải chờ. Vậy s = max(d<sub>trước</sub>, s<sub>min</sub>). Sec 3.3 viết "the actual horizon for a given chunk is max(d, s<sub>min</sub>) where d is the delay encountered when computing the <i>next</i> chunk". Cách gọi tên d trong câu này hơi khác cách mình lần theo code giả; mình hiểu là cùng một ý, nhưng nên tự đối chiếu với Algorithm 1 dòng 13–14 và 21–22.</li>
+<li>Trong lúc tính (d bước), luồng điều khiển tiếp tục lấy \(\mathbf A_{\text{cur}}[s], \dots, [s+d-1]\) từ chunk cũ. t tăng lên s + d.</li>
+<li>Đổi chunk; t ← t − s = d. Bước kế tiếp robot chạy \(\mathbf A_{\text{new}}[d]\): đúng ô đầu tiên sau vùng đóng băng. d hành động đầu của chunk mới không bao giờ được chạy.</li>
+<li>Ghi d vừa đo vào hàng đợi dài b = 10; lần sau dùng max của hàng đợi, tức là <b>ước lượng thận trọng</b> (đề phòng lần sau chậm hơn).</li>
+</ol>
+</details>
+
+<h3 id="guided">7.2 GuidedInference: code giả cạnh vòng của Qwen-VLA <span class="lv m">Phải nắm</span></h3>
+<div class="two">
+<div>
+<p><b>Vòng khử nhiễu thường</b> (kiểu Qwen-VLA, τ<sub>q</sub>: 1 → 0)</p>
+<pre><code>Y = randn(H, K)                 # nhiễu
+for k in range(n):
+    tq = 1 - k/n
+    v  = expert(Y, vlm_feats, tq)
+    Y  = Y - (1/n) * v          # trừ
+return Y                        # chunk sạch</code></pre>
+<p style="font-size:.88rem;color:var(--muted)">n: paper Qwen-VLA chỉ ghi "a few"; cần đọc code. Đặc trưng VLM tính một lần trước vòng.</p>
+</div>
+<div>
+<p><b>RTC GuidedInference</b> (Algorithm 1, dòng 23–29; quy ước paper)</p>
+<pre><code>W = soft_mask(H, d, s)            # Eq. 5
+Y = pad_right(A_prev, H)          # mục tiêu
+A = randn(H, M)                   # τ = 0
+for k in range(n):
+    τ = k/n
+    v    = expert(A, feats, τ)            # cần grad theo A
+    A1   = A + (1-τ)*v                    # Eq. 3
+    e    = (Y - A1) * W                   # Eq. 2
+    g    = vjp(A1 wrt A, e)               # 1 backward
+    w    = min(β, (1-τ)/(τ*r2(τ)))        # Eq. 2, 4
+    A    = A + (1/n)*(v + w*g)            # Eq. 1
+return A</code></pre>
+</div>
+</div>
+<p>Khác biệt duy nhất nằm ở 4 dòng giữa. Prefill VLM vẫn tính một lần (Bảng 3 phụ lục: prefill 44 ms không đổi khi thêm RTC); gradient chỉ cần đi ngược qua <b>action expert</b>. Đây là suy luận của mình từ Bảng 3, paper không viết thành câu.</p>
+
+<h3 id="torch">7.3 Code PyTorch giản lược chạy được <span class="lv s">Nên biết</span></h3>
+<div class="co warn"><b class="t">Không phải code của tác giả</b>Code chính thức (phần mô phỏng) viết bằng JAX: <a href="https://github.com/Physical-Intelligence/real-time-chunking-kinetix">Physical-Intelligence/real-time-chunking-kinetix</a>. Đoạn dưới viết lại cho dễ học, dùng một MLP đồ chơi làm "action expert". Mình đã chạy thử trên CPU (PyTorch 2.x): in ra W = [1, 1, 0,488, 0,189, 0,041, 0, 0, 0], hai quy ước cho kết quả <code>True</code>, và vùng đóng băng lệch 3,709 (không dẫn hướng) so với 0,011 (RTC).</div>
+<details class="more"><summary>Mở code (khoảng 90 dòng)</summary>
+<pre><code id="torchCode"># RTC inference-time, phiên bản giản lược để học (KHÔNG phải code của tác giả).
+# Chạy được trên CPU với tensor nhỏ. Quy ước như paper RTC: tau = 0 nhiễu, tau = 1 sạch.
+import math
+import torch
+
+torch.manual_seed(0)
+H, M = 8, 2            # H: số bước trong chunk, M: số chiều mỗi hành động
+
+
+class ToyVelocity(torch.nn.Module):
+    """Mạng vận tốc v(A_tau, o, tau) đồ chơi: MLP trên chunk đã làm phẳng."""
+    def __init__(self):
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            torch.nn.Linear(H * M + 1 + 4, 64), torch.nn.Tanh(),
+            torch.nn.Linear(64, H * M))
+
+    def forward(self, A, obs, tau):          # A: (H, M), obs: (4,), tau: float
+        x = torch.cat([A.reshape(-1), obs, torch.tensor([tau])])
+        return self.net(x).reshape(H, M)
+
+
+def soft_mask(H, d, s):
+    """Eq. 5: 1 với i &lt; d, giảm theo hàm mũ tới 0, bằng 0 với i &gt;= H - s."""
+    W = torch.zeros(H)
+    for i in range(H):
+        if i &lt; d:
+            W[i] = 1.0
+        elif i &lt; H - s:
+            c = (H - s - i) / (H - s - d + 1)
+            W[i] = c * (math.exp(c) - 1) / (math.e - 1)
+    return W
+
+
+def guidance_weight(tau, beta):
+    """min(beta, (1 - tau) / (tau * r^2)), r^2 = (1-tau)^2 / (tau^2 + (1-tau)^2)."""
+    if tau == 0:
+        return beta
+    r2 = (1 - tau) ** 2 / (tau ** 2 + (1 - tau) ** 2)
+    return min(beta, (1 - tau) / (tau * r2))
+
+
+def guided_inference(v, obs, A_prev, d, s, n=5, beta=5.0):
+    """Algorithm 1, dòng 23-29. A_prev: (H - s, M) phần còn lại của chunk cũ."""
+    W = soft_mask(H, d, s)[:, None]                       # (H, 1)
+    Y = torch.cat([A_prev, torch.zeros(s, M)])           # đệm phải tới (H, M)
+    A = torch.randn(H, M)                                 # A^0 ~ N(0, I)
+    for k in range(n):
+        tau = k / n
+        A_in = A.detach().requires_grad_(True)
+        vel = v(A_in, obs, tau)                           # v_pi(A^tau, o, tau)
+        A1_hat = A_in + (1 - tau) * vel                   # Eq. 3: đoán chunk sạch
+        e = (Y - A1_hat) * W                              # Eq. 2: sai số có trọng số
+        # vector-Jacobian product: g = e^T dA1_hat/dA_tau (một lần backward)
+        (g,) = torch.autograd.grad(A1_hat, A_in, grad_outputs=e)
+        A = A + (1 / n) * (vel.detach() + guidance_weight(tau, beta) * g)  # Eq. 1
+    return A.detach()
+
+
+def guided_inference_qwen(vq, obs, A_prev, d, s, n=5, beta=5.0):
+    """Cùng thuật toán, viết theo quy ước Qwen-VLA: tau_q = 1 nhiễu, tau_q = 0 sạch,
+    mạng học vq = nhiễu - sạch, Euler đi từ tau_q = 1 về 0 và TRỪ vận tốc."""
+    W = soft_mask(H, d, s)[:, None]
+    Y = torch.cat([A_prev, torch.zeros(s, M)])
+    Yt = torch.randn(H, M)                                # bắt đầu ở tau_q = 1
+    for k in range(n):
+        tq = 1 - k / n                                    # 1, 0.8, ..., 0.2
+        Y_in = Yt.detach().requires_grad_(True)
+        vel = vq(Y_in, obs, tq)
+        Y0_hat = Y_in - tq * vel                          # đoán sạch: Y - tau_q * v
+        e = (Y - Y0_hat) * W
+        (g,) = torch.autograd.grad(Y0_hat, Y_in, grad_outputs=e)
+        w = guidance_weight(1 - tq, beta)                 # trọng số tính theo tau RTC
+        Yt = Yt - (1 / n) * (vel.detach() - w * g)        # chú ý dấu trừ
+    return Yt.detach()
+
+
+if __name__ == "__main__":
+    v = ToyVelocity()
+    vq = lambda Y, o, tq: -v(Y, o, 1 - tq)                # cùng một mạng, đổi quy ước
+    obs = torch.randn(4)
+    d, s = 2, 3
+    A_prev = torch.randn(H - s, M)
+    print("W =", [round(x, 3) for x in soft_mask(H, d, s).tolist()])
+
+    torch.manual_seed(1); A_rtc = guided_inference(v, obs, A_prev, d, s)
+    torch.manual_seed(1); A_q = guided_inference_qwen(vq, obs, A_prev, d, s)
+    print("Hai quy ước cho cùng kết quả:", torch.allclose(A_rtc, A_q, atol=1e-5))
+
+    # So với không dẫn hướng (naive async): khoảng cách tới chunk cũ ở vùng đóng băng
+    def naive(seed):
+        torch.manual_seed(seed); A = torch.randn(H, M)
+        for k in range(5):
+            A = A + 0.2 * v(A, obs, k / 5).detach()
+        return A
+    torch.manual_seed(1); A_rtc = guided_inference(v, obs, A_prev, d, s)
+    A_nv = naive(1)
+    print("Lệch vùng đóng băng, naive:", round((A_nv[:d] - A_prev[:d]).norm().item(), 3),
+          "| RTC:", round((A_rtc[:d] - A_prev[:d]).norm().item(), 3))
+</code></pre>
+</details>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="sec" id="results">
+<h2>8. Thí nghiệm & kết quả (Sec 4, Phụ lục A.2–A.5) <span class="lv m">Phải nắm</span></h2>
+<p>Paper hỏi 3 câu: (1) RTC so với các cách khác thế nào trong môi trường động, khi độ trễ tăng? (2) Soft masking quan trọng tới đâu? (3) RTC ảnh hưởng thế nào tới <b>cả</b> độ chính xác <b>lẫn</b> tốc độ trên robot thật?</p>
+<div class="co warn"><b class="t">Về độ chính xác của các con số</b>Kết quả chính của paper nằm trong <b>biểu đồ</b> (Hình 5, 6), không có bảng số. Các số có dấu "≈" dưới đây do mình đọc từ ảnh trang PDF phóng to, sai số cỡ ±0,01–0,02. Số trong Bảng 1–4 phụ lục là số chính xác. Khi trình bày, nói "khoảng".</div>
+
+<h3 id="kinetix">8.1 Mô phỏng Kinetix (Sec 4.1, Hình 5) <span class="lv m">Phải nắm</span></h3>
+<div class="tw"><table class="t">
+<tr><th>Thiết lập</th><th>Chi tiết (từ PDF)</th></tr>
+<tr><td>Vì sao tự làm benchmark</td><td>Các benchmark mô phỏng phổ biến gần như "tĩnh" (quasi-static): chạy chunk dài vẫn gần 100%. Kinetix điều khiển bằng <b>lực</b>, không có "đứng yên giữ vị trí", nên độ trễ buộc phải chạy bất đồng bộ</td></tr>
+<tr><td>Tác vụ</td><td>12 môi trường động (10 có sẵn + 2 mới): ném, bắt, giữ thăng bằng… Mục tiêu chung: đưa vật xanh lá chạm vật xanh dương. Thêm nhiễu Gaussian vào hành động để buộc phải sửa vòng kín</td></tr>
+<tr><td>Dữ liệu</td><td>Mỗi môi trường: 6 policy chuyên gia huấn luyện bằng RPO (thưởng nhị phân), 1 triệu transition, mỗi episode một chuyên gia khác (nên dữ liệu đa mode)</td></tr>
+<tr><td>Policy</td><td>Flow matching, H = 8, MLP-Mixer 4 lớp, 32 epoch; n = 5, β = 5 (Bảng 4)</td></tr>
+<tr><td>Đánh giá</td><td>Tỉ lệ giải được, 2048 lượt mỗi điểm, khoảng tin cậy Wilson 95%. Độ trễ giả lập d = 0 … 4 (4 là tối đa khi H = 8), giữ cố định trong mỗi thí nghiệm</td></tr>
+<tr><td>Baseline</td><td>Naive async; BID (N = 32, K = 3, checkpoint 8 epoch làm "weak policy"); TE</td></tr>
+</table></div>
+<div class="widget" id="wKin">
+<h4>Hình 5 phải: tỉ lệ giải được trung bình 12 môi trường (s = max(d, 1))</h4>
+<div class="ctrl" id="kinBtns"></div>
+<div class="bars" id="kinBars"></div>
+<div class="out" id="kinOut"></div>
+</div>
+<ul>
+<li><b>TE kém ở mọi độ trễ</b>, kể cả d = 0 (≈ 0,56 so với ≈ 0,92 của các cách khác): bằng chứng benchmark thật sự đa mode, "averages of valid actions are not necessarily valid".</li>
+<li><b>RTC bền nhất</b> và khoảng cách với BID nới rộng khi d tăng (d = 4: ≈ 0,62 so với ≈ 0,55), dù BID tốn nhiều tính toán hơn hẳn (mỗi lần lấy 64 chunk: 32 từ mô hình mạnh, 32 từ mô hình yếu).</li>
+<li><b>Hard masking thua soft masking</b>, rõ nhất khi d nhỏ (d = 1: ≈ 0,85 so với ≈ 0,89); tới d = 4 thì gần bằng nhau. Khớp với lý lẽ ở mục 6.4: d nhỏ thì tín hiệu dẫn hướng yếu.</li>
+<li><b>Hình 5 dưới trái</b> (cố định d = 1, đổi s từ 1 tới 7): chỉ RTC và BID tăng đều khi s giảm (gọi mô hình thường xuyên hơn = phản ứng nhanh hơn). RTC ≈ 0,89 ở s = 1 → ≈ 0,80 ở s = 7. Naive async lại tụt mạnh ở s = 1 (≈ 0,75): đổi chunk mỗi bước mà không giữ liền mạch thì giật liên tục.</li>
+</ul>
+
+<h3 id="real">8.2 Robot thật với π0.5 (Sec 4.2, Hình 6) <span class="lv m">Phải nắm</span></h3>
+<div class="tw"><table class="t">
+<tr><th>Thiết lập</th><th>Chi tiết (từ PDF)</th></tr>
+<tr><td>Robot</td><td>Hai tay 6 bậc tự do, kẹp song song; 2 tác vụ có đế di động. Điều khiển <b>vị trí</b>, nên đồng bộ là baseline hợp lý (robot đứng được)</td></tr>
+<tr><td>Mô hình</td><td>π0.5 fine-tune cho từng tác vụ (mỗi lần ~24 giờ trên 8×H100). H = 50, Δt = 20 ms, n = 5, β = 5, s<sub>min</sub> = 25, b = 10</td></tr>
+<tr><td>Độ trễ</td><td>Mô hình 76 ms (baseline) / 97 ms (RTC) trên RTX 4090, cộng LAN 10–20 ms → d ≈ 6. Thêm +100 / +200 ms giả lập mô hình to hơn hoặc server xa → d ≈ 11 / 16</td></tr>
+<tr><td>Tác vụ (số bước chấm, giới hạn)</td><td>Thắp nến bằng que diêm (5, 40 s) · Cắm dây ethernet (6, 120 s) · Dọn giường, di động (3, 200 s) · Gấp áo (1, 300 s) · Gấp quần áo từ thùng (4, 300 s) · Bát đĩa vào bồn, di động (8, 300 s)</td></tr>
+<tr><td>Quy mô</td><td>10 lượt mỗi (tác vụ, cách, độ trễ) → 480 episode, 28 giờ robot chạy. Điểm mỗi episode = số bước con hoàn thành, gán nhãn thời điểm sau khi chạy</td></tr>
+<tr><td>Baseline</td><td><b>Đồng bộ</b>: chạy s = 25 rồi dừng chờ. <b>TE thưa</b>: bất đồng bộ s = 25, cộng TE trên đoạn chồng lấn ngắn. <b>TE dày</b>: gọi mô hình liên tục, s = d. Không so BID vì BID với batch 16 chậm 2,3× RTC</td></tr>
+<tr><td>Metric</td><td><b>Throughput</b> = tỉ lệ hoàn thành tác vụ ÷ thời lượng episode, trung bình trên episode (task/phút). Gộp cả tốc độ lẫn chất lượng</td></tr>
+</table></div>
+<p style="font-size:.9rem;color:var(--muted)">Kiểm số episode: RTC và đồng bộ chạy cả 3 độ trễ, hai TE chỉ chạy được +0 ms → (3 + 3 + 1 + 1) × 6 tác vụ × 10 = 480, khớp paper.</p>
+<div class="widget" id="wReal">
+<h4>Hình 6 phải: throughput theo độ trễ thêm vào</h4>
+<div class="ctrl" id="realBtns"></div>
+<div class="bars" id="realBars"></div>
+<div class="out" id="realOut"></div>
+</div>
+<div class="tw"><table class="t">
+<tr><th>Tác vụ (Hình 6 trên, gộp mọi độ trễ, trục = bước thực thi)</th><th class="num">RTC ≈</th><th class="num">Đồng bộ ≈</th></tr>
+<tr><td>Thắp nến (không được thử lại, cần chính xác nhất)</td><td class="num">0,82</td><td class="num">0,66</td></tr>
+<tr><td>Dọn giường (khó nhất, gối khó cầm)</td><td class="num">0,67</td><td class="num">0,45</td></tr>
+<tr><td>Bát đĩa vào bồn</td><td class="num">0,80</td><td class="num">0,75</td></tr>
+<tr><td>Gấp áo</td><td class="num">0,90</td><td class="num">0,88</td></tr>
+<tr><td>Gấp quần áo từ thùng</td><td class="num">0,85</td><td class="num">0,83</td></tr>
+<tr><td>Cắm ethernet</td><td class="num">0,83</td><td class="num">0,82</td></tr>
+</table></div>
+<div class="pv"><div class="p"><span class="lab">Paper viết (Sec 4.2)</span>"RTC helps with more than just execution speed: it completes tasks faster than synchronous inference even when inference pauses are removed."</div>
+<div class="n"><span class="lab">Nghĩa là</span>Hình 6 trên dùng trục <b>bước thực thi</b> (đã cắt bỏ thời gian dừng), vậy mà RTC vẫn tới đích sớm hơn: ít sai, ít phải thử lại. Với 4 tác vụ cho phép thử lại, điểm cuối gần bằng nhau; khác biệt lớn nằm ở thắp nến (không thử lại) và dọn giường. Hình 1: cùng một chuyển động, RTC nhanh hơn đồng bộ 20% và mượt hơn mọi cách khác (khớp vai, 10 giây đầu của một lượt thắp nến).</div></div>
+<div class="co crit"><b class="t">Đọc kỹ trước khi trích</b>Paper nói RTC tốt nhất ở mọi độ trễ, nhưng <b>chỉ có ý nghĩa thống kê ở +100 và +200 ms</b>; ở +0 ms thanh sai số (±1 SEM) của RTC và đồng bộ chồng nhau. Throughput RTC ở +200 ms (≈ 0,88) còn cao hơn ở +0 ms (≈ 0,84): đó là nhiễu thống kê, không phải "trễ hơn thì tốt hơn".</div>
+
+<h3 id="cost">8.3 Độ trễ & chi phí (Phụ lục A.3, Bảng 1–3) <span class="lv s">Nên biết</span></h3>
+<div class="two">
+<div class="tw"><table class="t">
+<tr><th>Bảng 3: thời gian mô hình π0.5 (RTX 4090)</th><th class="num">Không RTC</th><th class="num">Có RTC</th></tr>
+<tr><td>Image encoder (SigLIP)</td><td class="num">18 ms</td><td class="num">18 ms</td></tr>
+<tr><td>Prefill LLM (Gemma 2B)</td><td class="num">44 ms</td><td class="num">44 ms</td></tr>
+<tr><td>Khử nhiễu (× 5 bước)</td><td class="num">14 ms</td><td class="num">35 ms</td></tr>
+<tr class="hl"><td>Tổng</td><td class="num">76 ms</td><td class="num">97 ms</td></tr>
+</table></div>
+<div class="tw"><table class="t">
+<tr><th>Bảng 1: các cách so sánh, áp lên π0.5</th><th class="num">Độ trễ</th></tr>
+<tr><td>RTC</td><td class="num">97 ms</td></tr>
+<tr><td>BID, N = 16, không mô hình phụ</td><td class="num">115 ms</td></tr>
+<tr><td>BID, N = 16, chung backbone</td><td class="num">169 ms</td></tr>
+<tr><td>BID, N = 16, đầy đủ</td><td class="num">223 ms</td></tr>
+<tr><td>π0.5 gốc</td><td class="num">76 ms</td></tr>
+</table></div>
+</div>
+<div class="tw"><table class="t">
+<tr><th>Bảng 2: tổng độ trễ của RTC theo thành phần</th><th class="num">Di động (Intel NUC)</th><th class="num">Bàn cố định (Ryzen 9)</th></tr>
+<tr><td>Mô hình</td><td class="num">96,89 ± 0,16 ms</td><td class="num">97,43 ± 0,28 ms</td></tr>
+<tr><td>Mạng (LAN có dây, WebSocket)</td><td class="num">21,20 ± 3,12 ms</td><td class="num">6,89 ± 2,39 ms</td></tr>
+<tr><td>Resize ảnh (trên CPU robot)</td><td class="num">11,22 ± 5,00 ms</td><td class="num">1,44 ± 0,27 ms</td></tr>
+<tr><td>Khác</td><td class="num">9,67 ± 3,20 ms</td><td class="num">3,00 ± 0,68 ms</td></tr>
+<tr class="hl"><td>Tổng</td><td class="num">138,98 ± 6,71 ms</td><td class="num">108,76 ± 2,34 ms</td></tr>
+</table></div>
+<ul>
+<li>Mỗi bước khử nhiễu chậm <b>2,5×</b> (14 → 35 ms cho 5 bước) vì phải backward. Tổng mô hình chỉ tăng 28% vì phần lớn thời gian là encode ảnh và prefill, phần này không đổi.</li>
+<li>Bảng 1 đo trung bình 10 lần gọi sau 5 lần khởi động, bfloat16. Bảng 2 đo 50 lần gọi trong một lượt chạy thật. Bảng 3 từ một lần profile.</li>
+<li>Cộng thử: 96,89 + 21,20 + 11,22 + 9,67 = 138,98 ✓; 18 + 44 + 35 = 97 ✓. Ở robot di động, mạng + resize + khác (~42 ms) gần bằng một nửa thời gian mô hình: tối ưu mô hình thôi là chưa đủ.</li>
+</ul>
+
+<h3 id="ablation">8.4 Ablation trong phụ lục (A.2, A.4, Hình 7–8) <span class="lv k">Đọc lướt</span></h3>
+<div class="tw"><table class="t">
+<tr><th>Ablation</th><th>Kết quả</th></tr>
+<tr><td>β (Hình 7 trên phải, Kinetix)</td><td>Tăng β từ 1 lên 5 giúp rõ ở d ≥ 1; quá 5 thì không thêm gì. Chọn β = 5 "conservative"</td></tr>
+<tr><td>β trên robot thật (Hình 7 dưới)</td><td>n = 5: β lớn làm chunk lệch hẳn chunk cũ; n = 100 thì ổn. Gia tốc cực đại tăng theo β (325 chunk, d = 15)</td></tr>
+<tr><td>Kiểu giảm W (Hình 8 trái)</td><td>Hàm mũ tốt nhất, tuyến tính rất sát; "không giảm" và hard masking thấp hơn</td></tr>
+<tr><td>Inpainting kiểu Diffuser (Hình 8 phải)</td><td>Ghi đè thẳng phần đóng băng ở mỗi bước khử nhiễu (rẻ hơn, không cần backward): vẫn có ích so với naive, nhưng thua guidance của RTC. Đây chính là ý tưởng mà paper RTC training-time "làm cho đúng" bằng cách huấn luyện</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="sec" id="code">
+<h2>9. Nằm ở đâu trong code <span class="lv m">Phải nắm</span></h2>
+<div class="co warn"><b class="t">Phần này viết theo kiến trúc chung</b>Mình chưa biết codebase của nhóm dùng mô hình nào. Phần dưới mô tả cho khuôn chung "VLM + action expert DiT flow matching", lấy Qwen-VLA và GR00T làm ví dụ. Tên hàm/tham số chỉ là gợi ý để tìm, <b>không</b> phải tên chắc chắn có trong repo. Việc cần làm: hỏi mentor tên codebase.</div>
+<h3>RTC chạm vào hai chỗ</h3>
+<div class="tw"><table class="t">
+<tr><th>Chỗ</th><th>Hiện tại thường là</th><th>RTC đổi thành</th></tr>
+<tr><td><b>Vòng khử nhiễu</b> trong action head (hàm kiểu <code>sample_actions</code>, <code>get_action</code>, <code>predict_action</code>)</td><td>Tính đặc trưng VLM một lần; lặp n bước gọi action expert dưới <code>torch.no_grad()</code>, cộng/trừ v/n</td><td>Thêm tham số <code>A_prev, d, s</code>; bật grad cho đầu vào hành động trong vòng lặp; thêm Eq. 3, sai số có W, VJP, hệ số kẹp β. Đặc trưng VLM vẫn tính một lần, coi là hằng (detach)</td></tr>
+<tr><td><b>Vòng chạy robot</b> (client/server gửi quan sát, nhận chunk)</td><td>Thường đồng bộ: gọi mô hình, chạy s hành động, gọi tiếp</td><td>Luồng điều khiển phát lệnh mỗi Δt; luồng nền gọi mô hình khi đã chạy s<sub>min</sub> bước; đo độ trễ, giữ hàng đợi 10 giá trị, lấy max; đổi chunk ngay khi có, gửi kèm phần còn lại của chunk cũ</td></tr>
+</table></div>
+<h3>Những con số RTC cần</h3>
+<div class="tw"><table class="t">
+<tr><th>Con số</th><th>π0.5 (paper)</th><th>Qwen-VLA</th><th>GR00T N1</th></tr>
+<tr><td>H (chunk)</td><td>50</td><td>16 (thao tác)</td><td>16</td></tr>
+<tr><td>Δt / tần số</td><td>20 ms / 50 Hz</td><td>theo dataset, nằm trong embodiment prompt</td><td>chưa rõ (trang GR00T có ghi 120 Hz là điểm chưa rõ)</td></tr>
+<tr><td>n (bước khử nhiễu)</td><td>5</td><td>"a few": tìm trong code</td><td>4 (theo PDF GR00T, nên kiểm lại)</td></tr>
+<tr><td>δ (độ trễ tổng)</td><td>~109–139 ms</td><td>không báo: phải đo</td><td>63,9 ms chỉ phần mô hình</td></tr>
+<tr><td>s<sub>min</sub>, b, β</td><td>25, 10, 5</td><td>tự chọn: s<sub>min</sub> ≈ H/2 = 8, b = 10, β = 5 là điểm xuất phát hợp lý</td><td>như bên trái</td></tr>
+<tr><td>Ràng buộc</td><td>d ≤ s ≤ H − d → d ≤ 25</td><td>d ≤ 8</td><td>d ≤ 8</td></tr>
+</table></div>
+<div class="co note"><b class="t">Riêng với Qwen-VLA (suy luận của mình, kiểm khi có code)</b>(1) Phải lật dấu như mục 6.5. (2) Qwen-VLA dùng joint self-attention: token VLM nằm chung chuỗi với 16 token hành động trong mọi khối DiT, nên backward cho VJP đi qua cả chuỗi dài đó; chi phí thêm của RTC có thể lớn hơn tỉ lệ 2,5× của π0.5. (3) Qwen-VLA đệm 0 tới K kênh: W chỉ theo thời gian, nhưng nên nhân thêm mask kênh để kênh đệm không gây lực kéo (về lý thuyết chúng bằng 0 ở cả Y lẫn dự đoán nên ảnh hưởng nhỏ).</div>
+<h3>Checklist khi mở codebase: tìm gì trước</h3>
+<div class="chk" id="chk2">
+  <label><input type="checkbox" data-k="k1"><span>Tìm vòng khử nhiễu: grep <code>num_inference|num_steps|denois|euler|sample_actions|get_action</code>. Ghi lại số bước n.</span></label>
+  <label><input type="checkbox" data-k="k2"><span>Xác định quy ước τ: dòng tạo điểm nhiễu (<code>t * noise + (1 - t) * actions</code> hay ngược lại) và mục tiêu vận tốc (<code>noise - actions</code> hay <code>actions - noise</code>), Euler cộng hay trừ.</span></label>
+  <label><input type="checkbox" data-k="k3"><span>Xem đặc trưng VLM có được tính một lần trước vòng lặp không (KV cache / hidden states), và vòng lặp có bọc <code>no_grad</code>/<code>inference_mode</code> không.</span></label>
+  <label><input type="checkbox" data-k="k4"><span>Tìm H và s: <code>action_horizon|chunk_size|n_action_steps|action_steps|replan</code>. Robot chạy bao nhiêu hành động trước khi gọi lại mô hình?</span></label>
+  <label><input type="checkbox" data-k="k5"><span>Tìm vòng chạy robot/client: đồng bộ hay có hàng đợi hành động, luồng nền? Gửi quan sát qua mạng thế nào (WebSocket, gRPC…)?</span></label>
+  <label><input type="checkbox" data-k="k6"><span>Đo độ trễ thật: mô hình, mạng, tiền xử lý ảnh; đổi ra d với tần số của robot.</span></label>
+  <label><input type="checkbox" data-k="k7"><span>Xem đã có sẵn RTC chưa: grep <code>rtc|real_time|inpaint|guidance|prefix|prev_chunk</code>.</span></label>
+  <label><input type="checkbox" data-k="k8"><span>Chuẩn bị cho paper sau: action expert có nhận τ <b>riêng cho từng token</b> (AdaLN theo token) được không, hay chỉ một τ cho cả chunk?</span></label>
+</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sec" id="critique">
+<h2>10. Hạn chế & phản biện (Sec 6) <span class="lv s">Nên biết</span></h2>
+<h3>Paper tự nhận</h3>
+<ul>
+<li>Tốn thêm tính toán đáng kể so với lấy mẫu thẳng từ policy (backward ở mỗi bước khử nhiễu).</li>
+<li>Chỉ dùng được với policy diffusion/flow (policy tự hồi quy kiểu token thì không).</li>
+<li>Robot thật mới thử thao tác; chưa thử bối cảnh động hơn như robot đi bằng chân (chỉ có trong mô phỏng).</li>
+</ul>
+<h3>Ba điểm mạnh nhất để nói khi present</h3>
+<ol>
+<li><b>Chi phí suy luận đi ngược mục tiêu "thời gian thực".</b> Backward làm bước khử nhiễu chậm 2,5×, cần bật autograd lúc suy luận (tốn bộ nhớ, khó dùng các engine suy luận tối ưu chỉ chạy forward). Độ trễ tăng thì d tăng, và với H nhỏ như Qwen-VLA/GR00T (16) thì ràng buộc d ≤ 8 chặt hơn nhiều so với H = 50. Đây chính là động lực của paper RTC training-time.</li>
+<li><b>Bằng chứng trên robot thật còn mỏng.</b> 10 lượt mỗi ô, chỉ có ý nghĩa thống kê ở +100/+200 ms; không có naive async và BID ở robot thật; tác vụ có thử lại nên điểm cuối của đồng bộ gần bằng. Phần "nhanh hơn" vững hơn phần "chính xác hơn".</li>
+<li><b>Mô phỏng khác xa VLA.</b> Kinetix 2D, điều khiển lực, MLP-Mixer nhỏ, H = 8, d giữ cố định; trong khi robot thật dùng điều khiển vị trí với H = 50 và d dao động. Không thí nghiệm nào xét chuyện <b>ước lượng d sai</b> (d thật lớn hơn max của hàng đợi) sẽ ra sao.</li>
+</ol>
+<h3>Các điểm nhỏ hơn (tự kiểm trong PDF trước khi nói)</h3>
+<ul>
+<li>Định nghĩa d = ⌊δ/Δt⌋ nhưng các số d ≈ 6, 11, 16 khớp với làm tròn <b>lên</b> (mục 5.1).</li>
+<li>Sec 4.2 viết "Inspecting the per-task results (Figure 5, top)"; kết quả theo tác vụ thật ra ở <b>Hình 6 trên</b>. Lỗi đánh số.</li>
+<li>W giảm theo hàm mũ là chọn theo kinh nghiệm (heuristic); paper không có lý do lý thuyết, chỉ có ablation Hình 8 (tuyến tính gần như bằng).</li>
+<li>Hệ số ΠGDM giả sử dữ liệu chuẩn hóa phương sai 1 và Gaussian; với 5 bước thì xấp xỉ này kém, nên mới cần β. Phần lớn "lực" thực ra do β quyết định ở bước τ = 0.</li>
+<li>Hình 1 ("nhanh hơn 20%") lấy từ 10 giây đầu của <b>một</b> lượt thắp nến: minh họa, không phải thống kê.</li>
+<li>"Out of the box, no re-training" đúng cho flow; với diffusion cần chuyển sang dạng flow lúc suy luận (paper dẫn nguồn, không thử).</li>
+</ul>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="sec" id="next">
+<h2>11. Nối sang RTC training-time (arXiv 2512.05964) <span class="lv s">Nên biết</span></h2>
+<p>Cùng tác giả chính (Kevin Black, Physical Intelligence), ra sau 6 tháng. Trang riêng sẽ làm sau khi bạn đọc xong trang này; ở đây chỉ là cầu nối.</p>
+<div class="tw"><table class="t">
+<tr><th></th><th>RTC inference-time (paper này)</th><th>RTC training-time</th></tr>
+<tr><td>Vấn đề giữ nguyên</td><td colspan="2">Chạy bất đồng bộ, chunk mới phải khớp d hành động "prefix" của chunk cũ</td></tr>
+<tr><td>Cách khớp</td><td>Guidance ΠGDM lúc suy luận, cần backward</td><td><b>Giả lập độ trễ lúc huấn luyện</b>: đưa thẳng prefix sạch vào mô hình, chỉ học khử nhiễu phần sau</td></tr>
+<tr><td>Đổi mô hình?</td><td>Không</td><td>Cho τ khác nhau theo từng token (prefix τ = 1, tức là sạch; phần sau τ ngẫu nhiên); loss chỉ tính trên phần sau. Không thêm tham số; cần fine-tune</td></tr>
+<tr><td>Chi phí suy luận</td><td>+21 ms trên π0.5 (2,5× mỗi bước khử nhiễu)</td><td>Bằng mô hình gốc</td></tr>
+<tr><td>Soft masking</td><td>Có (vùng giữa)</td><td>Không, chỉ prefix cứng d bước</td></tr>
+</table></div>
+<div class="co link"><b class="t">Câu hỏi để mang sang trang sau</b>(1) Nếu bỏ soft masking, vì sao training-time vẫn có thể tốt hơn khi d lớn? (2) Chuyện "mỗi token một τ" khớp thế nào với AdaLN trong DiT của Qwen-VLA? (3) Theo quy ước Qwen-VLA, prefix sạch phải đặt τ<sub>q</sub> bằng bao nhiêu? (Gợi ý: 0.) Ý tưởng "ghi đè phần đóng băng ở mỗi bước" ở Hình 8 phải chính là cách lấy mẫu của paper training-time, nhưng lần này mô hình đã được huấn luyện để hiểu nó.</div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="sec" id="mentor">
+<h2>12. Câu hỏi mentor có thể vặn <span class="lv m">Phải nắm</span></h2>
+<p>Tự trả lời thành tiếng trước, rồi mới mở gợi ý.</p>
+<details class="q"><summary>1. Sao không làm mô hình nhanh hơn (distill, ít bước hơn) cho xong?</summary>Paper (Sec 5): mọi cách tăng tốc đều không xuống dưới <b>một</b> lần forward. Chỉ riêng encode ảnh + prefill của π0.5 đã 62 ms, gấp 3 lần Δt = 20 ms. Chừng nào một forward còn lâu hơn Δt thì vẫn phải chạy bất đồng bộ. Hai hướng bổ trợ nhau, không thay nhau.</details>
+<details class="q"><summary>2. Robot thật dùng điều khiển vị trí thì đồng bộ (dừng chờ) có sao đâu?</summary>Có ba cái giá: chậm (throughput đồng bộ giảm từ ≈ 0,72 xuống ≈ 0,51 khi thêm 200 ms), các khoảng dừng tạo gia tốc giật (Hình 1), và động lực học lúc chạy khác lúc thu dữ liệu (dữ liệu demo không có những lần khựng) → lệch phân phối. Hình 6 trên cho thấy RTC vẫn tới đích sớm hơn kể cả khi đã cắt bỏ thời gian dừng.</details>
+<details class="q"><summary>3. Temporal ensembling làm mượt mà, sao lại tệ?</summary>Vì phân phối hành động đa mode: trung bình hai cách đúng có thể là cách sai (Hình 2). Kinetix: TE thấp nhất kể cả d = 0. Robot thật: ở +100/+200 ms, TE rung tới mức kích hoạt dừng bảo vệ, throughput = 0.</details>
+<details class="q"><summary>4. Đã đóng băng d bước rồi, sao còn cần soft masking?</summary>Khi d nhỏ, chỉ vài ô bị ràng buộc, lực kéo yếu, và ΠGDM chỉ là xấp xỉ, nên chunk mới vẫn có thể đổi chiến lược ngay sau phần đóng băng (Hình 4). Soft masking dùng toàn bộ H − s ô chồng lấn với trọng số giảm dần, giữ chiến lược nhất quán mà vẫn để phần xa được sửa theo quan sát mới. Bằng chứng: Hình 5 (hard thua soft ở d nhỏ), Hình 8.</details>
+<details class="q"><summary>5. "Guidance" này có giống classifier-free guidance (CFG) không?</summary>Không. CFG trộn hai lần dự đoán có/không điều kiện, không cần gradient. ΠGDM dùng gradient của sai số giữa chunk-sạch-dự-đoán và mục tiêu theo đầu vào \(\mathbf A^\tau\) (một VJP), nhân hệ số \((1-\tau)/(\tau r_\tau^2)\). Nó giải bài toán ngược: "tìm mẫu của mô hình khớp với một phần đã biết".</details>
+<details class="q"><summary>6. β = 5 để làm gì? Đổi β có ảnh hưởng nhiều không?</summary>Hệ số vô cùng ở τ = 0 nên bắt buộc phải kẹp; với chỉ 5 bước, lực quá mạnh làm chunk văng và tăng gia tốc (Hình 7). Với n = 5, hệ số chưa kẹp ở các τ còn lại tối đa 4,25, nên β ≥ 4,25 chỉ đổi bước đầu. Ablation: quá 5 không thêm lợi.</details>
+<details class="q"><summary>7. RTC tốn bao nhiêu? Có đáng không?</summary>π0.5: 76 → 97 ms (+28%); bước khử nhiễu 14 → 35 ms. Đáng, vì bất đồng bộ đã "giấu" độ trễ: miễn d ≤ H − s thì robot không bao giờ chờ. Nhưng d tăng 1 bước thì phải đóng băng thêm, và với H nhỏ (16) dư địa ít. Paper training-time sinh ra để bỏ chi phí này.</details>
+<details class="q"><summary>8. Áp RTC vào Qwen-VLA cần sửa gì?</summary>(1) Vòng khử nhiễu: bật grad, thêm Eq. 3 dạng \(\mathbf Y - \tau_q\mathbf v_q\), VJP, và <b>trừ</b> guidance khỏi \(\mathbf v_q\). (2) Runtime bất đồng bộ với hàng đợi độ trễ. (3) Biết n, tần số từng robot, đo δ để tính d, chọn s<sub>min</sub> với d ≤ s ≤ 16 − d. (4) Lưu ý joint self-attention làm backward đắt hơn.</details>
+<details class="q"><summary>9. d hành động đầu của chunk mới có được dùng không? Nếu không thì khớp chúng để làm gì?</summary>Không được chạy (Algorithm 1: sau khi đổi, t = d, robot chạy từ \(\mathbf A_{\text{new}}[d]\)). Khớp chúng là để <b>ép phần sau phải liền với chúng</b>: mô hình sinh cả chunk đồng thời, nên phần đầu bị ép thì phần sau phải chọn cùng chiến lược, cùng vị trí xuất phát.</details>
+<details class="q"><summary>10. Nếu độ trễ thật lớn hơn d đã ước lượng thì sao?</summary>Paper không thí nghiệm trường hợp này. Theo Algorithm 1, đổi chunk xảy ra khi chunk về, t lúc đó = d thật, nên robot vẫn chạy đúng ô d<sub>thật</sub> của chunk mới; nhưng các ô từ d<sub>ước lượng</sub> tới d<sub>thật</sub> − 1 chỉ được khớp mềm. Đó là lý do dùng max của 10 lần gần nhất (thận trọng). Nếu d thật vượt H − s thì chunk cũ hết hành động: hỏng ràng buộc thời gian thực.</details>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="sec" id="quiz">
+<h2>13. Câu hỏi tự kiểm tra & thí nghiệm tự làm <span class="lv s">Nên biết</span></h2>
+<h3>Thí nghiệm tự làm (đoán trước rồi mới bấm)</h3>
+<div class="tw"><table class="t">
+<tr><th>#</th><th>Làm gì</th><th>Bạn đoán gì sẽ xảy ra?</th></tr>
+<tr><td>1</td><td>Mô phỏng 5.2: giữ hạt giống, kéo d từ 1 lên 6, nhìn cột "Giật" của bất đồng bộ ngây thơ và RTC mềm</td><td>Cột nào tăng nhanh? Vì sao RTC cứng ở d = 1 gần như bằng naive?</td></tr>
+<tr><td>2</td><td>Widget 6.4: H = 16, s = 5, kéo d từ 4 về 1, đổi giữa "Hàm mũ" và "Hard masking"</td><td>Với hard masking và d = 1, còn bao nhiêu ô có W > 0? Điều đó liên quan gì tới Hình 5?</td></tr>
+<tr><td>3</td><td>Code 7.3: đổi <code>beta=5.0</code> thành 50 và <code>n=5</code> thành 50; hoặc đổi dấu dòng cuối của <code>guided_inference_qwen</code> thành <code>+ w * g</code></td><td>Khoảng cách vùng đóng băng thay đổi ra sao? Hàm <code>allclose</code> còn True không?</td></tr>
+</table></div>
+<h3>Câu hỏi</h3>
+<details class="q"><summary>1. π0.5 ở +100 ms: tổng độ trễ ~208,76 ms (bàn cố định). Ở 50 Hz, d bằng bao nhiêu? Với H = 50, s nằm trong khoảng nào?</summary>208,76/20 = 10,4 → đóng băng 11 bước (paper ghi d ≈ 11). Ràng buộc 11 ≤ s ≤ 39. Với s<sub>min</sub> = 25 thì s = 25.</details>
+<details class="q"><summary>2. Tính W cho H = 16, d = 4, s = 5 ở i = 4 và i = 10.</summary>H − s = 11, mẫu số 8. i = 4: c = 7/8, W = 0,875 × (e<sup>0,875</sup> − 1)/(e − 1) ≈ 0,712. i = 10: c = 1/8, W ≈ 0,010. i ≥ 11: 0.</details>
+<details class="q"><summary>3. Với τ = 0,6, \(\mathbf A^\tau\) = 0,2, v = 1,0: đoán chunk sạch bằng bao nhiêu? Hệ số dẫn hướng (chưa kẹp) bằng bao nhiêu?</summary>\(\widehat A^1 = 0{,}2 + 0{,}4 \times 1{,}0 = 0{,}6\). Hệ số = (0,36 + 0,16)/(0,6 × 0,4) = 0,52/0,24 ≈ 2,17.</details>
+<details class="q"><summary>4. Vì sao g lại cần Jacobian, sao không kéo thẳng \(\mathbf A^\tau\) về Y?</summary>Y là mục tiêu cho chunk <b>sạch</b>, còn \(\mathbf A^\tau\) là điểm <b>nhiễu</b>. Không thể so trực tiếp. Ta so \(\widehat{\mathbf A}^1\) với Y, rồi dùng Jacobian để biết phải đổi \(\mathbf A^\tau\) thế nào cho \(\widehat{\mathbf A}^1\) đổi đúng hướng. "Kéo thẳng" (ghi đè) là cách của Diffuser, kém hơn trong Hình 8.</details>
+<details class="q"><summary>5. Viết bước Euler có dẫn hướng theo quy ước Qwen-VLA.</summary>\(\mathbf Y \leftarrow \mathbf Y - \frac1n(\mathbf v_q - w\,\mathbf g)\), với \(\widehat{\mathbf Y}_0 = \mathbf Y - \tau_q\mathbf v_q\), \(\mathbf g = [(\mathbf Y_{\text{prev}} - \widehat{\mathbf Y}_0)\odot\mathbf W]^\top\partial\widehat{\mathbf Y}_0/\partial\mathbf Y\), \(w = \min(\beta, \frac{\tau_q^2+(1-\tau_q)^2}{\tau_q(1-\tau_q)})\).</details>
+<details class="q"><summary>6. Throughput đo gì, vì sao paper chọn nó?</summary>Tỉ lệ hoàn thành ÷ thời lượng episode, trung bình trên episode. Nó phạt cả làm sai lẫn làm chậm, nên so công bằng giữa RTC (nhanh) và đồng bộ (chậm nhưng điểm cuối gần bằng nhờ thử lại).</details>
+<details class="q"><summary>7. Vì sao Kinetix chứ không phải LIBERO?</summary>LIBERO và các benchmark tương tự gần như tĩnh: chạy chunk dài, đồng bộ vẫn đạt gần tối đa, nên không phân biệt được các cách. Kinetix điều khiển lực, môi trường động, có nhiễu hành động: độ trễ thật sự gây hại.</details>
+<details class="q"><summary>8. BID khác RTC thế nào?</summary>BID sinh cả lô chunk (32 từ mô hình mạnh, 32 từ mô hình yếu) rồi chọn chunk khớp nhất: không cần gradient nhưng tốn tính toán theo số mẫu. RTC sinh một chunk duy nhất và dẫn hướng nó. BID (N = 16) trên π0.5 chậm 115–223 ms so với 97 ms của RTC, và thua RTC trong Kinetix.</details>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="sec" id="sources">
+<h2>14. Nguồn <span class="lv k">Đọc lướt</span></h2>
+<ul>
+<li>Paper gốc: K. Black, M. Y. Galliker, S. Levine, <i>Real-Time Execution of Action Chunking Flow Policies</i>, NeurIPS 2025, arXiv 2506.07339 (bản v2, 05/12/2025). Mọi con số trên trang lấy từ PDF này; số trong Hình 5, 6, 7 đọc từ ảnh trang phóng to (ghi "≈").</li>
+<li>Video và blog: <a href="https://pi.website/research/real_time_chunking">pi.website/research/real_time_chunking</a> · Code mô phỏng (JAX): <a href="https://github.com/Physical-Intelligence/real-time-chunking-kinetix">github.com/Physical-Intelligence/real-time-chunking-kinetix</a></li>
+<li>RTC training-time: K. Black, A. Z. Ren, M. Equi, S. Levine, <i>Training-Time Action Conditioning for Efficient Real-Time Chunking</i>, arXiv 2512.05964</li>
+<li>ΠGDM: Song et al., <i>Pseudoinverse-Guided Diffusion Models for Inverse Problems</i>, ICLR 2023 · Pokle et al., <i>Training-free Linear Image Inverses via Flows</i>, arXiv 2310.04432</li>
+<li>Flow matching: Lipman et al., arXiv 2210.02747 · Diffusion ↔ flow: Gao et al., diffusionflow.github.io</li>
+<li>Temporal ensembling / ACT: Zhao et al., arXiv 2304.13705 · BID: Liu et al., arXiv 2408.17355 · Diffuser: Janner et al., arXiv 2205.09991</li>
+<li>π0: arXiv 2410.24164 · π0.5: arXiv 2504.16054 · Kinetix: arXiv 2410.23208 · MLP-Mixer: arXiv 2105.01601</li>
+<li>Trang trước trong lộ trình: Qwen-VLA (2605.30280), GR00T N1 (2503.14734)</li>
+</ul>
+</section>
+
+</main>
+</div>
+<footer>RTC inference-time · Đọc hiểu paper — tài liệu học tập cá nhân, thư mục VLA Modeling</footer>
+
+<script>
+(function(){
+"use strict";
+/* ---------- theme ---------- */
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function vn(x,d){if(!isFinite(x))return '∞';return (+x).toFixed(d===undefined?1:d).replace('-','−').replace('.',',');}
+function $(id){return document.getElementById(id);}
+
+/* ---------- checklists ---------- */
+function checklist(boxSel,key,barId){
+  var boxes=[].slice.call(document.querySelectorAll(boxSel));
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){saved={};}
+  function upd(){
+    var n=0;boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);if(b.checked)n++;});
+    if(barId)$(barId).style.width=(100*n/boxes.length)+'%';
+  }
+  boxes.forEach(function(b){
+    b.checked=!!saved[b.dataset.k];
+    b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem(key,JSON.stringify(saved));}catch(e){}upd();});
+  });
+  upd();
+}
+checklist('#chk input','rtcinf-chk','progBar');
+checklist('#chk2 input','rtcinf-chk2',null);
+
+/* ---------- TOC scroll spy ---------- */
+var links=[].slice.call(document.querySelectorAll('#toc a'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){
+  var y=window.scrollY+120,idx=0;
+  targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});
+  links.forEach(function(a,i){a.classList.toggle('on',i===idx);});
+}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+/* ---------- 5.1 delay calculator ---------- */
+function delayCalc(){
+  var m=+$('dlModel').value||0,nt=+$('dlNet').value||0,inj=+$('dlInj').value,hz=+$('dlHz').value||1,H=Math.round(+$('dlH').value||1),smin=Math.round(+$('dlS').value||1);
+  var dt=1000/hz,delta=m+nt+inj,raw=delta/dt,d=Math.ceil(raw-1e-9),df=Math.floor(raw);
+  var s=Math.max(d,smin),ok=d<=s&&s<=H-d;
+  var html='Δt = 1000 / '+vn(hz,0)+' = <b>'+vn(dt,2)+' ms</b>. Tổng độ trễ δ = '+vn(m,2)+' + '+vn(nt,2)+(inj?' + '+inj:'')+' = <b>'+vn(delta,2)+' ms</b>.<br>'+
+   'δ / Δt = '+vn(raw,2)+' bước → cần đóng băng <b>d = '+d+'</b> (làm tròn lên; định nghĩa ⌊·⌋ của paper cho '+df+').<br>'+
+   'Ràng buộc d ≤ s ≤ H − d: '+d+' ≤ s ≤ '+(H-d)+'. Với s<sub>min</sub> = '+smin+' thì s = max(d, s<sub>min</sub>) = <b>'+s+'</b>. ';
+  if(d>H-d)html+='<span class="delta-dn">Không có s hợp lệ: độ trễ quá lớn so với H = '+H+' (cần d ≤ '+Math.floor(H/2)+'). Chunk cũ hết hành động trước khi chunk mới về.</span>';
+  else if(!ok)html+='<span class="delta-dn">s = '+s+' vượt H − d = '+(H-d)+': giảm s<sub>min</sub>.</span>';
+  else html+='<span class="delta-up">Hợp lệ.</span> Mỗi chunk: chạy '+s+' bước, trong đó '+d+' bước cuối diễn ra lúc chunk sau đang được tính. Vùng giữa của chunk sau dài H − d − s = '+(H-d-s)+' ô.';
+  $('dlOut').innerHTML=html;
+}
+['dlModel','dlNet','dlInj','dlHz','dlH','dlS'].forEach(function(id){$(id).addEventListener('input',delayCalc);});
+function preset(m,n,hz,H,s){$('dlModel').value=m;$('dlNet').value=n;$('dlHz').value=hz;$('dlH').value=H;$('dlS').value=s;$('dlInj').value='0';delayCalc();}
+$('dlP1').addEventListener('click',function(){preset(97.43,11.33,50,50,25);});
+$('dlP2').addEventListener('click',function(){preset(96.89,42.09,50,50,25);});
+$('dlP3').addEventListener('click',function(){preset(120,30,10,16,8);});
+preset(97.43,11.33,50,50,25);
+
+/* ---------- 5.2 chunk-stitching simulator (toy exact flow) ---------- */
+var SIM=(function(){
+  var SC=3,H=16,T=64,S0=0.02*SC,B=SC,TOB=32,PHI=[[],[]],SJ=[0.22*SC,0.18*SC],i,j,q;
+  for(i=0;i<H;i++){PHI[0].push(1-Math.exp(-i/4));PHI[1].push(Math.sin(Math.PI*i/(H-1)));}
+  var SIG=[];for(i=0;i<H;i++){SIG.push([]);for(j=0;j<H;j++){var v=(i===j?S0*S0:0);for(q=0;q<2;q++)v+=SJ[q]*SJ[q]*PHI[q][i]*PHI[q][j];SIG[i].push(v);}}
+  function inv(M){var n=M.length,A=M.map(function(r,i){return r.concat(Array.from({length:n},function(_,j){return i===j?1:0;}));}),c,r,k;
+    for(c=0;c<n;c++){var p=c;for(r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;var t=A[c];A[c]=A[p];A[p]=t;var d=A[c][c];for(k=0;k<2*n;k++)A[c][k]/=d;
+      for(r=0;r<n;r++)if(r!==c){var f=A[r][c];if(f)for(k=0;k<2*n;k++)A[r][k]-=f*A[c][k];}}
+    return A.map(function(r){return r.slice(n);});}
+  var CACHE={};
+  function mats(tau){var key=tau.toFixed(6);if(CACHE[key])return CACHE[key];
+    var S=SIG.map(function(r,i){return r.map(function(v,j){return tau*tau*v+(i===j?(1-tau)*(1-tau):0);});});
+    var P=inv(S),K=[];for(var i=0;i<H;i++){K.push([]);for(var j=0;j<H;j++){var s=0;for(var k=0;k<H;k++)s+=SIG[i][k]*P[k][j];K[i].push(tau*s);}}
+    return CACHE[key]={P:P,K:K};}
+  function bump(t){return Math.exp(-Math.pow((t-TOB)/8,2));}
+  function modes(t,x){var mu=[],k,i;[1,-1].forEach(function(k){var m=[];for(var i=0;i<H;i++)m.push(k*B*bump(t+i)+(x-k*B*bump(t))*Math.exp(-(i+1)/3));mu.push(m);});
+    var pu=1/(1+Math.exp(-12*x/SC));return {mu:mu,pi:[pu,1-pu]};}
+  function post(M,x,tau){var Q=mats(tau),lw=[],dk=[],k,i,j;
+    for(k=0;k<2;k++){var dd=x.map(function(xi,i){return xi-tau*M.mu[k][i];});dk.push(dd);var s=0;for(i=0;i<H;i++){var a=0;for(j=0;j<H;j++)a+=Q.P[i][j]*dd[j];s+=dd[i]*a;}lw.push(Math.log(M.pi[k]+1e-12)-s/2);}
+    var mx=Math.max(lw[0],lw[1]),w=lw.map(function(l){return Math.exp(l-mx);}),Z=w[0]+w[1];w=w.map(function(v){return v/Z;});
+    var out=new Array(H).fill(0);for(k=0;k<2;k++)for(i=0;i<H;i++){var a=M.mu[k][i];for(j=0;j<H;j++)a+=Q.K[i][j]*dk[k][j];out[i]+=w[k]*a;}
+    return out;}
+  function sample(M,eps,n,guide){var x=eps.slice(),i;
+    for(var st=0;st<n;st++){var tau=st/n,a1=post(M,x,tau),vv=a1.map(function(a,i){return (a-x[i])/(1-tau);});
+      if(guide){var e=a1.map(function(a,i){return (guide.Y[i]-a)*guide.W[i];}),h=1e-5,g=[];
+        for(var qq=0;qq<H;qq++){var xp=x.slice();xp[qq]+=h;var ap=post(M,xp,tau),s=0;for(i=0;i<H;i++)s+=e[i]*(ap[i]-a1[i])/h;g.push(s);}
+        var r2=(1-tau)*(1-tau)/(tau*tau+(1-tau)*(1-tau)),wt=tau===0?Infinity:(1-tau)/(tau*r2);wt=Math.min(guide.beta,wt);
+        for(i=0;i<H;i++)vv[i]+=wt*g[i];}
+      for(i=0;i<H;i++)x[i]+=vv[i]/n;}
+    return x;}
+  function softW(d,s,hard){var W=[];for(var i=0;i<H;i++){if(i<d)W.push(1);else if(i>=H-s||hard)W.push(0);else{var c=(H-s-i)/(H-s-d+1);W.push(c*(Math.exp(c)-1)/(Math.E-1));}}return W;}
+  function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function run(method,d,smin,seed){
+    var r=rng(seed*7919+13),noise=function(){var e=[];for(var i=0;i<H;i++){var u=r()||1e-9,v=r();e.push(Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v));}return e;};
+    var y=[],wall=[],sw=[],t=0,x=0,s=Math.max(d,smin),cur=sample(modes(0,0),noise(),5,null),cstart=0,chunks=[{start:0,a:cur,avail:0}],i,k;
+    if(method==='sync'){
+      while(t<T){for(i=0;i<s&&t<T;i++){x=cur[i];y.push(x);wall.push(x);t++;}if(t>=T)break;for(i=0;i<d;i++)wall.push(x);cur=sample(modes(t,x),noise(),5,null);sw.push(t);}
+      return {y:y,wall:wall,sw:sw};}
+    function act(tt){if(method==='te'){var a=0,c=0;chunks.forEach(function(ch){if(ch.avail<=tt&&tt>=ch.start&&tt-ch.start<H){a+=ch.a[tt-ch.start];c++;}});return a/c;}return cur[tt-cstart];}
+    while(t<T){
+      while(t-cstart<s&&t<T){x=act(t);y.push(x);t++;}
+      if(t>=T)break;
+      var tInf=t,prev=cur.slice(s).concat(new Array(s).fill(0)),M=modes(tInf,x),eps=noise(),nw;
+      nw=(method==='naive'||method==='te')?sample(M,eps,5,null):sample(M,eps,5,{Y:prev,W:softW(d,s,method==='hard'),beta:5});
+      for(k=0;k<d&&t<T;k++){x=act(t);y.push(x);t++;}
+      chunks.push({start:tInf,a:nw,avail:tInf+d});cur=nw;cstart=tInf;sw.push(tInf+d);
+    }
+    return {y:y,wall:y.slice(),sw:sw};}
+  return {run:run,SC:SC,T:T,TOB:TOB};
+})();
+var METH=[
+  {k:'sync',n:'Đồng bộ',c:'var(--red)'},
+  {k:'naive',n:'Bất đồng bộ ngây thơ',c:'var(--accent)'},
+  {k:'te',n:'Temporal ensembling',c:'#8d6e63'},
+  {k:'hard',n:'RTC cứng',c:'var(--blue)'},
+  {k:'soft',n:'RTC mềm (paper)',c:'var(--pri)'}
+];
+var smOn={sync:false,naive:true,te:false,hard:false,soft:true},smSel='soft';
+var mBox=$('smMeth');
+METH.forEach(function(m){
+  var l=document.createElement('label');l.style.cursor='pointer';
+  l.innerHTML='<input type="checkbox" data-k="'+m.k+'"'+(smOn[m.k]?' checked':'')+'> <i style="display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:3px;background:'+m.c+'"></i> '+m.n;
+  l.querySelector('input').addEventListener('change',function(e){smOn[m.k]=e.target.checked;if(e.target.checked)smSel=m.k;simDraw();});
+  mBox.appendChild(l);
+});
+var smCache={};
+function simDraw(){
+  var d=+$('smD').value,smin=Math.max(+$('smS').value,d),seed=Math.max(1,Math.round(+$('smSeed').value||1));
+  $('smDv').textContent=d;$('smSv').textContent=+$('smS').value;
+  var W=720,Hh=300,L=46,R=12,Tp=14,Bt=34,T=SIM.T,SC=SIM.SC;
+  function X(t){return L+(W-L-R)*t/(T-1);} function Y(v){return Tp+(Hh-Tp-Bt)*(1.35-v)/2.7;}
+  var g='';
+  g+='<rect x="'+X(SIM.TOB-2)+'" y="'+Y(0.3)+'" width="'+(X(SIM.TOB+2)-X(SIM.TOB-2))+'" height="'+(Y(-0.3)-Y(0.3))+'" rx="6" style="fill:var(--grey);opacity:.4"/>';
+  g+='<text x="'+X(SIM.TOB)+'" y="'+(Y(0)+4)+'" text-anchor="middle" style="font-size:11px;fill:var(--text)">vật cản</text>';
+  [-1,-0.5,0,0.5,1].forEach(function(v){g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" style="stroke:var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" style="font-size:10.5px;fill:var(--muted)">'+vn(v,1)+'</text>';});
+  for(var t=0;t<T;t+=8)g+='<text x="'+X(t)+'" y="'+(Hh-Bt+16)+'" text-anchor="middle" style="font-size:10.5px;fill:var(--muted)">'+t+'</text>';
+  g+='<text x="'+((L+W)/2)+'" y="'+(Hh-4)+'" text-anchor="middle" style="font-size:11px;fill:var(--muted)">bước thực thi (task time)</text>';
+  g+='<text x="12" y="'+(Tp+(Hh-Bt)/2)+'" transform="rotate(-90 12 '+(Tp+(Hh-Bt)/2)+')" text-anchor="middle" style="font-size:11px;fill:var(--muted)">vị trí</text>';
+  var rows='<tr><th>Cách</th><th class="num">Giật (|gia tốc| max)</th><th class="num">Chạm vật cản?</th><th class="num">Thời gian thực (bước)</th><th class="num">Số lần đổi chunk</th></tr>';
+  var selRes=null;
+  METH.forEach(function(m){
+    var key=m.k+'|'+d+'|'+smin+'|'+seed,res=smCache[key]||(smCache[key]=SIM.run(m.k,d,smin,seed));
+    var w=res.wall,ma=0,i;for(i=2;i<w.length;i++)ma=Math.max(ma,Math.abs(w[i]-2*w[i-1]+w[i-2]));
+    var hit=false;for(i=SIM.TOB-2;i<=SIM.TOB+2&&i<res.y.length;i++)if(Math.abs(res.y[i])<0.3*SC)hit=true;
+    rows+='<tr'+(m.k===smSel&&smOn[m.k]?' class="hl"':'')+'><td><i style="display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:3px;background:'+m.c+'"></i> '+m.n+'</td><td class="num">'+vn(ma/SC,2)+'</td><td class="num">'+(hit?'<span class="delta-dn">có</span>':'không')+'</td><td class="num">'+w.length+'</td><td class="num">'+res.sw.length+'</td></tr>';
+    if(!smOn[m.k])return;
+    if(m.k===smSel)selRes=res;
+    var p='';res.y.forEach(function(v,i){p+=(i?'L':'M')+X(i).toFixed(1)+','+Y(v/SC).toFixed(1);});
+    g+='<path d="'+p+'" style="fill:none;stroke:'+m.c+';stroke-width:'+(m.k===smSel?2.6:1.8)+';opacity:'+(m.k===smSel?1:.8)+'"/>';
+  });
+  if(selRes)selRes.sw.forEach(function(t){if(t<T)g+='<line x1="'+X(t)+'" x2="'+X(t)+'" y1="'+Tp+'" y2="'+(Hh-Bt)+'" style="stroke:var(--text);opacity:.12"/>';});
+  $('smSvg').innerHTML=g;$('smTab').innerHTML=rows;
+}
+['smD','smS','smSeed'].forEach(function(id){$(id).addEventListener('input',simDraw);});
+$('smRand').addEventListener('click',function(){$('smSeed').value=1+Math.floor(Math.random()*500);simDraw();});
+simDraw();
+
+/* ---------- 6.2 one guided step ---------- */
+function stepCalc(){
+  var tau=+$('stTau').value,A=+$('stA').value,v=+$('stV').value,dv=+$('stDv').value,Yv=+$('stY').value,Wv=+$('stW').value,b=+$('stB').value,n=Math.max(1,Math.round(+$('stN').value));
+  if(!(tau>=0&&tau<1)){$('stOut').innerHTML='τ phải nằm trong [0, 1).';return;}
+  var A1=A+(1-tau)*v,e=Wv*(Yv-A1),J=1+(1-tau)*dv,g=e*J;
+  var r2=(1-tau)*(1-tau)/(tau*tau+(1-tau)*(1-tau)),raw=tau===0?Infinity:(1-tau)/(tau*r2),w=Math.min(b,raw);
+  var vg=v+w*g,An=A+vg/n,Au=A+v/n;
+  $('stOut').innerHTML=
+   '① Â¹ = '+vn(A,3)+' + (1 − '+vn(tau,2)+') × '+vn(v,3)+' = <b>'+vn(A1,3)+'</b><br>'+
+   '② e = W × (Y − Â¹) = '+vn(Wv,2)+' × ('+vn(Yv,3)+' − '+vn(A1,3)+') = <b>'+vn(e,3)+'</b><br>'+
+   '③ ∂Â¹/∂Aτ = 1 + (1 − τ) × ∂v/∂A = <b>'+vn(J,3)+'</b> → g = e × J = <b>'+vn(g,4)+'</b><br>'+
+   '④ r² = '+vn(r2,4)+', hệ số chưa kẹp = '+(isFinite(raw)?vn(raw,3):'∞')+' → w = min(β, …) = <b>'+vn(w,3)+'</b><br>'+
+   '⑤ v<sub>ΠGDM</sub> = '+vn(v,3)+' + '+vn(w,3)+' × '+vn(g,4)+' = <b>'+vn(vg,3)+'</b><br>'+
+   '⑥ Bước Euler: A ← '+vn(A,3)+' + '+vn(vg,3)+'/'+n+' = <b>'+vn(An,3)+'</b> (không dẫn hướng: '+vn(Au,3)+'). Mục tiêu Y = '+vn(Yv,3)+'.';
+}
+['stTau','stA','stV','stDv','stY','stW','stB','stN'].forEach(function(id){$(id).addEventListener('input',stepCalc);});stepCalc();
+
+/* ---------- 6.3 guidance weight plot ---------- */
+function wraw(t){return (t*t+(1-t)*(1-t))/(t*(1-t));}
+function betaDraw(){
+  var n=+$('btN').value,b=+$('btB').value;$('btNv').textContent=n;$('btBv').textContent=vn(b,2);
+  var W=700,Hh=230,L=40,R=14,Tp=12,Bt=32,YM=12;
+  function X(t){return L+(W-L-R)*t;} function Y(v){return Tp+(Hh-Tp-Bt)*(1-Math.min(v,YM)/YM);}
+  var g='';[0,2,4,6,8,10,12].forEach(function(v){g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" style="stroke:var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" style="font-size:10.5px;fill:var(--muted)">'+v+'</text>';});
+  [0,0.25,0.5,0.75,1].forEach(function(t){g+='<text x="'+X(t)+'" y="'+(Hh-Bt+16)+'" text-anchor="middle" style="font-size:10.5px;fill:var(--muted)">'+vn(t,2)+'</text>';});
+  g+='<text x="'+((L+W)/2)+'" y="'+(Hh-3)+'" text-anchor="middle" style="font-size:11px;fill:var(--muted)">τ (0 = nhiễu, 1 = sạch)</text>';
+  var p='',pc='';for(var i=1;i<400;i++){var t=i/400,v=wraw(t);p+=(i>1?'L':'M')+X(t).toFixed(1)+','+Y(v).toFixed(1);pc+=(i>1?'L':'M')+X(t).toFixed(1)+','+Y(Math.min(b,v)).toFixed(1);}
+  g+='<path d="'+p+'" style="fill:none;stroke:var(--grey);stroke-width:1.6;stroke-dasharray:5 4"/>';
+  g+='<path d="'+pc+'" style="fill:none;stroke:var(--pri);stroke-width:2.6"/>';
+  g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(b)+'" y2="'+Y(b)+'" style="stroke:var(--accent);stroke-dasharray:3 3"/><text x="'+(W-R-4)+'" y="'+(Y(b)-5)+'" text-anchor="end" style="font-size:11px;fill:var(--accent)">β = '+vn(b,2)+'</text>';
+  var rows='<table class="t"><tr><th>bước k</th><th>τ = k/n</th><th class="num">hệ số chưa kẹp</th><th class="num">w = min(β, ·)</th><th>bị kẹp?</th></tr>';
+  for(var k=0;k<n;k++){var t=k/n,raw=t===0?Infinity:wraw(t),w=Math.min(b,raw);
+    g+='<circle cx="'+X(t)+'" cy="'+Y(w)+'" r="4.5" style="fill:'+(raw>b?'var(--accent)':'var(--pri)')+'"/>';
+    rows+='<tr><td>'+k+'</td><td>'+vn(t,3)+'</td><td class="num">'+(isFinite(raw)?vn(raw,3):'∞')+'</td><td class="num">'+vn(w,3)+'</td><td>'+(raw>b?'<span class="delta-dn">có</span>':'không')+'</td></tr>';}
+  rows+='</table>';
+  $('btSvg').innerHTML=g;
+  var nc=0;for(k=0;k<n;k++){var tt=k/n;if(tt===0||wraw(tt)>b)nc++;}
+  $('btOut').innerHTML='<div class="tw">'+rows+'</div>Với n = '+n+', β = '+vn(b,2)+': <b>'+nc+'</b> / '+n+' bước bị kẹp. Đường đứt: hệ số gốc (vô cùng ở hai đầu). Đường xanh: sau khi kẹp. Chấm cam: bước bị kẹp.';
+}
+['btN','btB'].forEach(function(id){$(id).addEventListener('input',betaDraw);});betaDraw();
+
+/* ---------- 6.4 soft mask ---------- */
+function softDraw(){
+  var H=+$('sfH').value,d=+$('sfD').value,s=+$('sfS').value,mode=$('sfMode').value;
+  $('sfHv').textContent=H;$('sfDv').textContent=d;$('sfSv').textContent=s;
+  var ok=d<=s&&s<=H-d,W=[],i;
+  for(i=0;i<H;i++){
+    if(i<d)W.push(1);else if(i>=H-s)W.push(0);
+    else if(mode==='hard')W.push(0);else if(mode==='none')W.push(1);
+    else if(mode==='lin')W.push((H-s-i)/(H-s-d+1));
+    else{var c=(H-s-i)/(H-s-d+1);W.push(c*(Math.exp(c)-1)/(Math.E-1));}
+  }
+  var Wd=720,L=10,R=10,cw=(Wd-L-R)/H,g='',top=20,bh=90,cy=top+bh+10,ch=28;
+  g+='<line x1="'+L+'" x2="'+(Wd-R)+'" y1="'+(top+bh)+'" y2="'+(top+bh)+'" style="stroke:var(--line)"/>';
+  g+='<line x1="'+L+'" x2="'+(Wd-R)+'" y1="'+top+'" y2="'+top+'" style="stroke:var(--line);stroke-dasharray:3 3"/><text x="'+(L+2)+'" y="'+(top-5)+'" style="font-size:10.5px;fill:var(--muted)">W = 1</text>';
+  for(i=0;i<H;i++){
+    var x=L+i*cw,col,op,lab;
+    if(i<d){col='var(--accent)';op=.95;}else if(i<H-s){col='var(--accent)';op=.25+.6*W[i];}else{col='var(--code-bg)';op=1;}
+    g+='<rect x="'+(x+1)+'" y="'+(top+bh*(1-W[i]))+'" width="'+(cw-2)+'" height="'+(bh*W[i])+'" style="fill:var(--pri);opacity:.75"/>';
+    g+='<rect x="'+(x+1)+'" y="'+cy+'" width="'+(cw-2)+'" height="'+ch+'" rx="3" style="fill:'+col+';opacity:'+op+';stroke:var(--line)"/>';
+    if(cw>=18)g+='<text x="'+(x+cw/2)+'" y="'+(cy+ch+14)+'" text-anchor="middle" style="font-size:10px;fill:var(--muted)">'+i+'</text>';
+  }
+  function brace(a,b,txt){if(b<=a)return '';var x1=L+a*cw,x2=L+b*cw;return '<line x1="'+(x1+2)+'" x2="'+(x2-2)+'" y1="'+(cy+ch+22)+'" y2="'+(cy+ch+22)+'" style="stroke:var(--text);opacity:.5"/><text x="'+((x1+x2)/2)+'" y="'+(cy+ch+36)+'" text-anchor="middle" style="font-size:11px;fill:var(--text)">'+txt+'</text>';}
+  g+=brace(0,d,'đóng băng d = '+d)+brace(d,Math.max(d,H-s),'vùng giữa '+Math.max(0,H-s-d))+brace(H-s,H,'mới s = '+s);
+  $('sfSvg').setAttribute('viewBox','0 0 720 '+(cy+ch+44));
+  $('sfSvg').innerHTML=g;
+  var nz=W.filter(function(v){return v>0;}).length;
+  var out=(ok?'':'<span class="delta-dn">Vi phạm ràng buộc d ≤ s ≤ H − d ('+d+' ≤ '+s+' ≤ '+(H-d)+'). Paper không dùng cấu hình này.</span><br>')+
+    'W = ['+W.map(function(v){return vn(v,3);}).join('; ')+']<br>Số ô có W &gt; 0: <b>'+nz+'</b> / '+H+'. ';
+  if(mode==='exp'&&H-s-d>0)out+='Ô đầu vùng giữa (i = '+d+'): c = '+(H-s-d)+'/'+(H-s-d+1)+' → W = '+vn(W[d],3)+'.';
+  if(mode==='hard')out+='Hard masking: chỉ '+d+' ô đầu kéo chunk mới; d càng nhỏ, lực kéo càng yếu.';
+  $('sfOut').innerHTML=out;
+}
+['sfH','sfD','sfS','sfMode'].forEach(function(id){$(id).addEventListener('input',softDraw);});softDraw();
+
+/* ---------- 8.1 / 8.2 bars ---------- */
+function barWidget(btnId,barsId,outId,labels,series,notes,scale,unit){
+  var box=$(btnId),cur=0;
+  labels.forEach(function(l,i){var b=document.createElement('button');b.type='button';b.className='b'+(i===0?' on':' o');b.textContent=l;b.addEventListener('click',function(){cur=i;draw();});box.appendChild(b);});
+  function draw(){
+    [].slice.call(box.children).forEach(function(b,i){b.className='b'+(i===cur?' on':' o');});
+    $(barsId).innerHTML=series.map(function(r){var v=r[2][cur];
+      return '<div class="row"><div class="nm">'+r[0]+'</div><div class="bb">'+(v===null?'<span style="font-size:.8rem;color:var(--muted)">'+(r[3]||'không có')+'</span>':'<div class="bar" style="background:'+r[1]+';width:'+(v*scale)+'%"><span>≈ '+vn(v,2)+unit+'</span></div>')+'</div></div>';}).join('');
+    $(outId).innerHTML=notes[cur];
+  }
+  draw();
+}
+barWidget('kinBtns','kinBars','kinOut',['d = 0','d = 1','d = 2','d = 3','d = 4'],[
+  ['RTC (soft, paper)','var(--pri)',[0.92,0.89,0.84,0.75,0.62]],
+  ['RTC hard masking','var(--blue)',[0.92,0.85,0.82,0.73,0.62]],
+  ['BID','#7e57c2',[0.92,0.88,0.80,0.67,0.55]],
+  ['Naive async','var(--accent)',[0.92,0.75,0.71,0.59,0.49]],
+  ['TE','#8d6e63',[0.56,null,null,null,null],'dưới 0,5 (nằm ngoài khung hình)']
+],[
+ 'd = 0 là vòng kín hoàn toàn: mọi cách gần bằng nhau (≈ 0,92) trừ TE (≈ 0,56). TE kém ngay cả khi không có độ trễ: lấy trung bình hai mode tạo hành động không hợp lệ.',
+ 'd = 1: naive tụt mạnh (≈ 0,75). Hard masking (≈ 0,85) thua soft (≈ 0,89) rõ nhất ở đây: chỉ 1 ô bị ràng buộc thì lực kéo yếu.',
+ 'd = 2: RTC ≈ 0,84, hard ≈ 0,82, BID ≈ 0,80.',
+ 'd = 3: khoảng cách RTC với BID nới rộng (≈ 0,75 so với ≈ 0,67).',
+ 'd = 4 (tối đa khi H = 8): RTC và hard gặp nhau (≈ 0,62), BID ≈ 0,55, naive ≈ 0,49. d lớn thì vùng đóng băng đã đủ dài, soft masking ít tác dụng thêm.'
+],100,'');
+barWidget('realBtns','realBars','realOut',['+0 ms (d ≈ 6)','+100 ms (d ≈ 11)','+200 ms (d ≈ 16)'],[
+  ['RTC','var(--pri)',[0.84,0.78,0.88]],
+  ['Đồng bộ','var(--red)',[0.72,0.59,0.51]],
+  ['TE thưa','#8d6e63',[0.62,null,null],'0: không chạy được, robot tự dừng bảo vệ'],
+  ['TE dày','#d4a94f',[0.66,null,null],'0: không chạy được, robot tự dừng bảo vệ']
+],[
+ 'Không thêm độ trễ: RTC cao nhất nhưng thanh sai số (±1 SEM) chồng với đồng bộ; chưa có ý nghĩa thống kê.',
+ '+100 ms: RTC gần như giữ nguyên, đồng bộ giảm vì mỗi lần dừng lâu hơn. Hai TE rung tới mức kích hoạt dừng bảo vệ. Khác biệt có ý nghĩa thống kê.',
+ '+200 ms: RTC vẫn ≈ 0,88 (cao hơn +0 ms chỉ là nhiễu), đồng bộ giảm còn ≈ 0,51. Đây là con số mạnh nhất của paper.'
+],100,' task/phút');
+})();
+</script>
+</body>
+</html>

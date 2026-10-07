@@ -75,12 +75,12 @@ const PAPERS = [
     thuTuCap: 1,
     bia: "rtc-infer",
     moTa: "Chạy action chunk mượt khi suy luận",
-    trangThai: "chua-doc",
+    trangThai: "dang-doc",
     files: {
-      docHieu: null, // "RTC/RTC-Inference · Đọc hiểu paper.html"
-      slide: null,   // "RTC/RTC · Slide trình bày.html"
-      pdfGoc: null,
-      pdfViet: null
+      docHieu: "RTC/RTC-Inference · Đọc hiểu paper.html",
+      slide: "RTC/RTC · Slide trình bày.html",
+      pdfGoc: "Docs/RTC inference time.pdf",
+      pdfViet: "Docs/translated/RTC inference time-vi.pdf"
     }
   },
   {
@@ -92,12 +92,12 @@ const PAPERS = [
     thuTuCap: 2,
     bia: "rtc-train",
     moTa: "Đưa RTC vào lúc huấn luyện",
-    trangThai: "chua-doc",
+    trangThai: "dang-doc",
     files: {
-      docHieu: null, // "RTC/RTC-Training · Đọc hiểu paper.html"
-      slide: null,   // "RTC/RTC · Slide trình bày.html"
-      pdfGoc: null,
-      pdfViet: null
+      docHieu: "RTC/RTC-Training · Đọc hiểu paper.html",
+      slide: "RTC/RTC · Slide trình bày.html",
+      pdfGoc: "Docs/RTC training Time.pdf",
+      pdfViet: "Docs/translated/RTC training Time-vi.pdf"
     }
   },
   {
@@ -107,12 +107,12 @@ const PAPERS = [
     nhom: "Đọc sâu",
     bia: "moe",
     moTa: "MoE trong action expert",
-    trangThai: "chua-doc",
+    trangThai: "dang-doc",
     files: {
-      docHieu: null, // "LingBot/LingBot · Đọc hiểu paper.html"
+      docHieu: "LingBot/LingBot · Đọc hiểu paper.html",
       slide: null,   // "LingBot/LingBot · Slide trình bày.html"
-      pdfGoc: null,
-      pdfViet: null
+      pdfGoc: "Docs/Moe.pdf",
+      pdfViet: "Docs/translated/Moe-vi.pdf"
     }
   }
 ];
