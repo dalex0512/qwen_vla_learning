@@ -230,6 +230,23 @@ footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
   <div><b>④ Kim tự tháp dữ liệu</b>Video người (đáy) → dữ liệu tổng hợp từ mô phỏng và mô hình sinh video (giữa) → dữ liệu robot thật (đỉnh). Video không có nhãn hành động được gán "latent action".</div>
   <div><b>⑤ Kết quả</b>Sau post-training, thắng Diffusion Policy và BC-Transformer trên 3 benchmark mô phỏng (trong đó có RoboCasa) và trên robot GR-1 thật, đặc biệt khi ít dữ liệu.</div>
 </div>
+
+<div class="co note" style="margin-top: 18px; line-height: 1.75;">
+  <b class="t" style="font-size: 1.05rem; margin-bottom: 8px; color: var(--pri-strong);">Đúc kết sau paper GR00T N1 (Bức tranh VLA tổng quan):</b>
+  <p>Sau paper GR00T N1, em hiểu được cấu trúc chung của một mô hình VLA hiện đại gồm hai phần. Phần thứ nhất là một <b>VLM (Eagle-2)</b> đóng vai <i>"System 2"</i>: nhìn ảnh, đọc câu lệnh và tạo ra đặc trưng; GR00T lấy đặc trưng ở lớp giữa (lớp 12) và giữ phần ngôn ngữ đóng băng. Phần thứ hai là một <b>action expert dạng DiT</b> đóng vai <i>"System 1"</i>: nhìn sang đặc trưng của VLM bằng cross-attention và sinh luôn một chunk 16 hành động. Hành động được sinh bằng <b>flow matching</b>. Lúc huấn luyện, hành động thật được trộn với nhiễu theo công thức \(A^\tau = \tau A + (1-\tau)\epsilon\) và mạng học đoán vận tốc. Lúc chạy, mô hình xuất phát từ nhiễu và đi 4 bước Euler. Em hiểu vì sao cần một <b>mô hình sinh thay vì hồi quy</b>: một tình huống có thể có nhiều cách làm đúng, và hồi quy sẽ ra "trung bình" của chúng, thường là một hành động sai.</p>
+  
+  <p><b>Về dữ liệu</b>, em học được ý tưởng <b>kim tự tháp</b>: video người, dữ liệu mô phỏng và video do AI sinh, rồi đến dữ liệu robot thật. Dữ liệu không có nhãn được gán nhãn hành động giả (latent action, IDM). Mỗi loại robot có <b>MLP encoder/decoder riêng</b>, nhờ vậy nhiều robot dùng chung được một lõi.</p>
+  
+  <p><b>So với LIBERO</b>, cả hai đều là behavior cloning, nhưng GR00T thay đầu ra GMM bằng flow matching. Kết luận về pre-training cũng ngược nhau: LIBERO thấy pretrain trên LIBERO-90 làm hại, còn GR00T cho thấy pretrain trên dữ liệu lớn và nền VLM giúp post-train hiệu quả với ít demo. Em hiểu thêm <b>RoboCasa</b> là một môi trường đánh giá khác LIBERO: tay Franka, 3 camera, 24 việc bếp, chỉ dùng 30–300 demo mỗi tác vụ. GR00T cũng cho thấy một rủi ro LIBERO từng nêu: post-train hẹp có thể làm mất kỹ năng đã có.</p>
+  
+  <p><b>GR00T là nền để đọc các paper tiếp theo:</b></p>
+  <ul style="margin: 6px 0 0 18px; padding-left: 0;">
+    <li><b>Qwen-VLA</b> dùng cùng khuôn VLM + DiT + flow matching nhưng mô tả robot bằng prompt thay vì MLP riêng, và đặt quy ước \(\tau\) ngược lại.</li>
+    <li><b>RTC</b> giải quyết việc nối các action chunk, vì mỗi chunk mất khoảng 64 ms để tính trong khi robot vẫn phải cử động.</li>
+    <li><b>Paper MoE</b> thay lớp FFN trong chính action expert (DiT) bằng nhiều chuyên gia có router.</li>
+  </ul>
+</div>
+
 <div class="co link"><b class="t">Vì sao mentor xếp paper này trước RTC và MoE?</b>
 Cả RTC và MoE đều "mổ xẻ" đúng phần action expert: RTC bàn chuyện nối các action chunk khi suy luận, còn MoE thay lớp FFN bên trong action expert. GR00T N1 là ví dụ rõ ràng nhất về kiểu kiến trúc <i>VLM + action expert dùng flow matching</i>, nên hiểu kỹ phần 4 của trang này là nền cho cả hai paper sau.</div>
 </section>
