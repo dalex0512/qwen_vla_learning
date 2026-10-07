@@ -118,10 +118,18 @@
   };
 
   window.VLA_COVERS = COVERS;
+  // Bìa cơ bản: nền phẳng theo nhóm, số thứ tự lớn và tên paper
   window.Covers = {
-    render: function (key, paper, index) {
-      const k = key || (paper && paper.bia) || 'libero';
-      return COVERS[k] || COVERS['libero'] || '';
+    render: function (key, paper) {
+      if (!paper) return '';
+      const list = window.PAPERS || [];
+      const idx = String(list.findIndex(p => p.id === paper.id) + 1).padStart(2, '0');
+      const deep = paper.nhom === 'Đọc sâu';
+      return `<div class="cover-basic ${deep ? 'cover-basic--indigo' : 'cover-basic--teal'}">
+        <span class="cover-basic-num">${idx}</span>
+        <span class="cover-basic-group">${paper.nhom}</span>
+        <span class="cover-basic-name">${paper.ten}</span>
+      </div>`;
     }
   };
 })();

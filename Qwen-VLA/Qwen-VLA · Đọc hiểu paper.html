@@ -1,0 +1,1367 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qwen-VLA · Đọc hiểu paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+
+/* layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+
+/* paper viết / nghĩa là */
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+
+/* callouts */
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+
+/* tables */
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+
+/* misc */
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* checklist */
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+
+/* steps */
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* details */
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+
+/* arch svg */
+.n{cursor:pointer}
+.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.n.emb rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.frz rect.b0{fill:var(--blue-soft);stroke:var(--blue)}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.n text{fill:var(--text);font-size:13px;text-anchor:middle;pointer-events:none}
+.n text.s{fill:var(--muted);font-size:11.5px}
+.ar{stroke:var(--grey);stroke-width:1.8;fill:none}
+.lbl{fill:var(--muted);font-size:11.5px}
+#archInfo{min-height:96px}
+
+/* bars */
+.bars .row{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{display:flex;flex-direction:column;gap:2px}
+.bars .bar{height:11px;border-radius:4px;position:relative;min-width:2px}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-4px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .dp{background:var(--grey)}
+.bars .gr{background:var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:120px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cells{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.cells span{width:26px;height:26px;border-radius:5px;background:var(--pri-soft);border:1px solid var(--pri);font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cells span.used{background:var(--accent);border-color:var(--accent);color:#fff}
+.cells span.over{background:var(--red);border-color:var(--red);color:#fff}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+
+/* ===== thêm cho trang Qwen-VLA ===== */
+details.more{border:1px dashed var(--line);border-radius:12px;padding:8px 14px;margin:12px 0;background:var(--card)}
+details.more>summary{cursor:pointer;font-weight:600;color:var(--pri);font-size:.93rem}
+details.more>summary::marker{color:var(--pri)}
+details.more[open]>summary{margin-bottom:8px}
+.key{border:2px solid var(--pri);border-radius:14px;padding:12px 18px;margin:14px 0;background:var(--pri-soft)}
+.key b.t{display:block;color:var(--pri-strong);margin-bottom:2px}
+.idea{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:center;border-top:1px solid var(--line);padding:16px 0}
+.idea h3{margin:0 0 6px}
+.idea .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;font-size:.95rem}
+.idea .go{font-size:.85rem;color:var(--muted)}
+.stat div div{border:0;padding:0;border-radius:0}
+.idea svg text{font-size:13px}
+@media (max-width:760px){.idea{grid-template-columns:1fr}}
+.lv{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;vertical-align:middle;margin-left:8px;letter-spacing:.02em;line-height:1.6}
+.lv.m{background:var(--accent);color:#fff}
+.lv.s{background:var(--blue-soft);color:var(--blue)}
+.lv.k{background:var(--code-bg);color:var(--muted);border:1px solid var(--line)}
+nav.toc a i.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+i.d.m{background:var(--accent)} i.d.s{background:var(--blue)} i.d.k{background:var(--grey);opacity:.6}
+.legend-lv{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.9rem;margin:10px 0}
+.basics{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.basics>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.basics>div b.h{display:block;color:var(--pri-strong);margin-bottom:4px}
+.basics>div .why{display:block;margin-top:6px;font-size:.86rem;color:var(--muted)}
+table.t td.keep{color:var(--pri-strong);font-weight:600;white-space:nowrap}
+table.t td.chg{color:var(--accent);font-weight:600;white-space:nowrap}
+table.t td.unk{color:var(--muted);font-weight:600;white-space:nowrap}
+.prompt{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--code-bg);border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:10px;padding:12px 14px;white-space:pre-wrap;line-height:1.6}
+.prompt .v{background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:0 3px}
+.ctrl select,.ctrl input[type=text],.ctrl input[type=number]{font:inherit;font-size:.9rem;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+.grid{display:grid;gap:2px;margin:10px 0;max-width:100%;overflow-x:auto}
+.grid span{width:13px;height:13px;border-radius:2px;background:var(--code-bg);border:1px solid var(--line)}
+.grid span.on{background:var(--pri);border-color:var(--pri)}
+.grid span.pad{background:var(--card);border:1px dashed var(--grey);opacity:.6}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+@media (max-width:760px){.stages{grid-template-columns:1fr 1fr}}
+.stg{border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;background:var(--card);text-align:center;font-size:.85rem}
+.stg.sel{border-color:var(--accent)}
+.stg .nm{font-weight:700;color:var(--pri-strong);font-size:.95rem}
+.stg .blk{border-radius:7px;padding:3px 4px;margin:5px 0;font-size:.8rem;border:1.5px solid}
+.stg .blk.fz{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.stg .blk.tr{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stg .inp{color:var(--muted);font-size:.78rem}
+.stg .ck{margin-top:6px;font-size:.76rem;font-weight:600}
+.arrowrow{display:flex;justify-content:space-around;color:var(--grey);font-size:.8rem;margin:-4px 0 4px}
+.bars .q{background:var(--accent)}
+.bars .g6{background:var(--blue)}
+.delta-up{color:var(--pri-strong);font-weight:600}
+.delta-dn{color:var(--red);font-weight:600}
+.n.vlm rect.b0{fill:var(--accent-soft);stroke:var(--accent)}
+.n.dit rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.rl rect.b0{stroke-dasharray:5 4}
+.say{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:14px 0}
+.say b.t{display:block;color:var(--accent);margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>Qwen-VLA · Đọc hiểu paper</h1>
+  <p><b>Qwen-VLA: Unifying Vision-Language-Action Modeling across Tasks, Environments, and Robot Embodiments</b> — Qwen Team, 06/2026 · arXiv 2605.30280 (v2)</p>
+  <p>Trang đọc hiểu cho người mới. Paper thứ 3 trong lộ trình: LIBERO → GR00T N1 → <b>Qwen-VLA</b> → RTC → MoE.</p>
+  <div class="meta">
+    <span class="pill">VLM Qwen3.5-4B</span><span class="pill">Action expert DiT ~1,15B</span><span class="pill">Joint self-attention</span><span class="pill">Embodiment prompt</span><span class="pill">T2A → CPT → SFT → RL</span><span class="pill">H = 16</span><span class="pill">LIBERO 97,9 · RoboCasa-GR1 56,7</span>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#tldr"><i class="d m"></i>0. Tóm tắt 1 phút</a>
+  <a href="#quick" style="font-weight:700;color:var(--pri-strong)"><i class="d m"></i>★ Đọc nhanh 15 phút</a>
+  <a href="#roadmap"><i class="d m"></i>1. Lộ trình & checklist</a>
+  <a href="#glossary"><i class="d s"></i>2. Bảng thuật ngữ</a>
+  <a href="#basics"><i class="d m"></i>3. Nền tối thiểu</a>
+  <a href="#bridge"><i class="d m"></i>4. Từ GR00T N1 sang Qwen-VLA</a>
+  <a href="#motiv"><i class="d s"></i>5. Động lực & bài toán chung</a>
+  <a href="#arch"><i class="d m"></i>6. Kiến trúc</a>
+  <a class="sub" href="#vlm">6.1 VLM Qwen3.5</a>
+  <a class="sub" href="#dit">6.2 Action expert DiT</a>
+  <a class="sub" href="#flow">6.3 Flow matching & quy ước τ</a>
+  <a class="sub" href="#run">6.4 Ghép lại: code giả</a>
+  <a href="#prompt"><i class="d m"></i>7. Embodiment prompt</a>
+  <a href="#data"><i class="d s"></i>8. Dữ liệu pretraining</a>
+  <a href="#stages"><i class="d m"></i>9. T2A → CPT → SFT → RL</a>
+  <a class="sub" href="#t2a">9.1 T2A</a>
+  <a class="sub" href="#cpt">9.2 CPT</a>
+  <a class="sub" href="#sft">9.3 SFT</a>
+  <a class="sub" href="#rl">9.4 RL</a>
+  <a class="sub" href="#mentor">9.5 Pretrain vs finetune</a>
+  <a href="#results"><i class="d m"></i>10. Kết quả LIBERO & RoboCasa</a>
+  <a href="#other"><i class="d k"></i>11. Kết quả khác & ablation</a>
+  <a href="#next"><i class="d m"></i>12. Chuẩn bị cho RTC & MoE</a>
+  <a href="#critique"><i class="d s"></i>13. Hạn chế & phản biện</a>
+  <a href="#quiz"><i class="d s"></i>14. Câu hỏi tự kiểm tra</a>
+  <a href="#sources"><i class="d k"></i>15. Nguồn</a>
+</nav>
+
+<main>
+
+<!-- ============ 0 ============ -->
+<section class="sec" id="tldr">
+<h2>0. Tóm tắt 1 phút <span class="lv m">Phải nắm</span></h2>
+<p>Qwen-VLA là một mô hình <b>VLA</b> của nhóm Qwen (Alibaba). Câu hỏi của paper: <i>có gom được thao tác tay robot, điều hướng (navigation) và chuyển động tay người vào <b>một</b> mô hình duy nhất không?</i> Nếu chỉ nhớ năm ý, hãy nhớ năm ý này:</p>
+<div class="tldr">
+  <div><b>① Cùng khuôn với GR00T</b>VLM (Qwen3.5-4B) hiểu ảnh và câu lệnh; action expert là DiT ~1,15B tham số sinh <strong>chunk 16 hành động</strong> bằng flow matching. Khác GR00T: hidden states của VLM được <strong>nối chung một chuỗi</strong> với hành động nhiễu rồi qua self-attention chung.</div>
+  <div><b>② Robot được mô tả bằng câu chữ</b>Thay vì mỗi robot một MLP riêng, mỗi mẫu dữ liệu được gắn một <strong>embodiment prompt</strong>: "robot này là gì, mấy tay, tần số bao nhiêu Hz, đoán bao nhiêu bước". Số chiều hành động khác nhau được <strong>đệm 0</strong> và che bằng <strong>mask</strong>.</div>
+  <div><b>③ Bốn giai đoạn huấn luyện</b><strong>T2A</strong> (chỉ chữ → hành động, VLM đóng băng) → <strong>CPT</strong> (thêm ảnh, mở băng cả hai) = Qwen-VLA-Base → <strong>SFT</strong> (dữ liệu chất lượng của tác vụ đích) → <strong>RL</strong> (PPO, thưởng 0/1 trong SimplerEnv) = Qwen-VLA-Instruct.</div>
+  <div><b>④ Quy ước τ ngược GR00T</b>τ = 0 là sạch, τ = 1 là nhiễu. Suy luận đi từ τ = 1 về 0 bằng vài bước Euler. Cùng ý tưởng, chỉ đảo nhãn.</div>
+  <div><b>⑤ Một mô hình cho mọi benchmark</b>Một bản Instruct duy nhất đạt 97,9% LIBERO, 56,7% RoboCasa-GR1, 73,7% Simpler-WidowX, 86,1/87,2% RoboTwin Easy/Hard. Các đối thủ trong bảng được fine-tune riêng cho từng benchmark.</div>
+</div>
+
+<div class="say"><b class="t">Nếu chỉ có 30 giây để nói với mentor</b>
+Qwen-VLA giữ khuôn "VLM + DiT flow matching + action chunk 16" của GR00T, nhưng đổi ba chỗ. (1) Nối VLM với expert bằng một chuỗi chung thay cho cross-attention. (2) Mô tả robot bằng prompt và đệm 0 thay cho MLP riêng từng robot. (3) Chia huấn luyện thành T2A → CPT → SFT → RL. Pretrain (T2A + CPT) cho một mô hình biết rộng nhưng chưa chính xác. Finetune (SFT + RL) biến nó thành policy dùng được: ví dụ +7,1 điểm LIBERO, +16,3 điểm RoboCasa-GR1. Trên robot thật ALOHA, có pretrain đạt 83,6% so với 48,5% khi không pretrain.</div>
+
+<div class="co link"><b class="t">Vì sao paper này nằm giữa GR00T và RTC/MoE?</b>
+Paper này là bản "hiện đại hơn" của cùng một kiến trúc. Action expert DiT với khối <i>Self-Attention → AdaLN → Feed-Forward MLP</i> lặp 16 lần chính là chỗ paper MoE sẽ thay FFN. Còn việc sinh từng chunk 16 hành động bằng vài bước Euler chính là chỗ RTC can thiệp. Mục 12 gom lại các điểm cần nhớ cho hai paper đó.</div>
+</section>
+
+<!-- ============ QUICK ============ -->
+<section class="sec" id="quick">
+<h2>★ Đọc nhanh 15 phút <span class="lv m">Phải nắm</span></h2>
+<p>Đừng coi Qwen-VLA là một paper mới hoàn toàn. Bạn đã hiểu GR00T N1, nên hãy đọc nó là: <b>GR00T đổi 3 chỗ, cộng một quy trình học mới</b>. Mục này kể đủ 4 ý đó bằng lời thường, gần như không có công thức. Đọc xong mục này, trả lời được 4 câu hỏi ở cuối là bạn đã nắm đủ để trình bày. Các mục sau chỉ là phần đi sâu cho từng ý.</p>
+
+<div class="idea">
+<div>
+<h3><span class="num">1</span>Nối VLM với DiT: từ "tra sách" sang "ngồi chung bàn"</h3>
+<p>Ở GR00T, đặc trưng của VLM giống <b>cuốn sách tham khảo</b> đặt trên bàn: các token hành động mở ra tra (cross-attention), còn sách thì không bao giờ thay đổi.</p>
+<p>Ở Qwen-VLA, token ảnh-chữ và token hành động được <b>xếp chung một hàng</b>, cùng "họp" trong mỗi khối DiT (joint self-attention). Ai cũng nghe được ai, và token của VLM cũng được cập nhật.</p>
+<p class="go">Không có công thức mới. Đi sâu: mục 6.2.</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 200" role="img" aria-label="GR00T: token hành động tra cứu token VLM một chiều. Qwen-VLA: hai loại token chung một chuỗi, trao đổi hai chiều">
+<defs><marker id="qa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<text x="105" y="18" text-anchor="middle" style="font-weight:700;fill:var(--text)">GR00T N1</text>
+<rect x="30" y="34" width="150" height="54" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+<text x="105" y="58" text-anchor="middle" style="fill:var(--text)">token VLM</text><text x="105" y="76" text-anchor="middle" style="fill:var(--muted)">"sách" cố định</text>
+<g style="fill:var(--blue-soft);stroke:var(--blue)"><rect x="40" y="140" width="28" height="28" rx="5"/><rect x="91" y="140" width="28" height="28" rx="5"/><rect x="142" y="140" width="28" height="28" rx="5"/></g>
+<path class="ar" d="M54,138 V92" marker-end="url(#qa)"/><path class="ar" d="M105,138 V92" marker-end="url(#qa)"/><path class="ar" d="M156,138 V92" marker-end="url(#qa)"/>
+<text x="105" y="190" text-anchor="middle" style="fill:var(--muted)">token hành động hỏi một chiều</text>
+<line x1="232" y1="20" x2="232" y2="190" style="stroke:var(--line)"/>
+<text x="355" y="18" text-anchor="middle" style="font-weight:700;fill:var(--text)">Qwen-VLA</text>
+<rect x="250" y="80" width="210" height="44" rx="10" style="fill:var(--pri-soft);stroke:var(--pri)"/>
+<g style="fill:var(--accent-soft);stroke:var(--accent)"><rect x="262" y="90" width="24" height="24" rx="4"/><rect x="292" y="90" width="24" height="24" rx="4"/><rect x="322" y="90" width="24" height="24" rx="4"/></g>
+<g style="fill:var(--blue-soft);stroke:var(--blue)"><rect x="364" y="90" width="24" height="24" rx="4"/><rect x="394" y="90" width="24" height="24" rx="4"/><rect x="424" y="90" width="24" height="24" rx="4"/></g>
+<path class="ar" d="M304,86 Q355,40 406,86" marker-end="url(#qa)" marker-start="url(#qa)"/>
+<path class="ar" d="M274,118 Q355,170 436,118" marker-end="url(#qa)" marker-start="url(#qa)"/>
+<text x="355" y="190" text-anchor="middle" style="fill:var(--muted)">một chuỗi chung, trao đổi hai chiều</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">2</span>Nhiều loại robot: "tờ ghi chú" + "phiếu chung"</h3>
+<p>GR00T thuê cho mỗi robot một <b>phiên dịch riêng</b> (MLP riêng). Qwen-VLA bỏ cách đó và làm hai việc:</p>
+<ul style="margin:0 0 0 18px;padding:0">
+<li><b>Tờ ghi chú</b> dán trước câu lệnh: "robot này là gì, mấy tay, bao nhiêu Hz, đoán bao nhiêu bước". Đó là <b>embodiment prompt</b>.</li>
+<li><b>Phiếu chung</b> có số ô cố định cho mọi robot. Robot cần 7 ô thì điền 7 ô, còn lại để 0 và đánh dấu "đừng chấm". Đó là <b>đệm 0 + mask</b>.</li>
+</ul>
+<p>Lợi ích: một bộ trọng số cho mọi robot; robot mới chỉ cần đổi tờ ghi chú. Paper thử cả cách MLP riêng: điểm gần như bằng nhau (chênh dưới 1,2), nên chọn cách gọn nhất.</p>
+<p class="go">Đi sâu: mục 7 (có widget tự điền prompt).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 200" role="img" aria-label="Tờ ghi chú mô tả robot và phiếu 32 ô với 7 ô được điền">
+<rect x="20" y="12" width="430" height="62" rx="8" style="fill:var(--warn-bg);stroke:var(--warn)"/>
+<text x="34" y="36" style="fill:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px">The robot is WidowX with single arm. The control</text>
+<text x="34" y="56" style="fill:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px">frequency is 5 Hz. Please predict the next 16 …</text>
+<text x="235" y="92" text-anchor="middle" style="fill:var(--muted);font-size:12px">tờ ghi chú (khuôn của paper, phần điền là minh họa)</text>
+<g><rect x="20.0" y="128" width="12" height="26" rx="2" style="fill:var(--pri);stroke:var(--pri)"/><rect x="33.5" y="128" width="12" height="26" rx="2" style="fill:var(--pri);stroke:var(--pri)"/><rect x="47.0" y="128" width="12" height="26" rx="2" style="fill:var(--pri);stroke:var(--pri)"/><rect x="60.5" y="128" width="12" height="26" rx="2" style="fill:var(--pri);stroke:var(--pri)"/><rect x="74.0" y="128" width="12" height="26" rx="2" style="fill:var(--pri);stroke:var(--pri)"/><rect x="87.5" y="128" width="12" height="26" rx="2" style="fill:var(--pri);stroke:var(--pri)"/><rect x="101.0" y="128" width="12" height="26" rx="2" style="fill:var(--pri);stroke:var(--pri)"/><rect x="114.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="128.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="141.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="155.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="168.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="182.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="195.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="209.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="222.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="236.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="249.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="263.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="276.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="290.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="303.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="317.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="330.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="344.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="357.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="371.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="384.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="398.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="411.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="425.0" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/><rect x="438.5" y="128" width="12" height="26" rx="2" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:2 2"/></g>
+<text x="67" y="176" text-anchor="middle" style="fill:var(--pri-strong);font-weight:700">7 ô thật</text>
+<text x="300" y="176" text-anchor="middle" style="fill:var(--muted)">25 ô đệm 0, không chấm</text>
+<text x="235" y="196" text-anchor="middle" style="fill:var(--muted);font-size:12px">phiếu chung cho mọi robot (số ô là minh họa)</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">3</span>Flow matching: vẫn như GR00T, chỉ đảo nhãn τ</h3>
+<p>Vẫn là một đường thẳng nối <b>nhiễu</b> với <b>hành động thật</b>, mạng học "hướng đi" trên đường đó, khi chạy thì đi vài bước từ nhiễu về hành động. Chỗ khác duy nhất là cách đặt tên:</p>
+<ul style="margin:0 0 0 18px;padding:0">
+<li>GR00T: đầu nhiễu là τ = 0, đi tới τ = 1.</li>
+<li>Qwen-VLA: đầu nhiễu là <b>τ = 1</b>, đi về <b>τ = 0</b>.</li>
+</ul>
+<p>Công thức duy nhất nên nhớ: \(Y_\tau = (1-\tau)Y_0 + \tau Y_1\) (\(Y_0\) sạch, \(Y_1\) nhiễu). Nhớ để khỏi lúng túng khi đọc RTC.</p>
+<p class="go">Đi sâu: mục 6.3 (có widget so hai quy ước bằng cùng một con số).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 200" role="img" aria-label="Cùng một đoạn đường từ nhiễu tới sạch, GR00T đánh số 0 đến 1, Qwen-VLA đánh số 1 về 0">
+<defs><marker id="qb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<text x="50" y="30" text-anchor="middle" style="fill:var(--muted)">nhiễu</text><text x="420" y="30" text-anchor="middle" style="fill:var(--muted)">hành động thật</text>
+<line x1="50" y1="50" x2="420" y2="50" style="stroke:var(--line);stroke-width:3"/>
+<circle cx="50" cy="50" r="9" style="fill:var(--grey)"/><circle cx="420" cy="50" r="9" style="fill:var(--pri)"/>
+<text x="20" y="104" style="fill:var(--text);font-weight:700">GR00T</text>
+<path class="ar" d="M90,96 H400" marker-end="url(#qb)" style="stroke:var(--pri);stroke-width:2.5"/>
+<text x="90" y="124" text-anchor="middle" style="fill:var(--muted)">τ = 0</text><text x="400" y="124" text-anchor="middle" style="fill:var(--muted)">τ = 1</text>
+<text x="20" y="164" style="fill:var(--text);font-weight:700">Qwen</text>
+<path class="ar" d="M90,156 H400" marker-end="url(#qb)" style="stroke:var(--accent);stroke-width:2.5"/>
+<text x="90" y="184" text-anchor="middle" style="fill:var(--muted)">τ = 1</text><text x="400" y="184" text-anchor="middle" style="fill:var(--muted)">τ = 0</text>
+<text x="245" y="146" text-anchor="middle" style="fill:var(--muted);font-size:12px">cùng đường, cùng kết quả, chỉ đổi tên mốc</text>
+</svg>
+</div>
+
+<div class="idea" style="grid-template-columns:1fr">
+<div>
+<h3><span class="num">4</span>Bốn giai đoạn học: giống một người học nghề</h3>
+<p>Đây cũng là câu trả lời cho câu hỏi "pretrain vs finetune" của mentor.</p>
+<div class="tw"><table class="t">
+<tr><th>Giai đoạn</th><th>Giống như</th><th>Học từ dữ liệu gì</th><th>Để làm gì</th></tr>
+<tr><td><b>T2A</b></td><td>Đọc sách nghề, chưa được vào xưởng</td><td>Chỉ chữ → quỹ đạo, <b>không có ảnh</b>; VLM đóng băng</td><td>DiT có "từ điển động tác" trước khi nhìn</td></tr>
+<tr><td><b>CPT</b></td><td>Đi thực tập ở rất nhiều xưởng, giờ mới được nhìn</td><td>Hỗn hợp lớn: robot 74%, điều hướng, tay người, ảnh-chữ; mở băng cả hai</td><td>Gắn động tác với hình ảnh → bản <b>Base</b>: biết rộng, tay chưa khéo</td></tr>
+<tr><td><b>SFT</b></td><td>Luyện đúng dạng đề sắp thi</td><td>Demo chất lượng của chính các tác vụ đích (hoặc robot thật)</td><td>Làm chính xác; <b>tăng điểm nhiều nhất</b></td></tr>
+<tr><td><b>RL</b></td><td>Thi thử, chỉ được chấm đỗ / trượt</td><td>Robot tự thử trong SimplerEnv, thưởng 1 hoặc 0</td><td>Sửa lỗi khi tự chạy → bản <b>Instruct</b>; tăng thêm ít</td></tr>
+</table></div>
+<p><b>Pretrain = T2A + CPT, finetune = SFT + RL.</b></p>
+<p class="go">Đi sâu: mục 9 (từng giai đoạn) và 9.5 (câu trả lời cho mentor).</p>
+</div>
+</div>
+
+<h3>Ba bằng chứng nên thuộc</h3>
+<div class="stat">
+  <div><div class="v">48,5 → 83,6</div><div class="k">robot thật ALOHA: không pretrain → có pretrain (Bảng 5)</div></div>
+  <div><div class="v">40,4 → 56,7</div><div class="k">RoboCasa-GR1: Base → Instruct; LIBERO 90,8 → 97,9 (Bảng 4)</div></div>
+  <div><div class="v">60,9 → 71,1</div><div class="k">thêm T2A trước SFT, trên Simpler-WidowX (Hình 6)</div></div>
+</div>
+
+<h3>Tự kiểm tra 4 câu</h3>
+<p>Trả lời được 4 câu này bằng lời của mình là đủ để trình bày. Câu nào vấp thì đọc mục "đi sâu" tương ứng.</p>
+<details class="q"><summary>1. Qwen-VLA nối VLM với DiT khác GR00T thế nào?</summary>GR00T: token hành động hỏi sang token VLM bằng cross-attention, token VLM cố định. Qwen-VLA: nối hai loại token thành một chuỗi, joint self-attention, trao đổi hai chiều.</details>
+<details class="q"><summary>2. Mô hình biết đang điều khiển robot nào bằng cách nào?</summary>Nhờ embodiment prompt (câu chữ mô tả robot, số tay, Hz, số bước) gắn trước câu lệnh. Mọi robot dùng chung một tensor có số kênh cố định, đệm 0 và mask cho phần không dùng.</details>
+<details class="q"><summary>3. τ = 1 nghĩa là gì ở Qwen-VLA? Ở GR00T thì sao?</summary>Qwen-VLA: τ = 1 là nhiễu thuần, suy luận đi từ 1 về 0. GR00T ngược lại: τ = 0 là nhiễu, đi tới 1.</details>
+<details class="q"><summary>4. Bốn giai đoạn mỗi giai đoạn làm gì? Đâu là pretrain, đâu là finetune?</summary>T2A: học chữ → động tác, không ảnh. CPT: học trên hỗn hợp lớn có ảnh → Base. SFT: luyện trên demo tác vụ đích. RL: tự thử, thưởng 0/1 → Instruct. Pretrain = T2A + CPT; finetune = SFT + RL.</details>
+</section>
+
+<!-- ============ 1 ============ -->
+<section class="sec" id="roadmap">
+<h2>1. Lộ trình đọc & checklist <span class="lv m">Phải nắm</span></h2>
+<div class="key"><b class="t">Lần đọc đầu: chỉ cần 4 chặng</b>★ Đọc nhanh 15 phút → 4. Từ GR00T sang Qwen-VLA → 7. Embodiment prompt → 9.5 Pretrain vs finetune. Mọi công thức phụ, bảng ký hiệu và code giả đã được gập vào nút <b>"Xem chi tiết"</b>: lần đầu cứ bỏ qua, khi cần thì mở.</div>
+<p>Mỗi mục trên trang có nhãn mức độ. Đọc kỹ các mục <b>Phải nắm</b>, lướt <b>Nên biết</b>, bỏ qua <b>Đọc lướt</b> nếu thiếu thời gian.</p>
+<div class="legend-lv">
+  <span><span class="lv m" style="margin:0">Phải nắm</span> trọng tâm mentor hỏi, cần nói lại được</span>
+  <span><span class="lv s" style="margin:0">Nên biết</span> giúp hiểu sâu và phản biện</span>
+  <span><span class="lv k" style="margin:0">Đọc lướt</span> chi tiết, tra khi cần</span>
+</div>
+<div class="tw"><table class="t">
+<tr><th>Bước</th><th>Đọc phần nào trên trang</th><th>Ứng với paper</th><th class="num">Thời gian</th></tr>
+<tr><td>1</td><td>0. Tóm tắt, 3. Nền tối thiểu</td><td>Abstract, Hình 1</td><td class="num">20 phút</td></tr>
+<tr><td>2</td><td>4. Từ GR00T N1 sang Qwen-VLA</td><td>Sec 2.2–2.5 (đối chiếu GR00T)</td><td class="num">40 phút</td></tr>
+<tr><td>3</td><td>6. Kiến trúc + widget quy ước τ</td><td>Sec 2.2, 2.5, công thức (1)–(4)</td><td class="num">45 phút</td></tr>
+<tr><td>4</td><td>7. Embodiment prompt + widget</td><td>Sec 2.3, 2.4, Bảng 2</td><td class="num">30 phút</td></tr>
+<tr><td>5</td><td>9. Bốn giai đoạn huấn luyện</td><td>Sec 3.1, 4, 5.2.1, 5.2.3, Hình 2, 6</td><td class="num">50 phút</td></tr>
+<tr><td>6</td><td>10. Kết quả LIBERO & RoboCasa</td><td>Sec 5.1.1, Bảng 4, 11</td><td class="num">30 phút</td></tr>
+<tr><td>7</td><td>12. RTC & MoE, 13. Phản biện, 14. Tự kiểm tra</td><td>—</td><td class="num">35 phút</td></tr>
+<tr><td>8 (tùy)</td><td>5, 8, 11 (động lực, dữ liệu, kết quả khác)</td><td>Sec 1, 3.2, 5.1.2–5.1.6, 5.2.2, 5.2.4</td><td class="num">40 phút</td></tr>
+</table></div>
+
+<h3>Checklist "mình đã hiểu Qwen-VLA"</h3>
+<div class="prog"><i id="progBar"></i></div>
+<div class="chk" id="chk">
+  <label><input type="checkbox" data-k="c1"><span>Kể được 3 điểm Qwen-VLA giữ nguyên từ GR00T N1 và 5 điểm thay đổi, kèm lý do paper đưa ra.</span></label>
+  <label><input type="checkbox" data-k="c2"><span>Giải thích "joint self-attention" khác cross-attention của GR00T ở chỗ nào (token nào nhìn token nào).</span></label>
+  <label><input type="checkbox" data-k="c3"><span>Đọc thuộc khuôn embodiment prompt và nói được nó chứa những thông tin gì.</span></label>
+  <label><input type="checkbox" data-k="c4"><span>Giải thích đệm 0 + mask: tensor \(Y \in \mathbb{R}^{H\times K}\), c kênh thật, vì sao loss trung bình hai tầng.</span></label>
+  <label><input type="checkbox" data-k="c5"><span>Viết được \(Y_\tau = (1-\tau)Y_0 + \tau Y_1\), mục tiêu vận tốc \(Y_1 - Y_0\), và đổi qua lại với quy ước của GR00T.</span></label>
+  <label><input type="checkbox" data-k="c6"><span>Nêu được 4 giai đoạn: mỗi giai đoạn đóng băng gì, dùng dữ liệu gì, để làm gì, ra checkpoint nào.</span></label>
+  <label><input type="checkbox" data-k="c7"><span>Giải thích vì sao T2A <b>cố tình bỏ ảnh</b> (ý "giải nén" và bằng chứng −2,9 điểm).</span></label>
+  <label><input type="checkbox" data-k="c8"><span>Giải thích vì sao PPO khó áp vào flow matching và mẹo ODE → SDE giải quyết thế nào.</span></label>
+  <label><input type="checkbox" data-k="c9"><span>Trả lời được câu "pretrain vs finetune" của mentor bằng số liệu trong paper.</span></label>
+  <label><input type="checkbox" data-k="c10"><span>Đọc Bảng 4: specialist vs generalist, Base vs Instruct, và so đúng với GR00T (N1 hay N1.6?).</span></label>
+  <label><input type="checkbox" data-k="c11"><span>Chỉ ra được chỗ RTC và MoE sẽ "cắm vào" kiến trúc Qwen-VLA.</span></label>
+  <label><input type="checkbox" data-k="c12"><span>Nêu ít nhất 3 điểm cần dè dặt khi trình bày kết quả của paper.</span></label>
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="sec" id="glossary">
+<h2>2. Bảng thuật ngữ <span class="lv s">Nên biết</span></h2>
+<p>Không cần thuộc trước. Các từ đã có ở trang GR00T (VLA, VLM, token, DiT, flow matching, action chunk…) chỉ nhắc lại rất ngắn.</p>
+<details class="more"><summary>Mở bảng thuật ngữ (dùng để tra khi gặp từ lạ)</summary>
+<div class="tw"><table class="t">
+<tr><th>Thuật ngữ</th><th>Nghĩa ngắn gọn</th><th>Gặp ở</th></tr>
+<tr><td>Qwen3.5-4B</td><td>VLM 4 tỷ tham số của nhóm Qwen, đọc được ảnh, video và chữ ngay từ đầu (natively multimodal)</td><td>2.2</td></tr>
+<tr><td>Early fusion</td><td>Token ảnh được xen thẳng vào chuỗi token chữ, một Transformer xử lý tất cả</td><td>2.2</td></tr>
+<tr><td>Hybrid attention</td><td>Phần lớn lớp dùng <i>gated linear attention</i> (rẻ, hợp chuỗi dài), xen định kỳ vài lớp softmax attention đầy đủ (GQA)</td><td>2.2</td></tr>
+<tr><td>Hidden states</td><td>Các vector đầu ra bên trong VLM, mỗi token một vector. Là "bản tóm tắt" ảnh + câu lệnh mà DiT nhận</td><td>2.2</td></tr>
+<tr><td>Action expert</td><td>Mạng con chuyên sinh hành động. Ở đây là DiT 16 khối, ~1,15B tham số</td><td>2.2</td></tr>
+<tr><td>Single-stream DiT / joint self-attention</td><td>Ghép token của VLM và token hành động thành <b>một chuỗi</b>, mọi token nhìn nhau trong cùng một phép self-attention</td><td>2.2</td></tr>
+<tr><td>AdaLN</td><td>Adaptive LayerNorm: lớp chuẩn hóa có "núm chỉnh" phụ thuộc mức nhiễu τ</td><td>2.2</td></tr>
+<tr><td>Multi-section RoPE</td><td>Cách mã hóa vị trí token, chia vector thành nhiều phần cho các trục (thời gian, cao, rộng); Qwen-VLA làm khớp với backbone</td><td>2.2</td></tr>
+<tr><td>Embodiment</td><td>"Thân" robot: loại robot, số tay, kiểu điều khiển</td><td>2.3</td></tr>
+<tr><td>Embodiment prompt</td><td>Câu chữ mô tả robot, gắn trước câu lệnh của mỗi mẫu</td><td>2.3</td></tr>
+<tr><td>Zero-padding / mask</td><td>Đệm 0 cho đủ K kênh; mask (0/1) đánh dấu ô nào là dữ liệu thật</td><td>2.4</td></tr>
+<tr><td>ΔEEF / Abs Joint / G / DH</td><td>Dịch chuyển tương đối đầu tay / góc khớp tuyệt đối / kẹp (gripper) / bàn tay khéo (dexterous hand)</td><td>Bảng 2</td></tr>
+<tr><td>Quantile normalization</td><td>Chuẩn hóa mỗi chiều hành động về [−1, 1] dựa trên phân vị 1% và 99% của từng dataset</td><td>3.2.1</td></tr>
+<tr><td>MANO / eigengrasp</td><td>Mô hình 3D bàn tay người / các "kiểu nắm chính" tìm bằng PCA, dùng 10 số thay cho 45 góc khớp</td><td>3.2.2</td></tr>
+<tr><td>T2A</td><td>Text-to-Action pretraining: dạy DiT đi từ chữ sang hành động, không có ảnh</td><td>3.1</td></tr>
+<tr><td>CPT</td><td>Continued pretraining: huấn luyện tiếp trên hỗn hợp dữ liệu lớn, có ảnh, mở băng cả VLM lẫn DiT</td><td>3.1</td></tr>
+<tr><td>SFT</td><td>Supervised fine-tuning: bắt chước dữ liệu chất lượng của tác vụ đích</td><td>4.1</td></tr>
+<tr><td>RL, PPO, GAE</td><td>Học tăng cường; thuật toán Proximal Policy Optimization; cách ước lượng "lợi thế" (advantage)</td><td>4.2</td></tr>
+<tr><td>Value head</td><td>Một lớp tuyến tính nhỏ đoán "trạng thái này đáng giá bao nhiêu" (xác suất thành công kỳ vọng)</td><td>4.2</td></tr>
+<tr><td>ODE / SDE</td><td>Quá trình khử nhiễu tất định / có thêm nhiễu ngẫu nhiên mỗi bước</td><td>4.2</td></tr>
+<tr><td>Qwen-VLA-Base / -Instruct</td><td>Checkpoint sau pretraining (T2A + CPT) / sau SFT + RL</td><td>4, 5</td></tr>
+<tr><td>Specialist / generalist</td><td>Mô hình fine-tune riêng từng benchmark / một mô hình chung cho mọi benchmark</td><td>5.1.1</td></tr>
+<tr><td>OOD</td><td>Out-of-distribution: tình huống khác dữ liệu huấn luyện (màu, vật, nền, câu lệnh mới…)</td><td>5.1</td></tr>
+<tr><td>VLN, SR, OS(R), SPL</td><td>Điều hướng theo lời; tỉ lệ thành công; thành công "kiểu oracle" (từng đi qua đích); thành công có tính độ ngắn đường đi</td><td>5.1.3</td></tr>
+<tr><td>StarVLA</td><td>Codebase mở mà Qwen-VLA dùng làm giao thức đánh giá chuẩn</td><td>5.1.1</td></tr>
+</table></div>
+</details>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="sec" id="basics">
+<h2>3. Nền tối thiểu <span class="lv m">Phải nắm</span></h2>
+<p>Chỉ những khái niệm paper dùng mà không giải thích, mỗi cái một ví dụ đời thường. Không cần hiểu toán bên trong, chỉ cần biết <b>nó làm gì</b> và <b>vì sao paper cần nó</b>.</p>
+<div class="basics">
+  <div><b class="h">Token = một tấm thẻ</b>Mọi thứ được cắt thành các "thẻ" xếp thành hàng: mỗi từ là một thẻ, mỗi mảnh ảnh là một thẻ, mỗi bước hành động cũng là một thẻ. Mỗi thẻ thực chất là một vector số.<span class="why">Cần vì: Qwen-VLA nối thẻ của VLM với thẻ hành động thành một hàng.</span></div>
+  <div><b class="h">Attention = một cuộc họp</b>Mỗi thẻ "nhìn" các thẻ khác, quyết định nên chú ý ai nhiều, rồi lấy thông tin về. <b>Self-attention</b>: họp nội bộ trong một nhóm. <b>Cross-attention</b> (GR00T): nhóm hành động đặt câu hỏi, nhóm ảnh-chữ chỉ trả lời. <b>Joint self-attention</b> (Qwen-VLA): gộp hai nhóm vào cùng một phòng họp, ai cũng hỏi được ai.<span class="why">Cần vì: đây là thay đổi kiến trúc lớn nhất so với GR00T (mục 4, 6.2).</span></div>
+  <div><b class="h">FFN / MLP = tự suy nghĩ sau cuộc họp</b>Sau khi họp, mỗi thẻ đi qua một mạng nhỏ (MLP) để "tiêu hóa" thông tin vừa nhận, từng thẻ riêng rẽ. MLP cũng dùng làm "bộ đổi kích thước", ví dụ đổi 32 số hành động thành vector dài của DiT.<span class="why">Cần vì: paper MoE sẽ thay đúng lớp FFN này bằng nhiều "chuyên gia".</span></div>
+  <div><b class="h">LayerNorm & AdaLN = núm âm lượng</b>LayerNorm đưa các số trong vector về cùng một "mức âm lượng" chuẩn để mạng học ổn định. AdaLN thêm một núm chỉnh phụ thuộc mức nhiễu τ, nên mạng biết mình đang ở bước khử nhiễu nào.<span class="why">Cần vì: τ đi vào DiT qua AdaLN, giống GR00T.</span></div>
+  <div><b class="h">Flow matching = nặn tượng từ cục đất</b>Bắt đầu từ một cục "nhiễu Gaussian" (số ngẫu nhiên). Mạng chỉ ra hướng nặn tiếp; đi vài bước nhỏ (bước Euler) là ra chunk hành động. Lúc huấn luyện, mạng học "hướng đi" giữa nhiễu và hành động thật.<span class="why">Cần vì: giống GR00T, nhưng Qwen-VLA đảo nhãn τ (mục 6.3).</span></div>
+  <div><b class="h">Đóng băng / mở băng</b>Đóng băng (❄) một khối = khóa trọng số, không cho học. Mở băng (🔥) = cho học tiếp.<span class="why">Cần vì: bốn giai đoạn huấn luyện khác nhau chủ yếu ở chỗ đóng băng gì, cho ăn dữ liệu gì.</span></div>
+  <div><b class="h">Đệm 0 + mask = phiếu điền có ô bỏ trống</b>Một tờ phiếu cố định 32 ô. Robot một tay chỉ điền 7 ô, các ô còn lại để 0 và đánh dấu "đừng chấm". Nhờ vậy mọi robot dùng chung một mẫu phiếu.<span class="why">Cần vì: đây là cách Qwen-VLA thay MLP riêng của GR00T (mục 7).</span></div>
+  <div><b class="h">Học tăng cường (RL) = học bằng thưởng</b>Robot tự thử làm. Làm xong được thưởng 1, hỏng được 0. Mô hình được chỉnh để làm nhiều hơn những gì từng dẫn tới thưởng. <b>Advantage</b> = "lần này tốt hơn mình kỳ vọng bao nhiêu". <b>PPO</b> = luật "mỗi lần chỉ sửa một chút" để không học hỏng.<span class="why">Cần vì: giai đoạn cuối (mục 9.4).</span></div>
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="sec" id="bridge">
+<h2>4. Từ GR00T N1 sang Qwen-VLA <span class="lv m">Phải nắm</span></h2>
+<p>Hai paper dùng chung một <b>khuôn</b>: VLM hiểu tình huống, DiT sinh chunk hành động bằng flow matching. Bảng dưới so từng điểm; cột cuối cho biết <span style="color:var(--pri-strong);font-weight:600">giữ</span>, <span style="color:var(--accent);font-weight:600">đổi</span> hay <span style="color:var(--muted);font-weight:600">paper không nói rõ</span>. Số của GR00T lấy từ PDF GR00T N1, số của Qwen-VLA lấy từ PDF Qwen-VLA.</p>
+
+<div class="tw"><table class="t">
+<tr><th>Điểm so sánh</th><th>GR00T N1 (2503.14734)</th><th>Qwen-VLA (2605.30280)</th><th></th></tr>
+<tr><td><b>Khuôn tổng thể</b></td><td>VLM + action expert DiT, flow matching</td><td>VLM + action expert DiT, flow matching</td><td class="keep">giữ</td></tr>
+<tr><td><b>VLM</b></td><td>Eagle-2 (SigLIP-2 + SmolLM2), 1,34B</td><td>Qwen3.5-4B, đa phương thức từ gốc (early fusion), attention lai</td><td class="chg">đổi, to ~3×</td></tr>
+<tr><td>Ảnh vào VLM</td><td>224 × 224 → 64 token/ảnh</td><td>Token ảnh xen vào chuỗi chữ; mỗi ảnh bọc bằng thẻ tên camera (<code>ego</code>, <code>cam_left_wrist</code>…). Không nêu số token/ảnh</td><td class="chg">đổi</td></tr>
+<tr><td>VLM có được học?</td><td>LLM đóng băng suốt; vision encoder được học</td><td>Đóng băng ở T2A; <b>mở băng</b> ở CPT, SFT, RL</td><td class="chg">đổi</td></tr>
+<tr><td>Lấy đặc trưng VLM ở đâu</td><td>Lớp 12 (lớp giữa)</td><td>"VLM hidden states", qua một lớp Linear (3,9M) đổi sang kích thước DiT. Không nói lớp nào</td><td class="unk">chưa rõ</td></tr>
+<tr><td><b>Cách nối VLM ↔ action expert</b></td><td>Khối cross-attention xen self-attention: token hành động hỏi φ<sub>t</sub></td><td><b>Nối</b> hidden states VLM với chunk nhiễu thành <b>một chuỗi</b>, qua joint self-attention (DiT kiểu single-stream)</td><td class="chg">đổi</td></tr>
+<tr><td>Đưa τ vào mạng</td><td>AdaLN (+ action encoder)</td><td>AdaLN với timestep embedding (2,8M)</td><td class="keep">giữ</td></tr>
+<tr><td>Kích thước action expert</td><td>~0,86B phần ngoài VLM (tự tính 2,2 − 1,34)</td><td>~1,15B: 16 khối × 70,8M + các MLP chiếu</td><td class="chg">đổi, to hơn</td></tr>
+<tr><td><b>Xử lý nhiều loại robot</b></td><td>MLP encoder/decoder <b>riêng</b> cho mỗi embodiment</td><td><b>Embodiment prompt</b> (câu chữ) + <b>một</b> cặp MLP chung + đệm 0 tới K kênh + mask</td><td class="chg">đổi</td></tr>
+<tr><td>Trạng thái robot (proprio)</td><td>Có: q<sub>t</sub> qua state encoder</td><td>Mặc định <b>không dùng</b> (Bảng 12: thêm vào chỉ được ≤ +1,3 điểm)</td><td class="chg">đổi</td></tr>
+<tr><td><b>Quy ước τ</b></td><td>τ = 0 nhiễu, τ = 1 sạch: \(A^\tau = \tau A + (1-\tau)\epsilon\)</td><td>τ = 0 sạch, τ = 1 nhiễu: \(Y_\tau = (1-\tau)Y_0 + \tau Y_1\)</td><td class="chg">đảo nhãn</td></tr>
+<tr><td>Mục tiêu vận tốc</td><td>Paper ghi \(\epsilon - A\) (lệch dấu, phép toán cần \(A - \epsilon\))</td><td>\(Y_1 - Y_0\) (nhiễu − sạch), <b>đúng dấu</b> với quy ước của nó</td><td class="chg">đổi</td></tr>
+<tr><td>Phân phối p(τ) khi huấn luyện</td><td>Beta (theo π0), s = 0,999</td><td>Sigmoid-Normal ở T2A; Beta ở CPT/SFT</td><td class="chg">đổi một phần</td></tr>
+<tr><td><b>Chunk H</b></td><td>16</td><td>16 cho thao tác (VLN: 8 waypoint; T2A học cả quỹ đạo)</td><td class="keep">giữ</td></tr>
+<tr><td><b>Số bước suy luận</b></td><td>K = 4 bước Euler, τ: 0 → 1</td><td>"a few Euler integration steps", τ: 1 → 0. <b>Không ghi con số</b></td><td class="unk">chưa rõ số</td></tr>
+<tr><td>Loss phụ</td><td>L<sub>det</sub> (đoán tâm vật, phụ lục F)</td><td>L<sub>vl</sub>: đoán token chữ tiếp theo trên dữ liệu VL</td><td class="chg">đổi</td></tr>
+<tr><td>Đầu ra chữ</td><td>Không</td><td>Có (VQA, caption, grounding)</td><td class="chg">đổi</td></tr>
+<tr><td><b>Giai đoạn huấn luyện</b></td><td>Pre-training → post-training trên từng embodiment</td><td>T2A → CPT → SFT (2 nhánh) → RL</td><td class="chg">đổi</td></tr>
+<tr><td>Dữ liệu không có nhãn hành động</td><td>Latent action (LAPA), nhãn IDM cho video do AI sinh</td><td>Video người có sẵn tay 3D (MANO → 32 chiều); pseudo-action bằng sai phân trạng thái</td><td class="chg">đổi</td></tr>
+<tr><td>Cách báo kết quả</td><td>Post-train <b>riêng</b> mỗi benchmark</td><td><b>Một</b> mô hình chung cho mọi benchmark</td><td class="chg">đổi</td></tr>
+</table></div>
+
+<h3>Cái gì giữ nguyên, và vì sao giữ được</h3>
+<ul>
+<li><b>Chia vai "hiểu" và "làm".</b> Qwen-VLA so sánh với "đại não và tiểu não" (Sec 3.1): VLM lo hiểu, DiT lo động tác tinh. Lý do vẫn như GR00T: VLM mang kiến thức Internet, còn hành động liên tục và nhiều đỉnh (nhiều cách làm đúng) thì cần mô hình sinh.</li>
+<li><b>Flow matching + action chunk H = 16 + AdaLN cho τ.</b> Đã chứng minh hiệu quả ở π0, GR00T. Qwen-VLA không đổi toán, chỉ đổi nhãn τ.</li>
+<li><b>Vài bước Euler khi suy luận</b>, để đủ nhanh cho điều khiển thời gian thực.</li>
+</ul>
+
+<h3>Cái gì thay đổi, và paper giải thích vì sao</h3>
+<div class="pv"><div class="p"><span class="lab">Đổi 1 · MLP riêng → prompt + đệm 0</span>Bảng 10: so ba cách chiếu hành động trên Bridge và RoboCasa. Multi-MLP (kiểu GR00T) 63,3 / 52,1; Concat 63,0 / 52,8; Zero-Pad 63,0 / 53,2. Chênh &lt; 1,2 điểm.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Về điểm số, ba cách gần như ngang nhau. Paper chọn đệm 0 vì <b>nhẹ nhất</b>: chỉ cần \(2h\,d_{max}\) tham số chiếu, so với \(2h\sum_i d_i\) của MLP riêng (h là kích thước ẩn của DiT, \(d_i\) là số chiều hành động của robot i). Khi đã dùng chung MLP, mô hình cần biết "đang điều khiển robot nào", và <b>prompt</b> làm việc đó. Lợi ích thêm: lúc triển khai trên robot mới chỉ cần <b>đổi câu prompt</b>, không thêm tham số (Sec 4.2).</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Đổi 2 · Cross-attention → joint self-attention</span>"The action expert concatenates VLM hidden states with a noisy action chunk into one sequence and processes them through joint self-attention…" Thiết kế tách rời này giúp expert chuyên về hành động <i>while preserving the backbone's pretrained capabilities</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Trong GR00T, token VLM chỉ là "sách tham khảo" cố định cho token hành động tra cứu. Ở Qwen-VLA, token VLM cũng <b>đi qua 16 khối DiT</b> và được cập nhật cùng token hành động, nên thông tin chảy hai chiều. Lưu ý: paper <b>không có thí nghiệm so</b> joint self-attention với cross-attention. Đây là lựa chọn thiết kế theo dòng DiT single-stream (paper dẫn Esser et al. 2024, tức Stable Diffusion 3), không phải kết luận thực nghiệm.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Đổi 3 · Bỏ trạng thái robot</span>Bảng 12 trên RoboTwin-2.0: No State 88,7 / 87,4; State trong prompt VLM 89,3 / 88,7; State vào DiT 89,4 / 88,3.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Thêm góc khớp chỉ giúp tối đa +0,7 (Easy) và +1,3 (Hard). Paper đưa hai lý do: camera đã thấy được tay robot, và mô hình đoán hành động <b>tương đối</b> nên ít cần biết vị trí tuyệt đối. Bỏ state giúp prompt là <i>đầu vào duy nhất</i> phụ thuộc robot, đúng tinh thần "một mô hình cho mọi robot".</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Đổi 4 · VLM to hơn, mở băng, nhưng thêm T2A</span>VLM đã pretrain mạnh, còn DiT khởi tạo ngẫu nhiên. Huấn luyện chung ngay từ đầu thì kém hiệu quả và <i>noisy gradients from a fresh decoder may perturb the pretrained backbone</i> (Sec 3.1).</div>
+<div class="n"><span class="lab">Nghĩa là</span>GR00T tránh rủi ro bằng cách <b>khóa LLM vĩnh viễn</b>. Qwen-VLA muốn VLM cũng được học hành động (để hiểu không gian, vật thể tốt hơn), nên giải bằng cách khác: <b>khởi động DiT trước</b> (T2A, VLM đóng băng), rồi mới mở băng cả hai. Thêm loss L<sub>vl</sub> để VLM không quên khả năng hiểu ảnh-chữ.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Đổi 5 · Đảo quy ước τ</span>"…interpolates between the clean target (τ = 0) and pure noise (τ = 1)" (Sec 5.2.1).</div>
+<div class="n"><span class="lab">Nghĩa là</span>Paper không giải thích lý do. Theo mình hiểu: đây là quy ước của bài flow matching gốc (Lipman et al.) và của rectified flow trong Stable Diffusion 3, mà Qwen-VLA đều dẫn. GR00T thì theo π0. Hai cách cho <b>cùng một đường thẳng</b>, chỉ đổi chiều đặt tên. Widget ở 6.3 cho thấy hai cách cho ra cùng số.</div></div>
+
+<div class="co warn"><b class="t">Bẫy khi so số liệu với GR00T</b>
+Trong các bảng của Qwen-VLA, đối thủ là <b>GR00T N1.6</b>, không phải GR00T N1 bạn đã đọc. GR00T N1 không báo kết quả LIBERO. Mục 10 tách rõ số nào của N1 (lấy từ PDF GR00T) và số nào của N1.6 (lấy từ PDF Qwen-VLA).</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="sec" id="motiv">
+<h2>5. Động lực & bài toán chung (Section 1, 2.1) <span class="lv s">Nên biết</span></h2>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Phần lớn hệ embodied hiện nay <i>remain specialized to a narrow task family, robot embodiment, or evaluation setting</i>. Mô hình thao tác chỉ làm thao tác, mô hình điều hướng chỉ làm điều hướng.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Mỗi loại việc một mô hình riêng thì không "học chéo" được: kỹ năng nhận ra cái cốc khi điều hướng không giúp gì khi gắp cốc. Paper muốn làm như cách LLM đã làm với chữ: một mô hình lớn, học từ mọi loại dữ liệu.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Mọi tác vụ chung một cấu trúc: nhận quan sát \(o_t\), câu lệnh \(x\), mô tả robot \(e\), mã tác vụ \(z\) (tùy chọn), rồi đoán chuỗi \(y_{t:t+H-1}\):
+\[ p_\theta\big(y_{t:t+H-1} \mid o_t,\, x,\, e,\, z\big) \]</div>
+<div class="n"><span class="lab">Nghĩa là</span>Chỉ <b>một công thức</b> cho mọi loại việc; "đoán cái gì" thay đổi theo tác vụ:
+<ul style="margin:6px 0 0 18px;padding:0">
+<li>Thao tác: các hành động tương lai (dịch chuyển đầu tay, góc khớp, kẹp).</li>
+<li>Điều hướng: các waypoint \((\Delta x, \Delta y, \Delta\theta)\) trên mặt sàn.</li>
+<li>Lái xe, dự báo chuyển động: quỹ đạo trong tọa độ liên tục.</li>
+<li>Video người: quỹ đạo cổ tay và bàn tay.</li>
+</ul></div></div>
+
+<details class="more"><summary>Xem chi tiết: từng ký hiệu trong công thức</summary>
+<div class="tw"><table class="t">
+<tr><th>Ký hiệu</th><th>Là gì</th><th>Ví dụ</th></tr>
+<tr><td>\(o_t\)</td><td>Quan sát tại thời điểm t: một hoặc nhiều ảnh, video, cửa sổ lịch sử</td><td>3 ảnh: camera đầu + 2 camera cổ tay</td></tr>
+<tr><td>\(x\)</td><td>Câu lệnh</td><td>"pick up the red cup"</td></tr>
+<tr><td>\(e\)</td><td>Embodiment prompt: câu chữ mô tả robot</td><td>xem mục 7</td></tr>
+<tr><td>\(z\)</td><td>Mã họ tác vụ (khi cần)</td><td>thao tác / điều hướng</td></tr>
+<tr><td>\(H\)</td><td>Độ dài chuỗi cần đoán (horizon)</td><td>16 hành động, hoặc 8 waypoint</td></tr>
+<tr><td>\(\theta\)</td><td>Toàn bộ tham số mô hình</td><td>—</td></tr>
+</table></div>
+</details>
+<p>Bốn đóng góp paper tự nêu: (1) mô hình thống nhất trên Qwen3.5-4B + DiT; (2) hỗn hợp dữ liệu pretraining lớn và embodiment prompt; (3) công thức huấn luyện nhiều giai đoạn; (4) đánh giá rộng trên thao tác, điều hướng, OOD, robot thật.</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="sec" id="arch">
+<h2>6. Kiến trúc (Section 2.2, 2.5) <span class="lv m">Phải nắm</span></h2>
+
+<div class="stat">
+  <div><div class="v">4B</div><div class="k">VLM Qwen3.5-4B</div></div>
+  <div><div class="v">~1,15B</div><div class="k">action expert DiT</div></div>
+  <div><div class="v">16 × 70,8M</div><div class="k">16 khối DiT = 1,13B</div></div>
+  <div><div class="v">~5B</div><div class="k">tổng (tự cộng; paper không ghi)</div></div>
+  <div><div class="v">H = 16</div><div class="k">hành động mỗi chunk</div></div>
+</div>
+
+<div class="widget">
+<h4>Sơ đồ kiến trúc (Hình 1 vẽ lại)</h4>
+<p style="margin:0 0 6px;font-size:.92rem;color:var(--muted)">Bấm vào từng khối để xem giải thích. Khối cam thuộc VLM, khối xanh ngọc thuộc action expert, khối viền đứt chỉ dùng ở giai đoạn RL.</p>
+<svg class="svgbox" viewBox="0 0 920 500" id="archSvg" role="img" aria-label="Sơ đồ kiến trúc Qwen-VLA">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<path class="ar" d="M170,58 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M170,148 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M375,68 H408" marker-end="url(#ah)"/>
+<path class="ar" d="M375,135 H408" marker-end="url(#ah)"/>
+<path class="ar" d="M375,195 H408" marker-end="url(#ah)"/>
+<path class="ar" d="M550,68 H588" marker-end="url(#ah)"/>
+<path class="ar" d="M655,96 V258" marker-end="url(#ah)"/>
+<text class="lbl" x="662" y="190">token VL vào chuỗi</text>
+<path class="ar" d="M170,323 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M355,323 H398" marker-end="url(#ah)"/>
+<path class="ar" d="M170,423 H203" marker-end="url(#ah)"/>
+<path class="ar" d="M355,423 H398" marker-end="url(#ah)"/>
+<path class="ar" d="M740,330 H778" marker-end="url(#ah)"/>
+<path class="ar" d="M855,302 V200" marker-end="url(#ah)"/>
+<text class="lbl" x="862" y="245">sau</text><text class="lbl" x="862" y="260">vài</text><text class="lbl" x="862" y="275">bước</text>
+<path class="ar" d="M855,358 V482 H95 V360" marker-end="url(#ah)" style="stroke-dasharray:6 4"/>
+<text class="lbl" x="470" y="476" text-anchor="middle">vận tốc v<tspan baseline-shift="sub" font-size="9">θ</tspan> → một bước Euler (τ giảm dần từ 1 về 0) → chunk bớt nhiễu, đưa lại vào</text>
+<g class="n" data-k="img"><rect class="b0" x="20" y="25" width="150" height="66" rx="10"/><text x="95" y="51">Ảnh nhiều camera</text><text class="s" x="95" y="71">mỗi ảnh có thẻ tên view</text></g>
+<g class="n" data-k="txt"><rect class="b0" x="20" y="115" width="150" height="66" rx="10"/><text x="95" y="141">Prompt</text><text class="s" x="95" y="161">mô tả robot + câu lệnh</text></g>
+<g class="n vlm" data-k="vlm"><rect class="b0" x="205" y="25" width="170" height="190" rx="10"/><text x="290" y="95">Qwen3.5-4B</text><text class="s" x="290" y="115">ViT + LLM attention lai</text><text class="s" x="290" y="135">early fusion</text><text class="s" x="290" y="160">❄ ở T2A · 🔥 từ CPT</text></g>
+<g class="n vlm" data-k="hid"><rect class="b0" x="410" y="40" width="140" height="56" rx="10"/><text x="480" y="64">Hidden states</text><text class="s" x="480" y="82">mỗi token 1 vector</text></g>
+<g class="n vlm" data-k="lm"><rect class="b0" x="410" y="110" width="140" height="50" rx="10"/><text x="480" y="131">Chữ trả lời</text><text class="s" x="480" y="148">loss L<tspan baseline-shift="sub" font-size="8">vl</tspan></text></g>
+<g class="n vlm rl" data-k="val"><rect class="b0" x="410" y="172" width="140" height="50" rx="10"/><text x="480" y="193">Value head</text><text class="s" x="480" y="210">chỉ ở RL</text></g>
+<g class="n dit" data-k="lin"><rect class="b0" x="590" y="40" width="130" height="56" rx="10"/><text x="655" y="64">Linear</text><text class="s" x="655" y="82">→ kích thước DiT</text></g>
+<g class="n" data-k="act"><rect class="b0" x="20" y="290" width="150" height="66" rx="10"/><text x="95" y="315">Chunk nhiễu Y<tspan baseline-shift="sub" font-size="9">τ</tspan></text><text class="s" x="95" y="335">16 × K, đệm 0 + mask</text></g>
+<g class="n dit" data-k="ain"><rect class="b0" x="205" y="295" width="150" height="56" rx="10"/><text x="280" y="319">Action MLP vào</text><text class="s" x="280" y="337">chung mọi robot</text></g>
+<g class="n" data-k="tau"><rect class="b0" x="20" y="395" width="150" height="56" rx="10"/><text x="95" y="419">Mức nhiễu τ</text><text class="s" x="95" y="437">1 = nhiễu, 0 = sạch</text></g>
+<g class="n dit" data-k="temb"><rect class="b0" x="205" y="395" width="150" height="56" rx="10"/><text x="280" y="419">Timestep emb.</text><text class="s" x="280" y="437">→ AdaLN mỗi khối</text></g>
+<g class="n dit" data-k="dit"><rect class="b0" x="400" y="260" width="340" height="190" rx="12"/>
+  <text x="570" y="284">DiT × 16 khối (single-stream)</text>
+  <rect x="418" y="296" width="18" height="16" rx="3" style="fill:var(--accent-soft);stroke:var(--accent)"/><rect x="440" y="296" width="18" height="16" rx="3" style="fill:var(--accent-soft);stroke:var(--accent)"/><rect x="462" y="296" width="18" height="16" rx="3" style="fill:var(--accent-soft);stroke:var(--accent)"/><text x="500" y="309" style="font-size:11px">…</text>
+  <rect x="520" y="296" width="18" height="16" rx="3" style="fill:var(--warn-bg);stroke:var(--warn)"/><rect x="542" y="296" width="18" height="16" rx="3" style="fill:var(--warn-bg);stroke:var(--warn)"/><text x="580" y="309" style="font-size:11px">…</text><rect x="598" y="296" width="18" height="16" rx="3" style="fill:var(--warn-bg);stroke:var(--warn)"/>
+  <text class="s" x="680" y="309">một chuỗi</text>
+  <rect x="430" y="322" width="280" height="30" rx="6" style="fill:var(--code-bg);stroke:var(--grey)"/><text x="570" y="342" style="font-size:12px">Joint self-attention</text>
+  <rect x="430" y="358" width="280" height="24" rx="6" style="fill:var(--blue-soft);stroke:var(--blue)"/><text x="570" y="375" style="font-size:12px">AdaLN theo τ</text>
+  <rect x="430" y="388" width="280" height="30" rx="6" style="fill:var(--pri-soft);stroke:var(--pri)"/><text x="570" y="408" style="font-size:12px">Feed-Forward MLP (FFN)</text>
+  <text class="s" x="570" y="438">token VL (cam) + 16 token hành động (vàng)</text></g>
+<g class="n dit" data-k="aout"><rect class="b0" x="780" y="302" width="130" height="56" rx="10"/><text x="845" y="326">Action MLP ra</text><text class="s" x="845" y="344">→ vận tốc 16 × K</text></g>
+<g class="n" data-k="out"><rect class="b0" x="780" y="130" width="130" height="68" rx="10"/><text x="845" y="156">Chunk sạch Y<tspan baseline-shift="sub" font-size="9">0</tspan></text><text class="s" x="845" y="176">đọc c kênh đầu</text><text class="s" x="845" y="191">→ robot</text></g>
+</svg>
+<div class="out" id="archInfo">Bấm vào một khối bất kỳ trong sơ đồ.</div>
+</div>
+
+<!-- 6.1 -->
+<h3 id="vlm">6.1 VLM Qwen3.5 <span class="lv s">Nên biết</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Qwen3.5 là mô hình <i>natively multimodal</i>, huấn luyện với <i>early vision-language fusion</i>: token ảnh từ một ViT có <i>spatial merging</i> được xen thẳng vào dòng token chữ. Attention lai: phần lớn lớp dùng <i>gated linear attention</i>, định kỳ xen <i>grouped-query softmax attention</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Khác Eagle-2 của GR00T (ghép một bộ mã hóa ảnh với một LLM chữ), Qwen3.5 được dạy đọc ảnh và chữ cùng lúc ngay từ đầu. Attention lai là mẹo tốc độ: linear attention rẻ với chuỗi dài (nhiều ảnh, video), còn vài lớp softmax đầy đủ giữ khả năng suy luận toàn cục. Với người mới, chỉ cần nhớ: <b>VLM mạnh hơn và to hơn GR00T khoảng 3 lần</b>, chi tiết bên trong để đọc lướt.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Mỗi ảnh được bọc bằng cặp token theo camera: <code>&lt;|tag_start|&gt; ⟨image⟩ &lt;|tag_end|&gt;</code>, với tag là <code>ego</code>, <code>cam_left_wrist</code>, <code>cam_right_wrist</code>… (Sec 3.2.1)</div>
+<div class="n"><span class="lab">Nghĩa là</span>Mô hình biết ảnh nào từ camera nào mà không cần thêm kênh hay khối mới. Ví dụ (mình tự điền tag theo cách paper mô tả): <code>&lt;|ego_start|&gt; [ảnh đầu] &lt;|ego_end|&gt; &lt;|cam_left_wrist_start|&gt; [ảnh cổ tay trái] &lt;|cam_left_wrist_end|&gt;</code>.</div></div>
+
+<!-- 6.2 -->
+<h3 id="dit">6.2 Action expert DiT <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Một <i>single-stream DiT-style flow matching policy</i>. Expert <i>concatenates VLM hidden states with a noisy action chunk into one sequence</i>, xử lý bằng <i>joint self-attention with AdaLN timestep conditioning and multi-section RoPE aligned with the backbone</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Xếp hai nhóm thẻ thành một hàng: [thẻ ảnh + chữ từ VLM] [16 thẻ hành động nhiễu]. Mỗi khối DiT cho cả hàng "họp chung" (self-attention), chỉnh âm lượng theo τ (AdaLN), rồi mỗi thẻ tự tiêu hóa (FFN). Lặp 16 lần. Cuối cùng chỉ đọc 16 thẻ hành động để ra vận tốc.</div></div>
+
+<div class="two">
+<div class="co" style="margin:0;background:var(--accent-soft);border-color:transparent"><b class="t">GR00T N1: cross-attention xen self-attention</b>
+Token hành động (+ 1 token trạng thái) là nhóm duy nhất được cập nhật. Ở khối cross-attention, chúng hỏi φ<sub>t</sub> của VLM; φ<sub>t</sub> không đổi qua các khối. Thông tin chảy <b>một chiều</b>: VLM → hành động.</div>
+<div class="co note" style="margin:0"><b class="t">Qwen-VLA: joint self-attention</b>
+Token VLM và token hành động nằm chung một chuỗi, cùng được cập nhật qua 16 khối. Token hành động nhìn token VLM, và <b>ngược lại</b>. Đổi lại, mỗi bước Euler DiT phải xử lý cả chuỗi dài (token VLM + 16), nặng hơn chỉ xử lý 16 token (suy luận của mình, paper không đo).</div>
+</div>
+
+<details class="more"><summary>Xem chi tiết: 1,15B tham số chia ra sao</summary>
+<h4>Ngân sách 1,15B tham số đi đâu (Sec 2.2)</h4>
+<div class="tw"><table class="t">
+<tr><th>Thành phần</th><th class="num">Tham số</th><th>Vai trò</th></tr>
+<tr><td>16 khối DiT</td><td class="num">16 × 70,8M = 1,13B</td><td>Self-attention + AdaLN + FFN</td></tr>
+<tr><td>Action projection MLP (vào + ra)</td><td class="num">4,9M</td><td>Đổi K kênh hành động ↔ kích thước ẩn DiT; <b>dùng chung</b> mọi robot</td></tr>
+<tr><td>Linear cho hidden states VLM</td><td class="num">3,9M</td><td>Đổi kích thước VLM → kích thước DiT</td></tr>
+<tr><td>Timestep embedding</td><td class="num">2,8M</td><td>Biến τ thành vector cho AdaLN</td></tr>
+<tr><td>AdaLN ở đầu ra</td><td class="num">4,7M</td><td>Chuẩn hóa cuối theo τ</td></tr>
+<tr class="hl"><td>Tổng</td><td class="num">≈ 1,15B</td><td>Tự cộng: 1.132,8 + 4,9 + 3,9 + 2,8 + 4,7 ≈ 1.149M</td></tr>
+</table></div>
+</details>
+<p>Để ý: phần "phiên dịch" hành động chỉ <b>4,9M</b>, bé tí so với lõi DiT. Ở GR00T, mỗi robot có cặp MLP riêng nên phần này tăng theo số robot; ở Qwen-VLA nó cố định.</p>
+
+<!-- 6.3 -->
+<h3 id="flow">6.3 Flow matching & quy ước τ <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Với mục tiêu sạch \(Y_0 \in \mathbb{R}^{H\times K}\) và nhiễu \(Y_1 \sim \mathcal N(0, I)\), nội suy tuyến tính \(Y_\tau = (1-\tau)Y_0 + \tau Y_1\), \(\tau \in [0,1]\). Expert \(v_\theta\) học đoán trường vận tốc. Khi suy luận: vài bước Euler <i>from τ = 1 to τ = 0</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Vẫn là "đường thẳng nối nhiễu và hành động thật" như GR00T, chỉ đặt tên ngược: đứng ở τ = 1 là nhiễu thuần, đi về τ = 0 là sạch. Đạo hàm theo τ là \(Y_1 - Y_0\) (nhiễu − sạch), nên đó là vận tốc mục tiêu. Khi suy luận phải <b>trừ</b> vận tốc (đi ngược chiều tăng τ).</div></div>
+
+<div class="key"><b class="t">Công thức duy nhất cần nhớ trên cả trang</b>
+\[ Y_\tau = (1-\tau)\,Y_0 + \tau\,Y_1 \]
+\(Y_0\) là hành động thật, \(Y_1\) là nhiễu, τ = 1 là nhiễu thuần. Mạng học đoán "hướng đi" \(Y_1 - Y_0\). Khi chạy thật: bắt đầu từ nhiễu (τ = 1), mỗi bước đi ngược hướng đó một đoạn, sau vài bước tới τ = 0 là ra hành động.</div>
+<p><b>Loss nói bằng lời:</b> lấy sai số bình phương giữa hướng mạng đoán và hướng đúng, <b>chỉ trên các ô thật</b> (bỏ các ô đệm 0), rồi lấy trung bình sao cho mỗi kênh và mỗi mẫu nặng như nhau. Cộng thêm một loss đoán chữ (trọng số 0,1 ở SFT) để VLM không quên cách hiểu ảnh-chữ. Hiểu đến đây là đủ để trình bày; công thức đầy đủ nằm trong nút bên dưới.</p>
+<details class="more"><summary>Xem chi tiết: công thức (1)–(4), bảng ký hiệu, vì sao trung bình hai tầng</summary>
+\[ \ell_k = \frac{\sum_{h=1}^{H} M_{h,k}\,\Big[\, v_\theta(Y_\tau, \tau \mid o_{1:t}, x, e, z) - (Y_1 - Y_0) \,\Big]_{h,k}^{2}}{\sum_{h=1}^{H} M_{h,k}} \qquad (1) \]
+\[ \mathcal{L}_{act} = \mathbb{E}_{\tau, Y_0, Y_1}\Big[\frac{1}{c}\sum_{k=0}^{c-1} \ell_k\Big] \qquad (2) \]
+\[ \mathcal{L}_{vl} = -\sum_i \log p_\theta(w_i \mid w_{&lt;i}, o_{1:t}) \qquad (3) \qquad\qquad \mathcal{L} = \lambda_{act}\mathcal{L}_{act} + \lambda_{vl}\mathcal{L}_{vl} \qquad (4) \]
+
+<div class="tw"><table class="t">
+<tr><th>Ký hiệu</th><th>Là gì</th><th>Shape / giá trị</th></tr>
+<tr><td>\(Y_0\)</td><td>Chunk hành động thật, đã đệm 0 tới K kênh</td><td>H × K, H = 16</td></tr>
+<tr><td>\(Y_1\)</td><td>Nhiễu Gaussian chuẩn</td><td>H × K</td></tr>
+<tr><td>\(\tau\)</td><td>Mức nhiễu: 0 = sạch, 1 = nhiễu thuần</td><td>số trong [0, 1]</td></tr>
+<tr><td>\(Y_\tau\)</td><td>Chunk đã trộn nhiễu, đầu vào DiT</td><td>H × K</td></tr>
+<tr><td>\(v_\theta\)</td><td>Toàn bộ action expert, đoán vận tốc</td><td>H × K</td></tr>
+<tr><td>\(M\)</td><td>Mask: \(M_{h,k} = 1\) khi kênh k &lt; c <i>và</i> bước h nằm trong \(H_{task}\)</td><td>H × K, chỉ 0/1</td></tr>
+<tr><td>\(c\)</td><td>Số kênh thật của robot/tác vụ này</td><td>c ≤ K</td></tr>
+<tr><td>\(\ell_k\)</td><td>Sai số bình phương trung bình <b>theo thời gian</b> của kênh k</td><td>một số</td></tr>
+<tr><td>\(w_i\)</td><td>Token chữ thứ i trong dữ liệu VL</td><td>—</td></tr>
+<tr><td>\(\lambda_{act}, \lambda_{vl}\)</td><td>Trọng số hai loss. Ở SFT: 1,0 và 0,1</td><td>—</td></tr>
+</table></div>
+
+<p><b>Vì sao trung bình hai tầng?</b> Tầng 1 (công thức 1) lấy trung bình theo thời gian <i>chỉ trên ô thật</i>, nên ô đệm 0 không đóng góp gì. Tầng 2 (công thức 2) lấy trung bình đều trên c kênh, nên mẫu robot 7 kênh và mẫu tay người 32 kênh có <b>cùng tổng trọng số</b>. Nếu cộng dồn tất cả ô, mẫu 32 kênh sẽ "nói to" gấp khoảng 4,6 lần mẫu 7 kênh (32/7). Widget ở mục 7 minh họa điều này.</p>
+</details>
+
+<div class="widget">
+<h4>Hai quy ước τ cho cùng một con số</h4>
+<p style="margin:0 0 6px;font-size:.92rem">Một chiều hành động có giá trị thật a = 0,6, nhiễu bốc được ε = −1,2 (cùng ví dụ của trang GR00T). Kéo thanh "đã đi được bao nhiêu phần đường từ nhiễu tới sạch" để thấy hai paper gọi cùng một điểm bằng hai τ khác nhau.</p>
+<div class="ctrl">
+  <span>Đã đi: <b id="pV">25</b>%</span><input type="range" id="pp" min="0" max="100" step="1" value="25">
+  <span>Số bước Euler N = <b id="nV">4</b></span><input type="range" id="nn" min="1" max="8" step="1" value="4">
+</div>
+<div class="two">
+<div class="out" id="tauG"></div>
+<div class="out" id="tauQ"></div>
+</div>
+</div>
+
+<div class="co warn"><b class="t">Hai chữ "τ" khác nhau trong cùng paper</b>
+Ở phần RL (Sec 4.2), paper viết "sampled from the policy with temperature τ = 1.0; at evaluation… τ = 0.6". τ ở đây là <b>nhiệt độ lấy mẫu</b> (độ ngẫu nhiên), không phải mức nhiễu của flow matching. Đừng nhầm khi đọc code.</div>
+
+<details class="more"><summary>Xem chi tiết: phân phối p(τ) khi huấn luyện</summary>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>p(τ): dùng Beta ở CPT và SFT (<i>concentrates density toward the clean end</i>); dùng Sigmoid-Normal ở T2A (đỉnh ở mức nhiễu trung bình). Hình 6(b): kết hợp Sigmoid-Normal (T2A) + Beta (SFT) tốt nhất, 71,1%.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Khi T2A không có ảnh, mạng không có "gợi ý thị giác" để khử nhiễu, nên paper dồn luyện tập vào vùng nhiễu trung bình, nơi tín hiệu học là nhiều nhất. Khi đã có ảnh (CPT/SFT), quay về Beta. Xem phần phản biện ở mục 13 về cách paper mô tả Beta.</div></div>
+</details>
+
+<!-- 6.4 -->
+<h3 id="run">6.4 Ghép lại: một bước huấn luyện và một lần suy luận <span class="lv k">Đọc lướt</span></h3>
+<details class="more"><summary>Xem chi tiết: code giả một bước huấn luyện và một lần suy luận (so với GR00T)</summary>
+<p>Code giả kiểu PyTorch, viết theo mô tả của paper, chỉ để thấy luồng dữ liệu và shape. Không phải code thật của Qwen. Đặt cạnh code giả của trang GR00T để thấy chỗ khác.</p>
+<pre><code># ===== Một bước huấn luyện (CPT/SFT, giản lược) =====
+prompt = embodiment_prompt(robot) + instruction       # chữ (mục 7)
+h_vl   = qwen35(images_with_view_tags, prompt)        # [B, n_vl, d_vlm]  hidden states
+c_vl   = linear_vl(h_vl)                              # [B, n_vl, d]      3,9M tham số
+Y0     = pad_to_K(actions)                            # [B, 16, K]        đệm 0 sau c kênh
+M      = valid_mask                                   # [B, 16, K]        1 = ô thật
+Y1     = torch.randn_like(Y0)                         # nhiễu
+tau    = sample_tau(B)                                # Beta (CPT/SFT) hoặc Sigmoid-Normal (T2A)
+Ytau   = (1 - tau) * Y0 + tau * Y1                    # τ = 0 sạch, τ = 1 nhiễu
+a_tok  = act_in(Ytau)                                 # [B, 16, d]   MỘT MLP chung mọi robot
+x      = torch.cat([c_vl, a_tok], dim=1)              # MỘT chuỗi [B, n_vl + 16, d]
+for blk in dit_blocks:                                # 16 khối: joint self-attn → FFN, AdaLN theo τ
+    x = blk(x, t=time_emb(tau))
+v      = act_out(x[:, -16:])                          # [B, 16, K]  chỉ đọc 16 token hành động
+err    = ((v - (Y1 - Y0)) ** 2) * M                   # bỏ ô đệm
+l_k    = err.sum(1) / M.sum(1).clamp(min=1)           # tầng 1: TB theo thời gian, từng kênh  (1)
+L_act  = (l_k.sum(-1) / c).mean()                     # tầng 2: TB đều trên c kênh            (2)
+loss   = 1.0 * L_act + 0.1 * L_vl                     # trọng số ở SFT                        (4)
+
+# ===== Suy luận một chunk =====
+c_vl = linear_vl(qwen35(images, prompt))              # VLM chạy 1 lần cho mỗi chunk
+Y    = torch.randn(B, 16, K)                          # τ = 1: nhiễu thuần
+N    = 4                                              # GIẢ ĐỊNH: paper chỉ nói "a few"
+for i in range(N):
+    tau = 1 - i / N
+    Y = Y - (1 / N) * expert(c_vl, Y, tau)            # TRỪ vận tốc (nhiễu − sạch)
+robot.execute(Y[:, :H_task, :c])                      # chỉ dùng c kênh đầu</code></pre>
+<div class="co note"><b class="t">So nhanh với code giả GR00T</b>
+GR00T: <code>action_enc[emb]</code> (MLP riêng theo robot), <code>context=phi</code> (cross-attention), <code>A + v/K</code> (cộng). Qwen-VLA: <code>act_in</code> chung, <code>torch.cat</code> (một chuỗi), <code>Y − v/N</code> (trừ). Không có <code>state</code>.</div>
+</details>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="sec" id="prompt">
+<h2>7. Embodiment prompt & biểu diễn hành động (Section 2.3, 2.4) <span class="lv m">Phải nắm</span></h2>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Gắn trước mỗi mẫu một <i>robot-specific textual prompt</i> mô tả nền tảng, cấu hình tay và quy ước điều khiển. <i>The prompt serves as the sole interface through which the model is informed of embodiment-specific control semantics.</i></div>
+<div class="n"><span class="lab">Nghĩa là</span>GR00T "báo" cho mô hình biết robot nào bằng cách <b>chọn MLP</b> (thay đổi kiến trúc). Qwen-VLA báo bằng <b>câu chữ</b> (thay đổi đầu vào). Câu chữ đi qua VLM như mọi câu lệnh khác, hidden states của nó vào DiT, nên DiT luôn "đọc" được đặc tả điều khiển của mẫu hiện tại.</div></div>
+
+<h3>Khuôn prompt nguyên văn trong paper (Sec 2.3)</h3>
+<div class="prompt">The robot is <span class="v">{robot_tag}</span> with <span class="v">{single arm / dual arms}</span>[<span class="v">, waist</span>][<span class="v">, and mobile base</span>]. The control frequency is <span class="v">{FPS}</span> Hz. Please predict the next <span class="v">{chunk_size}</span> control actions to execute the following task: <span class="v">{ori_instruction}</span>.</div>
+<p>Đây là prompt duy nhất paper in ra (dạng khuôn). Paper <b>không</b> in một prompt đã điền đủ cho robot cụ thể nào. Các ô cam được điền theo dataset: <code>robot_tag</code> và các phần tùy chọn (waist, mobile base) theo embodiment; <code>FPS</code> và <code>chunk_size</code> lấy từ tần số điều khiển và horizon gốc của dataset. Với dữ liệu điều hướng, prompt "tương tự" nhưng nêu quy ước điều hướng và số waypoint.</p>
+
+<div class="widget">
+<h4>Tự điền prompt và xem tensor hành động</h4>
+<p style="margin:0 0 6px;font-size:.92rem">Robot và kiểu hành động lấy từ Bảng 2. Các số khác (FPS, số kênh c, K = 32) là <b>minh họa do mình đặt</b>, paper không công bố cho từng robot.</p>
+<div class="ctrl">
+  <span>Robot:</span><select id="pRobot"></select>
+  <span>Kiểu hành động:</span><select id="pType"></select>
+</div>
+<div class="ctrl">
+  <label><input type="checkbox" id="pWaist"> waist</label>
+  <label><input type="checkbox" id="pBase"> mobile base</label>
+  <span>FPS:</span><input type="number" id="pFps" value="10" min="1" max="200" style="width:70px">
+  <span>chunk_size:</span><input type="number" id="pChunk" value="16" min="1" max="16" style="width:60px">
+</div>
+<div class="ctrl"><span>Câu lệnh:</span><input type="text" id="pInstr" value="put the spoon on the towel" style="flex:1;min-width:220px"></div>
+<div class="prompt" id="pOut"></div>
+<div class="ctrl" style="margin-top:12px"><span>Số kênh thật c = <b id="cV">7</b></span><input type="range" id="pC" min="1" max="32" step="1" value="7"><span style="color:var(--muted);font-size:.85rem" id="cHint"></span></div>
+<div class="leg"><span><i style="background:var(--pri)"></i>ô thật (M = 1)</span><span><i style="background:var(--card);border:1px dashed var(--grey)"></i>ô đệm 0 (M = 0)</span><span>hàng = bước thời gian h (H = 16), cột = kênh k (K = 32, giả định)</span></div>
+<div class="grid" id="pGrid" style="grid-template-columns:repeat(32,13px)"></div>
+<div class="out" id="pLoss"></div>
+</div>
+
+<details class="more"><summary>Xem chi tiết: Bảng 2, 11 loại robot và kiểu hành động</summary>
+<h3>Bảng 2: các robot trong dữ liệu pretraining</h3>
+<div class="tw"><table class="t">
+<tr><th>Robot</th><th>Tay</th><th>Kiểu hành động</th></tr>
+<tr><td>WidowX</td><td>Single</td><td>ΔEEF + G</td></tr>
+<tr><td>Google Robot</td><td>Single</td><td>ΔEEF + G</td></tr>
+<tr><td>Franka Panda</td><td>Single / Dual</td><td>ΔEEF + G; Abs Joint + G</td></tr>
+<tr><td>ARX5</td><td>Dual</td><td>ΔEEF + G</td></tr>
+<tr><td>Fourier GR-1</td><td>Dual</td><td>ΔEEF + G</td></tr>
+<tr><td>Mobile ALOHA</td><td>Dual</td><td>ΔEEF + G; Abs Joint + G</td></tr>
+<tr><td>AgiBot A2-D</td><td>Dual</td><td>Abs Joint + G; Abs Joint + DH</td></tr>
+<tr><td>Galaxea R1</td><td>Dual</td><td>Abs Joint + G</td></tr>
+<tr><td>AIRBOT MMK2</td><td>Dual</td><td>Abs Joint + DH</td></tr>
+<tr><td>TienKung</td><td>Dual</td><td>Abs Joint + G; Abs Joint + DH</td></tr>
+<tr><td>Real Human</td><td>Dual</td><td>ΔEEF (từ MANO)</td></tr>
+</table></div>
+</details>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span><i>We unify the tensor interface and masking scheme, but do not force all embodiments into a single physical action semantic space.</i> Mỗi dataset giữ quy ước điều khiển gốc.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Kênh số 1 của WidowX có thể là Δx, còn kênh số 1 của AgiBot là góc khớp vai. Cùng vị trí, khác nghĩa. Mô hình phân biệt được nhờ prompt (và nhờ quan sát). Đây là điểm khác GR00T: GR00T cố "chuẩn hóa" (6D cho state, axis-angle cho action, thứ tự cố định), Qwen-VLA thì không ép.</div></div>
+
+<details class="more"><summary>Xem chi tiết: chuẩn hóa theo phân vị, công thức (5)</summary>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Mỗi chiều hành động d của dataset k được chuẩn hóa bằng phân vị 1% và 99%, rồi cắt về [−1, 1]:
+\[ \tilde a_d = 2\cdot\frac{a_d - q^k_{01}}{q^k_{99} - q^k_{01}} - 1 \qquad (5) \]</div>
+<div class="n"><span class="lab">Nghĩa là</span>Ví dụ số (tự đặt): Δx của một dataset có \(q_{01} = -0{,}05\), \(q_{99} = 0{,}15\). Giá trị \(a = 0{,}05\) → \(2\cdot 0{,}10/0{,}20 - 1 = 0\). Giá trị \(a = 0{,}20\) → \(1{,}5\) → cắt còn 1. Dùng phân vị thay vì min-max (như GR00T) để vài giá trị bất thường không kéo lệch thang đo.</div></div>
+</details>
+
+<div class="co note"><b class="t">Robot mới thì sao?</b>
+Paper (Sec 4.2): khi triển khai trên robot khác, <i>we simply replace the embodiment prompt</i>, giữ nguyên VLM và DiT. Với GR00T, robot mới cần một cặp MLP mới, phải huấn luyện từ đầu. Nhưng lưu ý: thí nghiệm robot thật ALOHA của Qwen-VLA vẫn <b>fine-tune</b> trên dữ liệu ALOHA, không phải chỉ đổi prompt.</div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="sec" id="data">
+<h2>8. Dữ liệu pretraining (Section 3.2, Bảng 1) <span class="lv s">Nên biết</span></h2>
+<p>Năm họ dữ liệu, trộn theo tỉ lệ cố định trong mỗi mini-batch. Đây là dữ liệu cho <b>T2A + CPT</b>; SFT và RL dùng dữ liệu khác (mục 9).</p>
+<div class="leg"><span><i style="background:var(--pri)"></i>dữ liệu có hành động</span><span><i style="background:var(--blue)"></i>dữ liệu thị giác–ngôn ngữ (chỉ có chữ)</span></div>
+<div class="bars" id="mixBars" style="margin-top:8px"></div>
+
+<div class="tw"><table class="t">
+<tr><th>Họ dữ liệu</th><th>Nguồn và quy mô</th><th>Để làm gì</th></tr>
+<tr><td><b>Robot manipulation</b> (74,2%)</td><td>Công khai: DROID, BridgeData V2, AgiBot World, RoboMIND, RH20T, RT-1… hơn 10.000 giờ. Mô phỏng: InternData-A1, GR00T-X-Embodiment-Sim. Nội bộ: hơn 1.000 giờ, khoảng 20% hỗn hợp</td><td>Giám sát hành động trực tiếp, đa dạng robot</td></tr>
+<tr><td><b>Video người góc nhìn thứ nhất</b> (6,0%)</td><td>Ego4D + EPIC-KITCHENS (qua VITRA), EgoDex (829 giờ), EgoVerse (&gt;1.300 giờ), Xperience</td><td>Kinh nghiệm thao tác phong phú, rẻ</td></tr>
+<tr><td><b>Mô phỏng tổng hợp</b> (3,7%)</td><td>VLA: 359.848 quỹ đạo (450 tác vụ, 200 cấu hình cảnh). Language-action: ~7,2 triệu quỹ đạo không có ảnh</td><td>Phủ rộng, kiểm soát được; corpus chính của T2A</td></tr>
+<tr><td><b>Điều hướng</b> (7,5%)</td><td>Theo lời 4,3% · tìm vật 2,3% · bám theo người 1,0%; video 2 FPS</td><td>Quỹ đạo dài, khám phá</td></tr>
+<tr><td><b>Thị giác–ngôn ngữ</b> (8,5%)</td><td>VL chung 3,4% · grounding 2D 2,5% · VQA lái xe 2,4% · caption hành động chi tiết 0,2% (~48.000 cặp)</td><td>Giữ khả năng hiểu ảnh-chữ, chống quên</td></tr>
+</table></div>
+
+<h4>Tay người thành 32 số mỗi bước <span class="lv k">Đọc lướt</span></h4>
+<p>Mỗi tay: cổ tay dịch chuyển tương đối so với khung đầu (3 số tịnh tiến + 3 số axis-angle) + 10 hệ số "eigengrasp" (PCA của 45 góc khớp MANO, giữ 10 thành phần chính). Hai tay: \(2 \times (6 + 10) = 32\). Đây cũng là lý do K phải ít nhất 32.</p>
+
+<h4>Dữ liệu language-action cho T2A <span class="lv s">Nên biết</span></h4>
+<p>6 mẫu tác vụ (gắp-đặt, đẩy, kéo, xoay-dời, xoay hướng, đổi chỗ hai vật) × 6 tay robot (Franka, UR10e, UR5e, Kinova Gen3, TM12, xArm7) × ~200k = <b>~7,2 triệu quỹ đạo, hơn 14.000 giờ</b>, ghi ở 50 Hz. Sinh <b>không cần mô phỏng vật lý hay render ảnh</b>: chỉ bốc tư thế đích trong vùng với tới, rồi dùng bộ lập kế hoạch chuyển động trên GPU tìm đường không va chạm. Rẻ đến mức nhân lên hàng triệu được. Câu lệnh ghép tự động từ từ vựng của từng mẫu ("Place the apple into the container"…).</p>
+
+<h4>Caption hành động chi tiết <span class="lv k">Đọc lướt</span></h4>
+<div class="tw"><table class="t">
+<tr><th>Nhãn thô</th><td>"Pick up, rotate, and place the ceramic bowl."</td></tr>
+<tr><th>Nhãn chi tiết</th><td>Bước 1: Nhấc bát gốm từ mép xa bên phải. Bước 2: Xoay bát theo chiều kim đồng hồ hai vòng. Bước 3: Đặt bát vào giữa bàn.</td></tr>
+</table></div>
+<p>Cùng một nhãn thô có thể ứng với nhiều cách làm (cầm bên trái hay phải, xoay chiều nào), gây mơ hồ khi học. Nhãn chi tiết do Qwen3.6-plus sinh qua hai lượt, rồi người kiểm lại.</p>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="sec" id="stages">
+<h2>9. Bốn giai đoạn huấn luyện: T2A → CPT → SFT → RL (Section 3.1, 4) <span class="lv m">Phải nắm</span></h2>
+<div class="co warn"><b class="t">Không phải 3 mà là 4 giai đoạn</b>
+Thường nghe tóm tắt là "T2A → SFT → RL", nhưng paper có thêm <b>CPT</b> (continued pretraining) xen giữa T2A và SFT, và CPT mới là giai đoạn dùng hỗn hợp dữ liệu lớn ở mục 8. T2A + CPT tạo ra <b>Qwen-VLA-Base</b>; SFT + RL tạo ra <b>Qwen-VLA-Instruct</b>.</div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>VLM và DiT <i>enter training in deeply asymmetric states</i>: VLM đã pretrain mạnh, DiT khởi tạo ngẫu nhiên. Ý tưởng chính là <i>compression</i>: câu "pick up the red cup" + prompt robot chỉ vài token, nhưng quỹ đạo tương ứng có hàng nghìn con số. Đi từ mô tả ngắn tới quỹ đạo dài là <i>a structured decompression problem</i>.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Hình dung DiT như người học việc chưa biết gì. Nếu ngay ngày đầu vừa phải học "tay đi thế nào", vừa học "nhìn ảnh", vừa học "robot nào điều khiển ra sao", thì vừa chậm, vừa làm phiền VLM (gradient lộn xộn chảy ngược vào VLM). Nên tách ra: trước hết học "đọc câu lệnh → phác ra động tác" (T2A), sau đó mới học "nhìn ảnh để chỉnh động tác cho đúng" (CPT). Mỗi giai đoạn lấp đúng lỗ hổng mà giai đoạn trước để lại.</div></div>
+
+<div class="widget">
+<h4>Bấm vào từng giai đoạn</h4>
+<div class="stages" id="stg">
+  <div class="stg sel" data-s="0"><div class="nm">I · T2A</div><div class="blk tr">DiT 🔥</div><div class="blk fz">VLM ❄</div><div class="inp">chỉ chữ (prompt)</div><div class="ck">→ DiT đã khởi động</div></div>
+  <div class="stg" data-s="1"><div class="nm">II · CPT</div><div class="blk tr">DiT 🔥</div><div class="blk tr">VLM 🔥</div><div class="inp">ảnh + chữ</div><div class="ck">→ Qwen-VLA-Base</div></div>
+  <div class="stg" data-s="2"><div class="nm">III · SFT</div><div class="blk tr">DiT 🔥</div><div class="blk tr">VLM 🔥</div><div class="inp">ảnh + chữ</div><div class="ck">→ 2 nhánh</div></div>
+  <div class="stg" data-s="3"><div class="nm">IV · RL</div><div class="blk tr">DiT 🔥</div><div class="blk tr">VLM 🔥</div><div class="inp">ảnh + chữ + thưởng</div><div class="ck">→ Qwen-VLA-Instruct</div></div>
+</div>
+<div class="out" id="stgInfo"></div>
+</div>
+
+<!-- 9.1 -->
+<h3 id="t2a">9.1 Giai đoạn I · T2A: chữ → hành động, không có ảnh <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span><i>We freeze the VLM and train only the DiT, conditioning it on text and the embodiment prompt e, but deliberately withholding images.</i> Ngôn ngữ chọn vùng trong không gian hành động, prompt robot chọn "cách tham số hóa động tác" của robot, flow matching lo quá trình sinh.</div>
+<div class="n"><span class="lab">Nghĩa là</span>DiT học một "từ điển động tác": nghe "đẩy vật sang trái" trên robot Franka thì quỹ đạo trông thế nào. Không có ảnh nên DiT không thể "đi tắt" bằng cách nhìn ảnh rồi bắt chước; nó buộc phải nối chữ với hành động.</div></div>
+
+<div class="tw"><table class="t">
+<tr><th>Lựa chọn trong T2A (Hình 6, chấm sau SFT trên Simpler-WidowX)</th><th class="num">Kết quả</th></tr>
+<tr><td>Không có T2A (baseline)</td><td class="num">60,9%</td></tr>
+<tr><td>T2A chỉ dữ liệu thật (bỏ ảnh)</td><td class="num">51,0%</td></tr>
+<tr><td>T2A chỉ dữ liệu tổng hợp</td><td class="num">64,1%</td></tr>
+<tr class="hl"><td>T2A 20% tổng hợp + 80% thật, đoán cả quỹ đạo, Sigmoid-Normal, 2.000 bước</td><td class="num">71,1% (+10,2)</td></tr>
+<tr><td>Đoán theo chunk thay vì cả quỹ đạo (10% tổng hợp)</td><td class="num">60,4% (so với 65,4%)</td></tr>
+<tr><td>Chunk + <b>có ảnh</b> (10% tổng hợp)</td><td class="num">57,6% (−2,9 so với không ảnh)</td></tr>
+<tr><td>Beta ở T2A thay vì Sigmoid-Normal</td><td class="num">65,4%</td></tr>
+<tr><td>Sigmoid-Normal ở SFT thay vì Beta</td><td class="num">62,8%</td></tr>
+<tr><td>Beta ở cả hai</td><td class="num">59,4%</td></tr>
+<tr><td>T2A 4.000 / 10.000 / 40.000 bước</td><td class="num">67,5 / 67,2 / 60,4%</td></tr>
+</table></div>
+<p>Ba bài học: (1) <b>trộn</b> hai nguồn tốt hơn từng nguồn riêng: tổng hợp cho độ phủ rộng, thật cho động lực học đúng; (2) <b>đoán cả quỹ đạo</b> tốt hơn đoán từng chunk, vì thấy được điểm bắt đầu và kết thúc tự nhiên; (3) T2A <b>ngắn</b> là đủ: 2.000 bước tốt nhất, 40.000 bước làm hỏng (học thuộc lòng corpus T2A).</p>
+
+<!-- 9.2 -->
+<h3 id="cpt">9.2 Giai đoạn II · CPT: gắn hành động với hình ảnh <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>CPT <i>focuses its multimodal capacity on exactly the problem that T2A could not address: grounding actions in visual observations and adapting the backbone to embodied perception.</i> Mở băng cả hai khối, huấn luyện trên hỗn hợp ở mục 8 (mô phỏng + robot thật).</div>
+<div class="n"><span class="lab">Nghĩa là</span>Đây mới là "pretraining lớn" theo nghĩa quen thuộc: mọi loại dữ liệu, có ảnh, loss \(\lambda_{act}\mathcal L_{act} + \lambda_{vl}\mathcal L_{vl}\). Vì checkpoint đã thấy cả ảnh mô phỏng lẫn ảnh thật, các giai đoạn sau có thể rẽ về phía nào cũng được. Kết quả là <b>Qwen-VLA-Base</b>: biết rộng (nhiều robot, nhiều việc) nhưng chưa đủ chính xác cho từng tác vụ.</div></div>
+<p>Bằng chứng DiT đã pretrain có ích (Hình 7b): gắn DiT đã pretrain vào một Qwen3.5-4B "mới tinh" rồi SFT trên RoboCasa-GR1 thì hội tụ nhanh hơn và đạt đỉnh cao hơn so với DiT khởi tạo ngẫu nhiên.</p>
+
+<!-- 9.3 -->
+<h3 id="sft">9.3 Giai đoạn III · SFT: chuyên môn hóa, hai nhánh song song <span class="lv m">Phải nắm</span></h3>
+<div class="two">
+<div class="co note" style="margin:0"><b class="t">Nhánh 1: SFT đa tác vụ (dẫn tới Instruct)</b>
+<ul style="margin:4px 0 0 18px;padding:0">
+<li>Dữ liệu VL: VQA, grounding không gian, caption hành động, để giữ khả năng hiểu ảnh.</li>
+<li>Demo thao tác <b>trong mô phỏng</b>, nhiều nền tảng (một tay, hai tay, hình người), H = 16, theo StarVLA.</li>
+<li>Tập điều hướng VLN chỉ giữ tập thành công, 8 waypoint mỗi chunk.</li>
+<li>Lấy mẫu cân bằng theo robot và theo tác vụ. Trọng số loss: VL 0,1, hành động 1,0.</li>
+</ul></div>
+<div class="co" style="margin:0;background:var(--accent-soft);border-color:transparent"><b class="t">Nhánh 2: SFT robot thật</b>
+Fine-tune từ checkpoint CPT trên dữ liệu teleop nội bộ, để kiểm tra kiến thức của CPT có chuyển sang phần cứng thật không. Thí nghiệm ALOHA (mục 11) thuộc nhánh này: so cùng kiến trúc, có và không có pretraining.</div>
+</div>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Base <i>does not yet yield the precision needed for reliable closed-loop control on specific downstream tasks</i>. Cả hai giai đoạn hậu huấn luyện dùng learning rate cosine với lịch riêng cho backbone và decoder.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Base giống sinh viên học rộng nhiều môn; SFT là đợt thực tập đúng công việc sẽ làm. Lưu ý: dữ liệu SFT đa tác vụ là demo mô phỏng <b>của chính các benchmark sẽ chấm</b> (theo giao thức StarVLA). Đây là chỗ cần nhớ khi đọc chữ "generalist" ở Bảng 4.</div></div>
+
+<!-- 9.4 -->
+<h3 id="rl">9.4 Giai đoạn IV · RL: tối ưu thẳng tỉ lệ thành công <span class="lv s">Nên biết</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>SFT tối ưu một đại lượng "bắt chước tốt cỡ nào", nhưng thứ cần là <i>closed-loop task success</i>. Hai thứ có thể lệch nhau: policy gán xác suất cao cho hành động hợp lý nhưng vẫn hỏng khi chính hành động của nó đẩy trạng thái ra khỏi vùng có demo.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Bắt chước giống học lái bằng xem video: lệch một chút là gặp tình huống chưa thấy bao giờ, rồi lệch thêm (lỗi dồn tích). RL cho robot tự lái trong mô phỏng, được thưởng khi xong việc, nên học được cách "chữa" những lệch đó.</div></div>
+
+<div class="key"><b class="t">Ba ý cần nhớ về RL</b>
+① Robot tự thử trong <b>SimplerEnv</b>, xong việc được thưởng 1, hỏng được 0; không dùng demo nữa.<br>
+② Thuật toán <b>PPO</b>: mỗi lần cập nhật chỉ được sửa policy một chút, để không học hỏng.<br>
+③ Mẹo kỹ thuật: PPO cần "xác suất của hành động", mà khử nhiễu bằng Euler thì không có xác suất. Paper thêm một chút nhiễu vào mỗi bước Euler (ODE → SDE), nên mỗi bước thành một phân phối Gaussian và tính được xác suất.<br>
+Kết quả: điểm chỉ tăng rõ ở SimplerEnv (+2,9), nơi khác gần như giữ nguyên.</div>
+<details class="more"><summary>Xem chi tiết: công thức PPO (6)–(7), ví dụ số, mẹo ODE → SDE, siêu tham số</summary>
+\[ \mathcal{L}_{actor}(\theta) = -\,\mathbb{E}_t\Big[\min\big(r_t(\theta)\,\hat A_t,\; \mathrm{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\,\hat A_t\big)\Big], \qquad r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{old}}(a_t \mid s_t)} \qquad (6) \]
+\[ \mathcal{L}(\theta) = \mathcal{L}_{actor}(\theta) + c_v\,\mathcal{L}_{value}(\theta), \quad c_v = 1 \qquad (7) \]
+<div class="tw"><table class="t">
+<tr><th>Ký hiệu</th><th>Là gì</th><th>Giá trị trong paper</th></tr>
+<tr><td>\(s_t\)</td><td>Trạng thái = (ảnh, câu lệnh, embodiment prompt)</td><td>—</td></tr>
+<tr><td>\(a_t\)</td><td>Một <b>chunk</b> hành động (không phải một bước)</td><td>H = 16</td></tr>
+<tr><td>\(r_t(\theta)\)</td><td>Tỉ lệ xác suất policy mới / policy cũ cho cùng hành động</td><td>—</td></tr>
+<tr><td>\(\hat A_t\)</td><td>Advantage: "tốt hơn kỳ vọng bao nhiêu", ước lượng bằng GAE</td><td>γ = 0,99; λ = 0,95</td></tr>
+<tr><td>\(\epsilon\)</td><td>Ngưỡng cắt: không cho \(r_t\) đi quá xa 1</td><td>0,2</td></tr>
+<tr><td>Thưởng R</td><td>1 nếu xong việc ở cuối episode, 0 nếu không. Không có mô hình thưởng học được</td><td>thưa, nhị phân</td></tr>
+</table></div>
+
+<p><b>Ví dụ số cho phép "clip".</b> Giả sử một chunk có advantage \(\hat A = +2\) và policy mới làm xác suất chunk đó tăng 1,5 lần (\(r = 1{,}5\)). Không cắt: mục tiêu là 1,5 × 2 = 3. Có cắt: \(\mathrm{clip}(1{,}5;\,0{,}8;\,1{,}2) = 1{,}2\), mục tiêu là min(3; 2,4) = 2,4. Nghĩa là: đã tăng xác suất quá 20% thì không được thưởng thêm, nên policy chỉ dịch từng chút một.</p>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Khó khăn chính: PPO cần \(\log \pi_\theta(a_t \mid s_t)\), nhưng flow matching chỉ định nghĩa mật độ ngầm qua trường vận tốc. Paper <i>convert the deterministic probability-flow ODE into a corresponding SDE by injecting controlled noise at each Euler denoising step</i>, để mỗi bước chuyển thành một Gaussian có log-xác suất tính được.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Bình thường mỗi bước Euler là tất định: cùng đầu vào ra cùng đầu ra, không có "xác suất" nào để tính. Mẹo: thêm một chút nhiễu ngẫu nhiên quanh mỗi bước. Khi đó bước đó thành "bốc ngẫu nhiên từ một chuông Gaussian có tâm là bước Euler", và log-xác suất của Gaussian thì có công thức sẵn. Khi rollout, lưu lại các trạng thái trung gian; khi cập nhật PPO, tính lại vận tốc với tham số mới để ra \(r_t\). Để rẻ, mỗi rollout chỉ chọn <b>ngẫu nhiên một</b> bước khử nhiễu để tính log-xác suất (thêm đúng 1 lần chạy DiT).</div></div>
+
+<div class="tw"><table class="t">
+<tr><th>Chi tiết RL khác</th><th>Giá trị</th></tr>
+<tr><td>Framework</td><td>RLinf</td></tr>
+<tr><td>Môi trường rollout</td><td><b>Chỉ SimplerEnv</b>; 128 môi trường song song, chia theo độ khó tác vụ</td></tr>
+<tr><td>Mỗi vòng lặp</td><td>8 epoch rollout × 128 bước môi trường → 128 × ⌊128/16⌋ × 8 = 8.192 chunk</td></tr>
+<tr><td>Value head</td><td>Trung bình mọi hidden state của VLM → Linear → 1 số; <b>chặn gradient</b> vào VLM</td></tr>
+<tr><td>Learning rate</td><td>Actor 5 × 10⁻⁶; value head 10⁻⁴ (~20 lần)</td></tr>
+<tr><td>Số epoch tối ưu mỗi batch</td><td>4</td></tr>
+<tr><td>Nhiệt độ lấy mẫu</td><td>1,0 khi rollout; 0,6 khi đánh giá</td></tr>
+<tr><td>Prompt</td><td>Giống hệt SFT, tránh lệch phân phối</td></tr>
+</table></div>
+</details>
+
+<!-- 9.5 -->
+<h3 id="mentor">9.5 Trả lời câu hỏi "pretrain vs finetune" của mentor <span class="lv m">Phải nắm</span></h3>
+<div class="tw"><table class="t">
+<tr><th></th><th>Pretraining (T2A + CPT)</th><th>Finetuning / post-training (SFT + RL)</th></tr>
+<tr><td>Mục tiêu</td><td>Biết <b>rộng</b>: nhiều robot, nhiều việc, gắn hành động với chữ và ảnh</td><td>Làm <b>đúng và chính xác</b> trên tác vụ đích; RL tối ưu thẳng tỉ lệ thành công</td></tr>
+<tr><td>Dữ liệu</td><td>T2A: ~7,2 triệu quỹ đạo chữ-hành động tổng hợp + dữ liệu thật bỏ ảnh. CPT: hỗn hợp Bảng 1 (robot 74,2%, người 6%, điều hướng 7,5%, mô phỏng 3,7%, VL 8,5%)</td><td>SFT: demo mô phỏng của các benchmark đích + VLN + VL; hoặc teleop robot thật (ALOHA). RL: rollout trong SimplerEnv, thưởng 0/1</td></tr>
+<tr><td>Đóng băng</td><td>T2A: VLM ❄. CPT: không</td><td>Không (value head chặn gradient vào VLM)</td></tr>
+<tr><td>Kết quả</td><td>Qwen-VLA-Base</td><td>Qwen-VLA-Instruct (hoặc bản ALOHA)</td></tr>
+<tr><td>Bằng chứng</td><td colspan="2">Base → Instruct: LIBERO 90,8 → 97,9 (+7,1); RoboCasa-GR1 40,4 → 56,7 (+16,3). ALOHA thật, cùng kiến trúc: không pretrain 48,5% → có pretrain 83,6% (trong miền); OOD 36,2% → 76,9%. T2A: SFT 60,9% → 71,1% trên Simpler-WidowX</td></tr>
+</table></div>
+<div class="say"><b class="t">Câu trả lời gọn để nói</b>
+"Pretrain dạy mô hình <i>biết nhiều thứ ở mức thô</i>; finetune dạy nó <i>làm đúng việc cần làm</i>. Ở Qwen-VLA, pretrain gồm hai bước: T2A dạy DiT nối chữ với động tác khi chưa có ảnh, CPT dạy nhìn ảnh trên dữ liệu khổng lồ nhiều robot. Finetune gồm SFT trên demo của tác vụ đích, rồi RL bằng thưởng thành công. Thiếu pretrain, trên robot thật ALOHA tỉ lệ thành công tụt từ 83,6% xuống 48,5%. So với các paper trước: LIBERO thấy pretrain trên LIBERO-90 làm hại; GR00T và Qwen-VLA thấy pretrain trên dữ liệu lớn, đa dạng thì giúp. Khác biệt nằm ở quy mô và độ đa dạng của dữ liệu pretrain."</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sec" id="results">
+<h2>10. Kết quả trên LIBERO và RoboCasa (Section 5.1.1, Bảng 4, 11) <span class="lv m">Phải nắm</span></h2>
+
+<h3>10.1 Hai benchmark này trong paper là gì?</h3>
+<div class="tw"><table class="t">
+<tr><th>Tên trong paper</th><th>Robot</th><th>Nội dung</th><th>Liên hệ trang trước</th></tr>
+<tr><td><b>LIBERO</b></td><td>Một tay (Franka)</td><td>4 bộ: Spatial, Object, Goal, Long. Con số là tỉ lệ thành công trung bình. Paper <b>không</b> tách theo từng bộ</td><td>Đúng LIBERO bạn đã học; LIBERO-Long chính là LIBERO-10</td></tr>
+<tr><td><b>RoboCasa-GR1</b></td><td>Hình người GR-1, hai tay</td><td>"RoboCasa-GR1 Tabletop Tasks", 24 tác vụ atomic</td><td>Khớp với <b>GR-1 Tabletop</b> (24 tác vụ) của GR00T, <b>không phải</b> RoboCasa Kitchen tay Franka. Trang GR00T đã cảnh báo đúng điểm này</td></tr>
+</table></div>
+<p>Mọi benchmark dùng H = 16 và giao thức đánh giá của <b>StarVLA</b>. Paper không ghi số lần thử hay số demo SFT cho từng benchmark.</p>
+
+<h3>10.2 Đọc Bảng 4 thế nào</h3>
+<ol class="steps">
+<li><b>Hàng</b> là mô hình, <b>cột</b> là benchmark, ô là tỉ lệ thành công trung bình (%). Dấu "–" nghĩa là mô hình đó không có kết quả.</li>
+<li><b>Cột Type</b> quan trọng nhất. <i>Specialist</i>: fine-tune riêng cho từng benchmark, mỗi ô là một mô hình khác nhau. <i>Generalist</i>: một mô hình Qwen-VLA duy nhất chấm trên mọi cột.</li>
+<li><b>Hai hàng Qwen-VLA</b>: Base (chỉ pretraining) và Instruct (thêm SFT + RL). Hiệu số giữa hai hàng là "giá trị của finetuning".</li>
+<li><b>In đậm</b> = tốt nhất, <b>gạch chân</b> = nhì trong cột (bảng dưới đây giữ in đậm, còn gạch chân đổi thành dấu ²).</li>
+<li>Câu hỏi đúng khi đọc: "một mô hình chung có <i>theo kịp</i> các mô hình chuyên biệt không?", chứ không phải "ai cao nhất".</li>
+</ol>
+
+<div class="tw"><table class="t" id="t4">
+<tr><th>Mô hình</th><th>Loại</th><th class="num">LIBERO</th><th class="num">RoboCasa-GR1</th><th class="num">Simpler-WidowX</th><th class="num">RoboTwin-Easy</th><th class="num">RoboTwin-Hard</th></tr>
+<tr><td>π0</td><td rowspan="6">Specialist</td><td class="num">94,4</td><td class="num">–</td><td class="num">–</td><td class="num">65,9</td><td class="num">58,4</td></tr>
+<tr><td>StarVLA-OFT</td><td class="num">96,6</td><td class="num">48,8</td><td class="num">64,6 ²</td><td class="num">50,4</td><td class="num">–</td></tr>
+<tr><td>GR00T N1.6</td><td class="num">97,2</td><td class="num">49,9</td><td class="num">63,2</td><td class="num">47,6</td><td class="num">–</td></tr>
+<tr><td>π0.5</td><td class="num">97,6</td><td class="num">37,0</td><td class="num">46,9</td><td class="num">82,7</td><td class="num">76,8</td></tr>
+<tr><td>ABot-M0</td><td class="num"><b>98,6</b></td><td class="num"><b>58,3</b></td><td class="num">–</td><td class="num">86,0 ²</td><td class="num">85,0 ²</td></tr>
+<tr><td>Being-H0.5</td><td class="num">97,6</td><td class="num">53,3</td><td class="num">–</td><td class="num">–</td><td class="num">–</td></tr>
+<tr><td>Qwen-VLA-Base</td><td rowspan="2">Generalist</td><td class="num">90,8</td><td class="num">40,4</td><td class="num">64,3</td><td class="num">64,3</td><td class="num">66,4</td></tr>
+<tr class="hl"><td>Qwen-VLA-Instruct</td><td class="num">97,9 ²</td><td class="num">56,7 ²</td><td class="num"><b>73,7</b></td><td class="num"><b>86,1</b></td><td class="num"><b>87,2</b></td></tr>
+</table></div>
+<p style="font-size:.85rem;color:var(--muted)">Số lấy từ Bảng 4 trong PDF (trang 16). <b>Đậm</b> = tốt nhất, ² = nhì, theo đánh dấu của paper.</p>
+
+<div class="widget">
+<h4>So từng cột Bảng 4</h4>
+<div class="ctrl" id="t4Btns"></div>
+<div class="leg"><span><i style="background:var(--grey)"></i>specialist</span><span><i style="background:var(--blue)"></i>GR00T N1.6</span><span><i style="background:var(--accent)"></i>Qwen-VLA</span></div>
+<div class="bars" id="t4Bars" style="margin-top:10px"></div>
+<div class="out" id="t4Out"></div>
+</div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Trên LIBERO, Instruct đạt 97,9%, <i>on par with the best specialists</i>. Trên RoboCasa-GR1 đạt 56,7%, hơn π0.5 (37,0), GR00T N1.6 (49,9) và Being-H0.5 (53,3).</div>
+<div class="n"><span class="lab">Nghĩa là</span><b>LIBERO</b> gần như "bão hòa": 5 trên 6 specialist nằm trong khoảng 96,6–98,6, chênh nhau 1–2 điểm. 97,9 là ngang hàng chứ không vượt trội; ABot-M0 vẫn cao hơn (98,6). <b>RoboCasa-GR1</b> còn nhiều chỗ để phân biệt mô hình: Qwen-VLA đứng nhì sau ABot-M0 (58,3). Câu của paper liệt kê những mô hình nó thắng, nhưng không nhắc mô hình xếp trên.</div></div>
+
+<h3>10.3 So với GR00T: phải tách N1 và N1.6</h3>
+<div class="tw"><table class="t">
+<tr><th>Mô hình</th><th>Nguồn số</th><th class="num">LIBERO</th><th class="num">GR-1 Tabletop / RoboCasa-GR1</th></tr>
+<tr><td>Diffusion Policy (100 demo/tác vụ)</td><td>PDF GR00T N1, Bảng 2/4</td><td class="num">–</td><td class="num">32,7</td></tr>
+<tr><td>GR00T N1 (30 / 100 / 300 demo)</td><td>PDF GR00T N1, Bảng 4</td><td class="num">không báo</td><td class="num">43,2 / 50,0 / 49,3</td></tr>
+<tr><td>GR00T N1.6 (specialist)</td><td>PDF Qwen-VLA, Bảng 4</td><td class="num">97,2</td><td class="num">49,9</td></tr>
+<tr><td>Qwen-VLA-Base</td><td>PDF Qwen-VLA, Bảng 4</td><td class="num">90,8</td><td class="num">40,4</td></tr>
+<tr class="hl"><td>Qwen-VLA-Instruct</td><td>PDF Qwen-VLA, Bảng 4</td><td class="num">97,9</td><td class="num">56,7</td></tr>
+</table></div>
+<div class="co warn"><b class="t">Đọc bảng này cẩn thận</b>
+(1) Hàng GR00T N1 và hàng Qwen-VLA đến từ <b>hai paper khác nhau, giao thức khác nhau</b>: GR00T N1 lấy điểm cao nhất của 5 checkpoint cuối, 100 lần thử, post-train với số demo cố định; Qwen-VLA theo StarVLA và không ghi số demo. Đặt cạnh nhau để thấy <i>bậc độ lớn</i>, không để kết luận chênh bao nhiêu điểm.<br>
+(2) "RoboCasa-GR1 ≈ GR-1 Tabletop" là suy luận từ tên gọi, robot và số tác vụ (24). Nên kiểm tra trong code StarVLA.<br>
+(3) Điểm thú vị: <b>Qwen-VLA-Base (40,4) thấp hơn GR00T N1 sau post-train (43,2–50,0)</b>. Pretraining rộng chưa đủ; phải qua SFT mới vượt (56,7). Điều này khớp thông điệp "pretrain cho nền, finetune cho độ chính xác".</div>
+
+<h3>10.4 Từng giai đoạn đóng góp bao nhiêu (Bảng 11)</h3>
+<div class="tw"><table class="t">
+<tr><th>Giai đoạn</th><th class="num">Simpler</th><th class="num">RoboCasa</th><th class="num">RoboTwin-E</th><th class="num">RoboTwin-H</th><th class="num">LIBERO</th><th class="num">SimplerOOD</th><th class="num">DOMINO SR</th><th class="num">DOMINO MS</th></tr>
+<tr><td>CPT (Base)</td><td class="num">64,3</td><td class="num">40,4</td><td class="num">64,3</td><td class="num">66,4</td><td class="num">90,8</td><td class="num">25,3</td><td class="num">21,1</td><td class="num">37,4</td></tr>
+<tr><td>+ SFT</td><td class="num">70,8</td><td class="num">56,0</td><td class="num">86,3</td><td class="num">87,1</td><td class="num">97,8</td><td class="num">31,6</td><td class="num">25,7</td><td class="num">39,1</td></tr>
+<tr class="hl"><td>+ RL (Instruct)</td><td class="num">73,7</td><td class="num">56,7</td><td class="num">86,1</td><td class="num">87,2</td><td class="num">97,9</td><td class="num">32,0</td><td class="num">26,6</td><td class="num">39,5</td></tr>
+<tr><td>Δ do SFT</td><td class="num delta-up">+6,5</td><td class="num delta-up">+15,6</td><td class="num delta-up">+22,0</td><td class="num delta-up">+20,7</td><td class="num delta-up">+7,0</td><td class="num delta-up">+6,3</td><td class="num delta-up">+4,6</td><td class="num delta-up">+1,7</td></tr>
+<tr><td>Δ do RL</td><td class="num delta-up">+2,9</td><td class="num delta-up">+0,7</td><td class="num delta-dn">−0,2</td><td class="num delta-up">+0,1</td><td class="num delta-up">+0,1</td><td class="num delta-up">+0,4</td><td class="num delta-up">+0,9</td><td class="num delta-up">+0,4</td></tr>
+</table></div>
+<p>Hai hàng Δ do mình tự trừ. Đọc ra: <b>SFT làm phần lớn công việc</b> (+7 đến +22 điểm). <b>RL thêm ít</b>, rõ nhất ở chính môi trường rollout (SimplerEnv +2,9); ở chỗ khác chủ yếu là "không làm hỏng" (−0,2 đến +0,9). Paper diễn giải đây là chuyển giao tích cực nhẹ; với một lần chạy và không có thanh sai số, mức +0,1 nên coi là "giữ nguyên".</p>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="sec" id="other">
+<h2>11. Kết quả khác & ablation (Section 5.1.2–5.1.6, 5.2.2) <span class="lv k">Đọc lướt</span></h2>
+
+<h3>Robot thật ALOHA (Bảng 5, 6)</h3>
+<p>ALOHA: hai tay 6 bậc tự do, kẹp song song, 3 camera (2 cổ tay + 1 góc nhìn thứ nhất). Hai biến thể cùng kiến trúc: <b>w/o pretrain</b> (huấn luyện "from scratch") và <b>w/ pretrain</b> (fine-tune từ Qwen-VLA-Base).</p>
+<div class="tw"><table class="t">
+<tr><th>Mô hình</th><th class="num">Trong miền (TB 6 nhóm tác vụ)</th><th class="num">OOD (TB 5 kiểu)</th></tr>
+<tr><td>GR00T N1.6</td><td class="num">28,6</td><td class="num">25,4</td></tr>
+<tr><td>π0.5</td><td class="num">71,6</td><td class="num">41,5</td></tr>
+<tr><td>Qwen-VLA-aloha w/o pretrain</td><td class="num">48,5</td><td class="num">36,2</td></tr>
+<tr class="hl"><td>Qwen-VLA-aloha w/ pretrain</td><td class="num">83,6</td><td class="num">76,9</td></tr>
+</table></div>
+<p>Ngoại lệ đáng để ý: gấp khăn (vật mềm), π0.5 đạt 80,8 so với 65,4 của Qwen-VLA. OOD gồm màu mới, vật mới, vị trí mới, nền/ánh sáng mới, câu lệnh mới.</p>
+
+<h3>Điều hướng VLN-CE (Bảng 7)</h3>
+<p>Val-Unseen. R2R: Instruct OS 69,0, SR 57,5 (StreamVLN: 64,2 / 56,9). RxR: SR 59,6, SPL 47,8 (StreamVLN: 52,9 / 46,0). Một mô hình vừa thao tác vừa điều hướng vẫn ngang hoặc hơn mô hình chuyên điều hướng.</p>
+
+<h3>OOD tĩnh và động</h3>
+<ul>
+<li><b>SimplerEnv-OOD</b> (Bảng 8, WidowX, chỉ SFT trên Bridge gắp-đặt đơn giản rồi chấm 6 tác vụ mới): Instruct 32,0% so với π0.5 12,6%. Ví dụ MoveRight 33,3 so với 0,0.</li>
+<li><b>DOMINO</b> (Bảng 9, vật đang chuyển động, zero-shot, 35 bộ): Instruct SR 26,6%, MS 39,5. Hơn cả các mô hình đã fine-tune riêng cho DOMINO (tốt nhất PUMA 17,2 / 35,0) và LingBot-VA (24,1 / 36,1).</li>
+<li><b>Định tính trên ALOHA với Base</b> (Hình 5): gắp theo màu, gắp vật chưa từng thấy (bông cải, vịt đồ chơi), làm theo động từ mới ("approach"), không bị nền vàng lạ làm nhiễu.</li>
+</ul>
+
+<h3>Ablation về đồng huấn luyện (Hình 7a, Bảng 10, 12)</h3>
+<ul>
+<li><b>Thêm dữ liệu VL khi học hành động</b>: LIBERO và Simpler gần như không đổi; RoboCasa-GR1 51,1 → 56,0 (+4,9), RoboTwin-2.0 81,8 → 86,4 (+4,6). Dữ liệu VL giúp ở tác vụ cần nhận vật và hiểu câu lệnh phức tạp.</li>
+<li><b>Cách chiếu hành động</b> (Bảng 10) và <b>trạng thái robot</b> (Bảng 12): đã phân tích ở mục 4. Đồng huấn luyện nhiều robot không làm giảm điểm so với huấn luyện riêng (Bridge 62,8 riêng so với ~63 chung; RoboCasa 53,4 riêng so với 52–53 chung).</li>
+</ul>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="sec" id="next">
+<h2>12. Phần nào chuẩn bị cho RTC và MoE <span class="lv m">Phải nắm</span></h2>
+<p>Cả hai paper đọc sâu tiếp theo đều mổ xẻ <b>action expert</b> và <b>action chunk</b>. Dưới đây là những gì Qwen-VLA cung cấp (và chưa cung cấp) cho từng hướng.</p>
+
+<h3>12.1 Cho RTC (Real-Time Chunking)</h3>
+<div class="tw"><table class="t">
+<tr><th>Chỗ trong Qwen-VLA</th><th>Paper nói gì</th><th>Vì sao quan trọng với RTC</th></tr>
+<tr><td>Action chunk</td><td>H = 16 (thao tác), sinh cả chunk một lần</td><td>RTC xử lý chuyện <b>nối chunk</b>: robot vẫn chạy chunk cũ trong lúc mô hình tính chunk mới</td></tr>
+<tr><td>Sinh bằng flow matching, vài bước Euler</td><td>"a few Euler integration steps", τ: 1 → 0</td><td>RTC suy luận "tô tiếp" (inpainting) bằng cách <b>can thiệp vào từng bước khử nhiễu</b>, để chunk mới khớp phần đầu với các hành động đã cam kết. Cần mô hình flow matching, và Qwen-VLA là một mô hình như vậy</td></tr>
+<tr><td>Quy ước τ</td><td>τ = 1 nhiễu, τ = 0 sạch</td><td>Theo mình biết, RTC (Physical Intelligence) dùng quy ước kiểu π0, giống GR00T. Khi đọc công thức RTC, phải "lật" τ nếu áp vào Qwen-VLA</td></tr>
+<tr><td>Tần số điều khiển</td><td>Nằm trong prompt ("control frequency is {FPS} Hz"), khác nhau theo dataset</td><td>Số bước robot đi trong lúc mô hình đang tính = độ trễ × FPS. RTC cần con số này</td></tr>
+<tr><td>Mask theo từng bước h</td><td>\(M_{h,k}\) cho phép một số bước trong chunk "không tính"</td><td>Với RTC bản training-time, cần đối xử khác với các bước đầu chunk (đã cố định). Hạ tầng mask và tensor H × K là chỗ có thể cắm vào (suy luận của mình, kiểm lại khi đọc paper RTC training-time)</td></tr>
+<tr><td>Mẹo ODE → SDE trong RL</td><td>Thêm nhiễu ở mỗi bước Euler, lưu các trạng thái trung gian</td><td>Cho thấy chuỗi khử nhiễu có thể được chỉnh từng bước, đúng tinh thần RTC can thiệp vào quá trình sinh</td></tr>
+</table></div>
+<div class="co crit"><b class="t">Những gì paper KHÔNG báo, cần tìm trong code</b>
+(1) Số bước Euler thật sự. (2) Thời gian suy luận một chunk (GR00T báo 63,9 ms; Qwen-VLA không báo). (3) Chạy bao nhiêu trong 16 hành động thì gọi mô hình lần nữa. (4) Với joint self-attention, mỗi bước Euler DiT xử lý cả chuỗi token VLM + 16 token hành động, nên độ trễ có thể lớn hơn kiểu cross-attention. Đây là đúng các con số RTC cần. Repo: <a href="https://github.com/QwenLM/Qwen-VLA">github.com/QwenLM/Qwen-VLA</a>.</div>
+
+<h3>12.2 Cho MoE (LingBot-VLA 2.0)</h3>
+<div class="tw"><table class="t">
+<tr><th>Chỗ trong Qwen-VLA</th><th>Paper nói gì</th><th>Vì sao quan trọng với MoE</th></tr>
+<tr><td>Khối DiT</td><td>Hình 1: Self-Attention → AdaLN → <b>Feed-Forward MLP</b>, lặp N = 16 lần, mỗi khối 70,8M</td><td>MoE trong action expert = thay lớp FFN này bằng E "chuyên gia" FFN + một router chọn chuyên gia cho từng token</td></tr>
+<tr><td>Một DiT chung cho mọi robot, mọi việc</td><td>Phân biệt robot <b>chỉ</b> bằng prompt; thao tác, điều hướng, tay người dùng chung trọng số</td><td>Dữ liệu rất không đồng nhất (7 kênh vs 32 kênh, tay vs bánh xe), nên đây là chỗ các chuyên gia có thể tự chia việc</td></tr>
+<tr><td>Bảng 10: MLP riêng từng robot</td><td>Chia cứng theo robot ở lớp chiếu: không hơn đệm 0 (&lt; 1,2 điểm)</td><td>Câu hỏi hay: chia <b>cứng</b> theo robot không giúp; chia <b>mềm</b> bằng router bên trong DiT thì sao?</td></tr>
+<tr><td>Hạn chế paper tự nêu</td><td>Huấn luyện chung làm <i>modestly regress</i> một số đánh giá VL và điều hướng; đề xuất <i>modular specialization</i></td><td>Đây chính là động lực của MoE: thêm sức chứa mà không bắt mọi việc tranh nhau một bộ trọng số</td></tr>
+<tr><td>Baseline trong Bảng 9</td><td>LingBot-VLA w/ depth: SR 11,8, MS 26,7 (zero-shot DOMINO)</td><td>Cùng "họ" với paper MoE bạn sẽ đọc</td></tr>
+</table></div>
+<div class="co link"><b class="t">Nhắc lại từ trang GR00T</b>
+"Mixture-of-experts" kiểu π0 (tách trọng số theo loại token, không có router) khác MoE có router thay FFN. Qwen-VLA không dùng cả hai: nó là một DiT single-stream, FFN dùng chung. Theo kiến thức chung về Transformer (không phải số của paper), với tỉ lệ ẩn 4× thì FFN chiếm khoảng 2/3 tham số attention + FFN của một khối, nên thay FFN bằng MoE sẽ đụng vào phần lớn trọng số của expert.</div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="sec" id="critique">
+<h2>13. Hạn chế và phản biện <span class="lv s">Nên biết</span></h2>
+<h3>Paper tự nhận (Section 7)</h3>
+<ul>
+<li>Dữ liệu hành động vẫn nhỏ và kém đa dạng hơn nhiều so với dữ liệu VL: yếu với vật hiếm, môi trường lạ, tác vụ nhiều tiếp xúc.</li>
+<li>Huấn luyện chung có đánh đổi: học hành động làm <b>giảm nhẹ</b> một số đánh giá thuần VL và điều hướng.</li>
+<li>Đánh giá phần lớn ngắn hạn, theo benchmark; triển khai thật dài hạn còn bỏ ngỏ.</li>
+</ul>
+
+<h3>Điểm nên dè dặt (tự kiểm chứng trước khi nói với mentor)</h3>
+<ol>
+<li><b>"Generalist" nhưng đã thấy dữ liệu benchmark.</b> Instruct được SFT trên demo mô phỏng của chính các benchmark (theo StarVLA), và RL trong SimplerEnv. "Không thích nghi riêng từng benchmark" khác với "chưa từng thấy dữ liệu benchmark".</li>
+<li><b>Đối thủ là GR00T N1.6</b>, không phải N1; số của các specialist có thể lấy từ báo cáo khác nhau, giao thức không chắc đồng nhất.</li>
+<li><b>Không báo số bước Euler và độ trễ</b>, dù paper nhấn mạnh "low-latency real-time control".</li>
+<li><b>Mô tả Beta mâu thuẫn.</b> Sec 5.2.1 nói Beta <i>concentrates density toward the clean end</i>, vài câu sau lại nói Beta <i>spreads gradient more uniformly</i>. Hình 6b vẽ Beta cao nhất ở τ = 0 (sạch). Trong khi đó, Beta của π0/GR00T dồn mẫu về phía <b>nhiều nhiễu</b>. Có thể Qwen-VLA dùng tham số Beta khác; cần xem code.</li>
+<li><b>RL "chỉ trong SimplerEnv"</b> nhưng cũng nói 128 môi trường <i>distributed across multiple manipulation task suites</i>. Có thể là nhiều bộ tác vụ bên trong SimplerEnv; paper không nói rõ.</li>
+<li><b>Mức tăng của RL rất nhỏ</b> ngoài SimplerEnv (−0,2 đến +0,9), một lần chạy, không có thanh sai số.</li>
+<li><b>"w/o pretrain … trained from scratch"</b> không rõ: VLM có khởi tạo từ Qwen3.5 không, hay toàn bộ ngẫu nhiên? Hai cách cho ý nghĩa khác nhau về mức đóng góp của pretraining.</li>
+<li><b>Ablation T2A chỉ trên một benchmark</b> (Simpler-WidowX, sau SFT). Paper gọi 71,1 → 67,2 là "comparable/plateau", trong khi nhiều so sánh khác chênh cỡ 3 điểm lại được coi là có ý nghĩa.</li>
+<li><b>Làm tròn lệch nhẹ</b>: "+4,9 pp (65,4 so với 60,4)" thật ra là 5,0; "−2,9" (60,4 so với 57,6) là 2,8. Không ảnh hưởng kết luận, nhưng nên tự trừ lại trước khi trích.</li>
+<li><b>Số trong phần tóm tắt dữ liệu</b>: Sec 3.2.1 nói "hơn 8 triệu" quỹ đạo tổng hợp, nhưng 3.2.3 cộng lại khoảng 7,2 triệu + 0,36 triệu ≈ 7,6 triệu. Điều hướng 4,3 + 2,3 + 1,0 = 7,6 so với 7,5 ghi trong Bảng 1.</li>
+<li><b>Corpus của T2A nói hai kiểu.</b> Sec 3.2.3 gọi ~7,2 triệu quỹ đạo language-action tổng hợp là <i>primary corpus</i> của T2A, nhưng ablation ở Hình 6a cho thấy cấu hình tốt nhất chỉ có <b>20%</b> tổng hợp, 80% là teleop thật bỏ ảnh; dùng 100% tổng hợp chỉ được 64,1%. Paper không nói rõ bản cuối dùng tỉ lệ nào.</li>
+<li><b>K không được công bố.</b> Chỉ biết K ≥ 32 (dữ liệu tay người cần 32 kênh).</li>
+</ol>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="sec" id="quiz">
+<h2>14. Câu hỏi tự kiểm tra <span class="lv s">Nên biết</span></h2>
+<p>Tự trả lời bằng lời của mình trước, rồi mới bấm xem gợi ý.</p>
+<details class="q"><summary>1. Kể 3 điểm giữ nguyên và 3 điểm thay đổi so với GR00T N1.</summary>Giữ: VLM + DiT flow matching; chunk H = 16; τ vào qua AdaLN và vài bước Euler. Đổi: joint self-attention thay cross-attention; prompt + đệm 0 + mask thay MLP riêng; bỏ state; đảo quy ước τ; thêm T2A/CPT/RL; VLM được mở băng.</details>
+<details class="q"><summary>2. Trong joint self-attention, token VLM có được cập nhật qua các khối DiT không? Còn ở GR00T?</summary>Qwen-VLA: có, token VLM nằm trong cùng chuỗi nên đi qua cả 16 khối và nhìn được token hành động. GR00T: không, φ<sub>t</sub> cố định, chỉ token hành động hỏi nó qua cross-attention.</details>
+<details class="q"><summary>3. Viết khuôn embodiment prompt. Nó chứa những thông tin gì?</summary>"The robot is {robot_tag} with {single arm / dual arms}[, waist][, and mobile base]. The control frequency is {FPS} Hz. Please predict the next {chunk_size} control actions to execute the following task: {ori_instruction}." Gồm: loại robot, số tay, eo, đế di động, tần số điều khiển, số hành động cần đoán, câu lệnh.</details>
+<details class="q"><summary>4. Robot WidowX có c = 7 kênh, H<sub>task</sub> = 16, K = 32. Mask có bao nhiêu ô bằng 1? Vì sao loss chia 2 tầng?</summary>7 × 16 = 112 ô trên 16 × 32 = 512. Tầng 1 lấy trung bình theo thời gian chỉ trên ô thật (bỏ đệm); tầng 2 lấy trung bình đều trên c kênh, để mẫu 7 kênh và mẫu 32 kênh có cùng trọng số.</details>
+<details class="q"><summary>5. Với τ = 0,25 theo quy ước Qwen-VLA, Y<sub>0</sub> = 0,6, Y<sub>1</sub> = −1,2: Y<sub>τ</sub> = ? Vận tốc mục tiêu = ? Điểm này ứng với τ nào bên GR00T?</summary>\(Y_{0.25} = 0.75 \times 0.6 + 0.25 \times (-1.2) = 0.15\). Vận tốc \(Y_1 - Y_0 = -1.8\). Bên GR00T là τ = 0,75 (đã đi 75% từ nhiễu tới sạch), với vận tốc \(A - \epsilon = +1.8\).</details>
+<details class="q"><summary>6. Vì sao T2A cố tình bỏ ảnh? Bằng chứng?</summary>Để DiT không "đi tắt" qua ảnh mà phải học ánh xạ chữ → hành động, tạo một prior hành động. Ảnh cũng làm mỗi bước tốn hơn khoảng 10 lần. Bằng chứng: chunk-mode có ảnh 57,6% so với không ảnh 60,4% (Hình 6a).</details>
+<details class="q"><summary>7. Giai đoạn nào tạo Qwen-VLA-Base, giai đoạn nào tạo Instruct? Mỗi giai đoạn đóng băng gì?</summary>Base = T2A (VLM ❄, DiT 🔥) + CPT (cả hai 🔥). Instruct = SFT đa tác vụ (cả hai 🔥) + RL (cả hai 🔥, value head chặn gradient vào VLM).</details>
+<details class="q"><summary>8. Vì sao không áp PPO thẳng vào flow matching được? Paper làm gì?</summary>PPO cần log π(a|s), mà flow matching tất định (ODE) không cho log-xác suất dễ tính. Paper thêm nhiễu ở mỗi bước Euler (ODE → SDE), nên mỗi bước là một Gaussian có log-xác suất tính được; chỉ chọn ngẫu nhiên một bước mỗi rollout để tính.</details>
+<details class="q"><summary>9. A = +2, r = 1,5, ε = 0,2. Mục tiêu PPO (trong dấu min) bằng bao nhiêu?</summary>min(1,5 × 2; 1,2 × 2) = min(3; 2,4) = 2,4.</details>
+<details class="q"><summary>10. "Qwen-VLA vượt mọi specialist trên LIBERO" đúng không?</summary>Không. 97,9 so với ABot-M0 98,6; paper dùng chữ "on par". LIBERO gần bão hòa, chênh 1–2 điểm.</details>
+<details class="q"><summary>11. RoboCasa-GR1 trong Qwen-VLA có phải RoboCasa trong Bảng 2 của GR00T N1 không?</summary>Không. "RoboCasa" của GR00T là RoboCasa Kitchen với tay Franka. RoboCasa-GR1 là bộ 24 tác vụ với robot hình người GR-1, khớp với "GR-1 Tabletop" của GR00T (GR00T N1: 50,0% ở 100 demo).</details>
+<details class="q"><summary>12. Nếu thay FFN trong action expert bằng MoE, bạn đụng vào khối nào trong Hình 1? Gợi ý cách chia chuyên gia?</summary>Khối "Feed-Forward MLP" trong mỗi khối DiT (16 khối). Chuyên gia có thể tự chia theo robot (prompt), theo họ tác vụ (thao tác/điều hướng/tay người), hoặc theo loại token (token VLM vs token hành động), vì chúng nằm chung một chuỗi.</details>
+</section>
+
+<!-- ============ 15 ============ -->
+<section class="sec" id="sources">
+<h2>15. Nguồn <span class="lv k">Đọc lướt</span></h2>
+<ul>
+<li>Paper gốc: Qwen Team, <i>Qwen-VLA: Unifying Vision-Language-Action Modeling across Tasks, Environments, and Robot Embodiments</i>, arXiv 2605.30280 (bản v2, 01/06/2026). Mọi con số trên trang này lấy từ PDF; Bảng 4, 5, 11 đối chiếu với ảnh trang PDF.</li>
+<li>Code và blog: <a href="https://github.com/QwenLM/Qwen-VLA">github.com/QwenLM/Qwen-VLA</a> · <a href="https://qwen.ai/blog?id=qwenvla">qwen.ai/blog?id=qwenvla</a></li>
+<li>GR00T N1: NVIDIA, arXiv 2503.14734 (số GR00T N1 ở mục 4 và 10 lấy từ PDF này: Bảng 2, 4, 6)</li>
+<li>StarVLA (giao thức đánh giá): arXiv 2604.05014 · RLinf (framework RL): arXiv 2509.15965</li>
+<li>PPO: Schulman et al., arXiv 1707.06347 · GAE: Schulman et al., arXiv 1506.02438</li>
+<li>ODE ↔ SDE: Song et al., <i>Score-Based Generative Modeling through SDEs</i>, ICLR 2021, arXiv 2011.13456</li>
+<li>Flow Matching: Lipman et al., arXiv 2210.02747 · DiT: Peebles &amp; Xie, arXiv 2212.09748 · Rectified flow transformer (SD3): Esser et al., arXiv 2403.03206</li>
+<li>LIBERO: arXiv 2306.03310 · RoboCasa: arXiv 2406.02523 · SimplerEnv: arXiv 2405.05941 · DOMINO: arXiv 2603.15620</li>
+<li>π0: arXiv 2410.24164 · RTC inference-time: arXiv 2506.07339 · RTC training-time: arXiv 2512.05964 · LingBot-VLA 2.0: arXiv 2607.06403</li>
+</ul>
+</section>
+
+</main>
+</div>
+<footer>Qwen-VLA · Đọc hiểu paper — tài liệu học tập cá nhân, thư mục VLA Modeling</footer>
+
+<script>
+(function(){
+"use strict";
+/* ---------- theme ---------- */
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function vn(x,d){return (+x).toFixed(d===undefined?1:d).replace('-','−').replace('.',',');}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* ---------- checklist ---------- */
+var boxes=[].slice.call(document.querySelectorAll('#chk input'));
+var saved={};
+try{saved=JSON.parse(localStorage.getItem('qwenvla-chk')||'{}');}catch(e){saved={};}
+function updChk(){
+  var n=0;boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);if(b.checked)n++;});
+  document.getElementById('progBar').style.width=(100*n/boxes.length)+'%';
+}
+boxes.forEach(function(b){
+  b.checked=!!saved[b.dataset.k];
+  b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem('qwenvla-chk',JSON.stringify(saved));}catch(e){}updChk();});
+});
+updChk();
+
+/* ---------- TOC scroll spy ---------- */
+var links=[].slice.call(document.querySelectorAll('#toc a'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){
+  var y=window.scrollY+120,idx=0;
+  targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});
+  links.forEach(function(a,i){a.classList.toggle('on',i===idx);});
+}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+/* ---------- architecture ---------- */
+var INFO={
+ img:'<b>Ảnh nhiều camera.</b> Một hoặc nhiều ảnh (ví dụ camera đầu + hai camera cổ tay), hoặc video/lịch sử khung hình với điều hướng. Mỗi ảnh được bọc bằng cặp token tên camera <code>&lt;|tag_start|&gt; … &lt;|tag_end|&gt;</code> để mô hình biết ảnh đến từ đâu.',
+ txt:'<b>Prompt.</b> Gồm <b>embodiment prompt</b> (robot gì, mấy tay, bao nhiêu Hz, đoán bao nhiêu bước) và câu lệnh gốc. Đây là đầu vào <b>duy nhất</b> cho mô hình biết đang điều khiển robot nào (mục 7).',
+ vlm:'<b>Qwen3.5-4B.</b> VLM đa phương thức từ gốc: token ảnh (từ ViT có spatial merging) xen thẳng vào chuỗi chữ. Attention lai: phần lớn lớp là gated linear attention, xen định kỳ softmax attention (GQA). <b>Đóng băng ở T2A</b>, được học ở CPT, SFT, RL. Khác GR00T: LLM của GR00T đóng băng suốt.',
+ hid:'<b>Hidden states.</b> Vector đầu ra của VLM cho mỗi token ảnh và chữ. Paper không nói lấy ở lớp nào (GR00T lấy lớp 12). Tính <b>một lần</b> cho mỗi chunk.',
+ lm:'<b>Đầu ra chữ.</b> VLM vẫn sinh chữ như bình thường cho dữ liệu VL (VQA, caption, grounding, VQA lái xe). Loss đoán token tiếp theo L<sub>vl</sub> giữ cho VLM không quên khả năng hiểu ảnh-chữ. Ở SFT, trọng số 0,1.',
+ val:'<b>Value head (chỉ ở RL).</b> Lấy trung bình mọi hidden state của VLM → một lớp Linear → một số: "trạng thái này đáng giá bao nhiêu". Có <b>stop-gradient</b> nên loss của value không chảy ngược vào VLM. Learning rate 10⁻⁴, gấp khoảng 20 lần actor.',
+ lin:'<b>Linear (3,9M tham số).</b> Đổi kích thước vector của VLM sang kích thước ẩn của DiT, để token VLM và token hành động "nói cùng một cỡ" trước khi ghép thành một chuỗi.',
+ act:'<b>Chunk hành động nhiễu Y<sub>τ</sub>.</b> Tensor H × K = 16 × K. Chỉ c kênh đầu và H<sub>task</sub> bước đầu là thật, còn lại đệm 0 và bị mask. Huấn luyện: Y<sub>τ</sub> = (1−τ)Y<sub>0</sub> + τY<sub>1</sub>. Suy luận: bắt đầu từ nhiễu thuần (τ = 1).',
+ ain:'<b>Action MLP vào.</b> Đổi K kênh hành động thành vector kích thước DiT, mỗi bước thời gian một token (16 token). <b>Một MLP chung cho mọi robot</b> (tổng MLP vào + ra chỉ 4,9M tham số). GR00T dùng MLP riêng từng robot.',
+ tau:'<b>Mức nhiễu τ.</b> Quy ước Qwen-VLA: τ = 1 là nhiễu thuần, τ = 0 là sạch (ngược GR00T). Lúc huấn luyện τ được bốc theo Sigmoid-Normal (T2A) hoặc Beta (CPT/SFT).',
+ temb:'<b>Timestep embedding (2,8M).</b> Biến τ thành vector, dùng để sinh tham số cho AdaLN trong mỗi khối DiT, giúp mạng biết đang ở bước khử nhiễu nào.',
+ dit:'<b>DiT × 16 khối, single-stream.</b> Token VLM (sau Linear) và 16 token hành động được <b>nối thành một chuỗi</b>. Mỗi khối: joint self-attention (mọi token nhìn nhau) → AdaLN theo τ → Feed-Forward MLP. RoPE nhiều phần khớp với backbone. Mỗi khối 70,8M tham số, 16 khối = 1,13B. <b>FFN ở đây là chỗ paper MoE sẽ thay.</b>',
+ aout:'<b>Action MLP ra.</b> Đọc 16 token hành động ở cuối DiT, xuất vận tốc 16 × K. Mục tiêu khi huấn luyện: Y<sub>1</sub> − Y<sub>0</sub> (nhiễu − sạch). Suy luận: Y ← Y − Δτ · v (trừ, vì τ giảm dần).',
+ out:'<b>Chunk sạch Y<sub>0</sub>.</b> Sau vài bước Euler (paper không ghi số bước), τ về 0. Chỉ đọc c kênh đầu, H<sub>task</sub> bước đầu, rồi bỏ chuẩn hóa (ngược công thức quantile) để gửi cho robot.'
+};
+var nodes=[].slice.call(document.querySelectorAll('#archSvg .n'));
+nodes.forEach(function(g){g.addEventListener('click',function(){
+  nodes.forEach(function(o){o.classList.remove('sel');});g.classList.add('sel');
+  document.getElementById('archInfo').innerHTML=INFO[g.dataset.k]||'';
+});});
+
+/* ---------- tau convention widget ---------- */
+var pp=document.getElementById('pp'),nn=document.getElementById('nn');
+function tauW(){
+  var p=+pp.value/100,N=+nn.value,a=0.6,e=-1.2;
+  document.getElementById('pV').textContent=pp.value;document.getElementById('nV').textContent=N;
+  var val=p*a+(1-p)*e, tq=1-p;
+  var seqG=[],seqQ=[],x=e,y=e,i;
+  for(i=0;i<=N;i++){seqG.push(vn(x,2));seqQ.push(vn(y,2));x=x+(a-e)/N;y=y-(1/N)*(e-a);}
+  document.getElementById('tauG').innerHTML='<b>GR00T N1</b> (τ = 0 nhiễu, τ = 1 sạch)<br>Điểm này: τ = <b>'+vn(p,2)+'</b><br>'+
+   'A<sup>τ</sup> = '+vn(p,2)+' × 0,6 + '+vn(1-p,2)+' × (−1,2) = <b>'+vn(val,3)+'</b><br>'+
+   'Vận tốc cần học: A − ε = <b>+1,8</b><br>Euler τ: 0 → 1, <b>cộng</b> v/'+N+':<br><span class="mono">'+seqG.join(' → ')+'</span>';
+  document.getElementById('tauQ').innerHTML='<b>Qwen-VLA</b> (τ = 0 sạch, τ = 1 nhiễu)<br>Cùng điểm: τ = <b>'+vn(tq,2)+'</b><br>'+
+   'Y<sub>τ</sub> = '+vn(1-tq,2)+' × 0,6 + '+vn(tq,2)+' × (−1,2) = <b>'+vn(val,3)+'</b><br>'+
+   'Vận tốc cần học: Y<sub>1</sub> − Y<sub>0</sub> = <b>−1,8</b><br>Euler τ: 1 → 0, <b>trừ</b> v/'+N+':<br><span class="mono">'+seqQ.join(' → ')+'</span>';
+}
+[pp,nn].forEach(function(e){e.addEventListener('input',tauW);});tauW();
+
+/* ---------- prompt widget ---------- */
+var ROB=[
+ {n:'WidowX',a:'single arm',t:['ΔEEF + G']},
+ {n:'Google Robot',a:'single arm',t:['ΔEEF + G']},
+ {n:'Franka Panda',a:'single arm',t:['ΔEEF + G','Abs Joint + G'],both:1},
+ {n:'ARX5',a:'dual arms',t:['ΔEEF + G']},
+ {n:'Fourier GR-1',a:'dual arms',t:['ΔEEF + G']},
+ {n:'Mobile ALOHA',a:'dual arms',t:['ΔEEF + G','Abs Joint + G'],base:1},
+ {n:'AgiBot A2-D',a:'dual arms',t:['Abs Joint + G','Abs Joint + DH']},
+ {n:'Galaxea R1',a:'dual arms',t:['Abs Joint + G']},
+ {n:'AIRBOT MMK2',a:'dual arms',t:['Abs Joint + DH']},
+ {n:'TienKung',a:'dual arms',t:['Abs Joint + G','Abs Joint + DH']},
+ {n:'Real Human',a:'dual arms',t:['ΔEEF (từ MANO)']}
+];
+var PER={'ΔEEF + G':[7,'giả định 7 kênh/tay: 3 dịch chuyển + 3 góc Euler + 1 kẹp'],'Abs Joint + G':[7,'giả định 7 kênh/tay: 6 khớp + 1 kẹp'],'Abs Joint + DH':[12,'giả định 12 kênh/tay: 6 khớp + 6 khớp bàn tay'],'ΔEEF (từ MANO)':[16,'theo paper: 6 cổ tay + 10 eigengrasp mỗi tay = 32']};
+var sR=document.getElementById('pRobot'),sT=document.getElementById('pType'),cW=document.getElementById('pWaist'),cB=document.getElementById('pBase'),
+    iF=document.getElementById('pFps'),iC=document.getElementById('pChunk'),iI=document.getElementById('pInstr'),rC=document.getElementById('pC');
+var armsOverride=null;
+ROB.forEach(function(r,i){var o=document.createElement('option');o.value=i;o.textContent=r.n;sR.appendChild(o);});
+var grid=document.getElementById('pGrid');
+for(var h=0;h<16;h++)for(var k=0;k<32;k++){grid.appendChild(document.createElement('span'));}
+var cells=[].slice.call(grid.children);
+function fillTypes(){
+  var r=ROB[+sR.value];sT.innerHTML='';
+  r.t.forEach(function(t){var o=document.createElement('option');o.value=t;o.textContent=t;sT.appendChild(o);});
+  cB.checked=!!r.base;cW.checked=false;setC();
+}
+function arms(){var r=ROB[+sR.value];return r.a;}
+function setC(){
+  var t=sT.value,per=PER[t],two=arms()==='dual arms';
+  rC.value=Math.min(32,per[0]*(two?2:1));
+  document.getElementById('cHint').textContent='('+per[1]+(two&&t.indexOf('MANO')<0?', × 2 tay':'')+')';
+  draw();
+}
+function draw(){
+  var r=ROB[+sR.value],c=+rC.value,ch=Math.max(1,Math.min(16,+iC.value||16)),fps=+iF.value||10;
+  document.getElementById('cV').textContent=c;
+  var tag=r.n, txt='The robot is <span class="v">'+esc(tag)+'</span> with <span class="v">'+arms()+'</span>'+
+    (cW.checked?'<span class="v">, waist</span>':'')+(cB.checked?'<span class="v">, and mobile base</span>':'')+
+    '. The control frequency is <span class="v">'+fps+'</span> Hz. Please predict the next <span class="v">'+ch+'</span> control actions to execute the following task: <span class="v">'+esc(iI.value)+'</span>.';
+  document.getElementById('pOut').innerHTML=txt;
+  cells.forEach(function(s,i){var hh=Math.floor(i/32),kk=i%32;s.className=(kk<c&&hh<ch)?'on':'pad';});
+  var valid=c*ch,pct=100*valid/512,human=512;
+  var msg='Ô thật: <b>'+valid+'</b> / 512 ('+vn(pct,1)+'%). Trong loss của mẫu này, mỗi ô thật nặng <b>1/('+c+' × '+ch+')</b>; ô đệm nặng 0.<br>';
+  if(valid===512){msg+='Mẫu này dùng hết mọi ô (giống dữ liệu tay người), nên không có ô đệm nào. Hãy chọn một robot một tay để thấy khác biệt.';}
+  else{
+   msg+='• Nếu <b>không có mask</b> và lấy trung bình cả 512 ô: '+(512-valid)+' ô đệm ('+vn(100-pct,1)+'% số ô) cũng bị chấm, mô hình mất công học "đoán số 0" cho những ô vô nghĩa.<br>'+
+   '• Nếu có mask nhưng <b>cộng dồn mọi ô thật trong batch</b> (thay vì trung bình 2 tầng): khi đứng cạnh một mẫu tay người (32 × 16 = 512 ô), mẫu người "nặng" gấp <b>'+vn(human/valid,1)+' lần</b> mẫu này. Trung bình 2 tầng của paper làm mỗi mẫu có cùng trọng số (giả định batch lấy trung bình đều các mẫu).';
+  }
+  document.getElementById('pLoss').innerHTML=msg;
+}
+sR.addEventListener('change',fillTypes);sT.addEventListener('change',setC);
+[cW,cB].forEach(function(e){e.addEventListener('change',draw);});
+[iF,iC,iI,rC].forEach(function(e){e.addEventListener('input',draw);});
+fillTypes();
+
+/* ---------- data mixture bars ---------- */
+var MIX=[['Robot manipulation',74.2,'gr'],['Điều hướng',7.5,'gr'],['Video người (egocentric)',6.0,'gr'],['Mô phỏng tổng hợp (của Qwen)',3.7,'gr'],['VL chung',3.4,'g6'],['Grounding 2D',2.5,'g6'],['VQA lái xe',2.4,'g6'],['Caption hành động chi tiết',0.2,'g6']];
+document.getElementById('mixBars').innerHTML=MIX.map(function(m){
+  return '<div class="row"><div class="nm">'+m[0]+'</div><div class="bb"><div class="bar '+m[2]+'" style="width:'+(m[1]/74.2*85)+'%"><span>'+vn(m[1],1)+'%</span></div></div></div>';}).join('');
+
+/* ---------- stages ---------- */
+var STG=[
+ '<b>Giai đoạn I · T2A (text-to-action).</b><br><b>Đóng băng:</b> VLM ❄. <b>Học:</b> chỉ DiT.<br><b>Đầu vào:</b> chữ (embodiment prompt + câu lệnh), <b>không có ảnh</b>.<br><b>Dữ liệu:</b> chủ yếu ~7,2 triệu quỹ đạo language-action tổng hợp (6 mẫu tác vụ × 6 tay robot); cấu hình tốt nhất trộn 20% tổng hợp + 80% teleop thật đã bỏ ảnh. Đoán <b>cả quỹ đạo</b>, không cắt chunk.<br><b>p(τ):</b> Sigmoid-Normal. <b>Độ dài:</b> 2.000 bước.<br><b>Để làm gì:</b> cho DiT một "từ điển động tác" (action prior) trước khi thấy ảnh, để CPT không phải học sinh hành động từ số 0 và gradient của DiT non không làm hỏng VLM.<br><b>Bằng chứng:</b> SFT trên Simpler-WidowX 60,9% → 71,1%.',
+ '<b>Giai đoạn II · CPT (continued pretraining).</b><br><b>Đóng băng:</b> không. Cả VLM và DiT 🔥.<br><b>Đầu vào:</b> ảnh + chữ.<br><b>Dữ liệu:</b> hỗn hợp Bảng 1 (robot 74,2% gồm cả mô phỏng và thật; người 6%; điều hướng 7,5%; mô phỏng tổng hợp 3,7%; VL 8,5%).<br><b>Loss:</b> λ<sub>act</sub>L<sub>act</sub> + λ<sub>vl</sub>L<sub>vl</sub>. <b>p(τ):</b> Beta.<br><b>Để làm gì:</b> gắn prior hành động với hình ảnh; làm VLM quen nhận thức kiểu robot. Thấy cả ảnh mô phỏng và ảnh thật, nên giai đoạn sau rẽ hướng nào cũng được.<br><b>Kết quả:</b> <b>Qwen-VLA-Base</b>. LIBERO 90,8; RoboCasa-GR1 40,4; Simpler 64,3.',
+ '<b>Giai đoạn III · SFT, hai nhánh từ checkpoint CPT.</b><br><b>Đóng băng:</b> không. Learning rate cosine, lịch riêng cho backbone và decoder.<br><b>Nhánh đa tác vụ:</b> dữ liệu VL (VQA, grounding, caption) + demo thao tác mô phỏng nhiều nền tảng (H = 16, theo StarVLA) + tập VLN thành công (8 waypoint). Lấy mẫu cân bằng theo robot và tác vụ. Loss: VL 0,1 · hành động 1,0.<br><b>Nhánh robot thật:</b> teleop nội bộ (ví dụ ALOHA), để kiểm tra kiến thức CPT có chuyển sang phần cứng.<br><b>Để làm gì:</b> biến "biết rộng" thành "làm chính xác" trên tác vụ đích.<br><b>Kết quả (nhánh đa tác vụ):</b> LIBERO 97,8; RoboCasa-GR1 56,0; Simpler 70,8.',
+ '<b>Giai đoạn IV · RL.</b><br><b>Xuất phát:</b> checkpoint SFT đa tác vụ. <b>Thuật toán:</b> PPO + GAE (RLinf), value head nhỏ gắn vào VLM.<br><b>Dữ liệu:</b> không có demo, chỉ có <b>rollout</b> của chính policy trong <b>SimplerEnv</b>, 128 môi trường song song; thưởng 1 nếu xong việc, 0 nếu không.<br><b>Mẹo chính:</b> ODE → SDE để có log-xác suất cho flow matching; tính ở mức chunk 16 bước.<br><b>Để làm gì:</b> tối ưu thẳng tỉ lệ thành công vòng kín, sửa lỗi dồn tích mà bắt chước không sửa được.<br><b>Kết quả:</b> <b>Qwen-VLA-Instruct</b>. Simpler 70,8 → 73,7; các benchmark khác gần như giữ nguyên (−0,2 đến +0,9).'
+];
+var stgs=[].slice.call(document.querySelectorAll('#stg .stg'));
+function showStg(i){stgs.forEach(function(s,j){s.classList.toggle('sel',i===j);});document.getElementById('stgInfo').innerHTML=STG[i];}
+stgs.forEach(function(s,i){s.addEventListener('click',function(){showStg(i);});});showStg(0);
+
+/* ---------- Table 4 explorer ---------- */
+var BM=['LIBERO','RoboCasa-GR1','Simpler-WidowX','RoboTwin-Easy','RoboTwin-Hard'];
+var T4=[
+ ['π0','dp',[94.4,null,null,65.9,58.4]],
+ ['StarVLA-OFT','dp',[96.6,48.8,64.6,50.4,null]],
+ ['GR00T N1.6','g6',[97.2,49.9,63.2,47.6,null]],
+ ['π0.5','dp',[97.6,37.0,46.9,82.7,76.8]],
+ ['ABot-M0','dp',[98.6,58.3,null,86.0,85.0]],
+ ['Being-H0.5','dp',[97.6,53.3,null,null,null]],
+ ['Qwen-VLA-Base','q',[90.8,40.4,64.3,64.3,66.4]],
+ ['Qwen-VLA-Instruct','q',[97.9,56.7,73.7,86.1,87.2]]
+];
+var NOTE=[
+ 'LIBERO gần bão hòa: 5/6 specialist trong khoảng 96,6–98,6. Instruct 97,9 đứng nhì sau ABot-M0 (98,6). Base 90,8 thấp nhất bảng: pretraining chưa đủ, SFT thêm +7,1. GR00T N1 (paper bạn đã đọc) không báo LIBERO; GR00T N1.6 đạt 97,2.',
+ 'Benchmark phân biệt mô hình rõ hơn (37,0 → 58,3). Instruct 56,7 đứng nhì sau ABot-M0 (58,3), hơn GR00T N1.6 (49,9). Base chỉ 40,4, thấp hơn cả GR00T N1.6; từ Base lên Instruct tăng +16,3.',
+ 'Instruct 73,7 cao nhất, hơn StarVLA-OFT (64,6). Đây cũng là môi trường duy nhất RL được chạy trong đó (+2,9 so với sau SFT), nên một phần lợi thế đến từ RL "đúng sân nhà".',
+ 'Instruct 86,1 nhỉnh hơn ABot-M0 (86,0) 0,1 điểm, coi như ngang. SFT tạo bước nhảy lớn nhất: Base 64,3 → 86,3 sau SFT.',
+ 'Instruct 87,2 so với ABot-M0 85,0 và π0.5 76,8. Lạ: với Qwen-VLA (cả Base lẫn Instruct), Hard lại cao hơn Easy, trong khi π0, π0.5 và ABot-M0 đều có Hard thấp hơn Easy. Paper không giải thích.'
+];
+var bt=document.getElementById('t4Btns'),cur=0;
+BM.forEach(function(b,i){var e=document.createElement('button');e.className='b'+(i===0?' on':' o');e.type='button';e.textContent=b;e.addEventListener('click',function(){cur=i;t4();});bt.appendChild(e);});
+function t4(){
+  [].slice.call(bt.children).forEach(function(e,i){e.className='b'+(i===cur?' on':' o');});
+  var rows=T4.filter(function(r){return r[2][cur]!==null;});
+  document.getElementById('t4Bars').innerHTML=rows.map(function(r){
+    return '<div class="row"><div class="nm">'+r[0]+'</div><div class="bb"><div class="bar '+r[1]+'" style="width:'+(r[2][cur]*0.85)+'%"><span>'+vn(r[2][cur],1)+'%</span></div></div></div>';}).join('');
+  var miss=T4.filter(function(r){return r[2][cur]===null;}).map(function(r){return r[0];});
+  document.getElementById('t4Out').innerHTML=NOTE[cur]+(miss.length?'<br><span style="color:var(--muted)">Không có số: '+miss.join(', ')+'.</span>':'');
+}
+t4();
+})();
+</script>
+</body>
+</html>

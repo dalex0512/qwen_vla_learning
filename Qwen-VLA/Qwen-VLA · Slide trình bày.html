@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Qwen-VLA · Slide trình bày</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+<style>
+/* Layout: khung 16:9 cố định 1280×720, tự co giãn vừa màn hình; thanh điều khiển dưới; khung lời thuyết trình bật bằng phím N */
+:root {
+  --stage: #E7ECEF;
+  --slide: #FCFCFB;
+  --ink: #15212B;
+  --muted: #586672;
+  --rule: #D5DCE1;
+  --accent: #00897B;
+  --accent-ink: #00695F;
+  --accent-soft: #DDF1EE;
+  --amber: #B8650F;
+  --amber-soft: #FBEEDC;
+  --indigo: #5B5BD6;
+  --bad: #B3362B;
+  --bad-soft: #F8E3E0;
+  --code-bg: #EEF2F4;
+  --c1: #00897B; --c2: #B8650F; --c3: #5B5BD6;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --stage: #0B1013; --slide: #141B20; --ink: #E3EAEE; --muted: #9AA8B2; --rule: #2A363E;
+    --accent: #2BA597; --accent-ink: #5CC9BC; --accent-soft: #123430; --amber: #C27C2B; --amber-soft: #33260F;
+    --indigo: #7E7EE8; --bad: #F08A80; --bad-soft: #3A1E1B; --code-bg: #1C252B;
+    --c1: #2BA597; --c2: #C27C2B; --c3: #7E7EE8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --stage: #0B1013; --slide: #141B20; --ink: #E3EAEE; --muted: #9AA8B2; --rule: #2A363E;
+  --accent: #2BA597; --accent-ink: #5CC9BC; --accent-soft: #123430; --amber: #C27C2B; --amber-soft: #33260F;
+  --indigo: #7E7EE8; --bad: #F08A80; --bad-soft: #3A1E1B; --code-bg: #1C252B;
+  --c1: #2BA597; --c2: #C27C2B; --c3: #7E7EE8; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--stage); color: var(--ink); font-family: var(--f-body); margin: 0; overflow: hidden; padding-inline: 0; }
+.app { position: fixed; inset: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) 0; display: flex; flex-direction: column; }
+.viewport { flex: 1; position: relative; min-height: 0; }
+.notes-panel { height: 0; overflow: auto; background: var(--slide); border-top: 1px solid var(--rule); font-size: 15px; line-height: 1.6; padding: 0 20px; transition: height .2s; }
+.app.show-notes .notes-panel { height: 30%; padding: 12px 20px; }
+.notes-panel h6 { margin: 0 0 4px; font: 600 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
+.notes-panel p { margin: 0 0 8px; max-width: 95ch; }
+.bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--slide); border-top: 1px solid var(--rule); flex-wrap: wrap; }
+.bar button { font: 600 13px var(--f-body); color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.bar button:hover { border-color: var(--accent); }
+.bar button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.bar .count { font: 600 13px var(--f-mono); color: var(--muted); min-width: 64px; text-align: center; }
+.bar .hint { margin-left: auto; font-size: 12px; color: var(--muted); }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: transparent; }
+.progress span { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 640px) { .bar .hint { display: none; } }
+
+/* Slide canvas */
+.deck { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform-origin: 0 0; }
+.slide { position: absolute; inset: 0; background: var(--slide); border-radius: 6px; box-shadow: 0 8px 30px rgba(0,0,0,.12); padding: 56px 72px 48px; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: opacity .25s; overflow: hidden; }
+.slide.active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+.slide .notes { display: none; }
+.kicker { font: 600 14px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 10px; }
+.slide h2 { font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -.015em; margin: 0 0 22px; text-wrap: balance; }
+.slide p, .slide li { font-size: 22px; line-height: 1.5; }
+.slide ul { margin: 0; padding-left: 26px; }
+.slide li { margin-bottom: 8px; }
+.pn { position: absolute; right: 28px; bottom: 18px; font: 600 13px var(--f-mono); color: var(--muted); }
+.src { position: absolute; left: 72px; bottom: 18px; font-size: 13px; color: var(--muted); max-width: 980px; }
+.grow { flex: 1; min-height: 0; }
+.row { display: flex; gap: 28px; }
+.col { flex: 1; min-width: 0; }
+.card { border: 1px solid var(--rule); border-radius: 12px; padding: 18px 20px; background: var(--slide); }
+.card h4 { margin: 0 0 6px; font-size: 22px; }
+.card p { margin: 0; font-size: 19px; line-height: 1.45; }
+.card.teal { background: var(--accent-soft); border-color: transparent; }
+.card.amb { background: var(--amber-soft); border-color: transparent; }
+.card.red { background: var(--bad-soft); border-color: transparent; }
+.tag { display: inline-block; font: 600 12px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; background: var(--code-bg); color: var(--muted); }
+.tag.on { background: var(--amber-soft); color: var(--amber); }
+.say { font-size: 20px; font-style: italic; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 14px; margin: 6px 0 0; }
+.math { font-size: 22px; }
+.mono { font-family: var(--f-mono); }
+.big { font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.callout { border-radius: 12px; padding: 14px 20px; font-size: 20px; line-height: 1.45; }
+.callout b { color: var(--ink); }
+svg text { font-family: var(--f-body); }
+table.t { border-collapse: collapse; width: 100%; font-size: 18px; }
+table.t th, table.t td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.t th { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+table.t td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.pddl { font: 14px/1.55 var(--f-mono); background: var(--code-bg); border-radius: 10px; padding: 14px 16px; overflow: hidden; white-space: pre; margin: 0; }
+.pddl .c { color: var(--accent-ink); }
+
+.slide .math mjx-container { margin: 6px 0 !important; }
+.pddl { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="viewport" id="viewport">
+    <div class="deck" id="deck">
+
+      <!-- 1 TITLE -->
+      <section class="slide" aria-label="Slide 1: Tiêu đề">
+        <div class="row grow" style="align-items:center">
+          <div class="col" style="flex:1.25">
+            <div class="kicker">Đọc paper · 3 / 6 trong lộ trình VLA</div>
+            <div style="font-size:96px;font-weight:800;letter-spacing:-.03em;line-height:1">Qwen-VLA</div>
+            <p style="font-size:26px;margin:14px 0 22px;font-weight:600;line-height:1.3">Unifying Vision-Language-Action Modeling<br>across Tasks, Environments, and Robot Embodiments</p>
+            <p style="font-size:18px;color:var(--muted);margin:0">Qwen Team (Alibaba) · 06/2026</p>
+            <p style="font-size:18px;color:var(--muted);margin:0 0 26px">arXiv 2605.30280 (v2) · github.com/QwenLM/Qwen-VLA</p>
+            <div class="callout" style="background:var(--accent-soft)"><b>Một</b> mô hình cho thao tác tay robot, điều hướng và chuyển động tay người: VLM Qwen3.5-4B + action expert DiT, robot được <b>mô tả bằng câu chữ</b>.</div>
+            <p style="font-size:18px;margin:22px 0 0;color:var(--muted)">Trình bày: <b style="color:var(--ink)">Đỗ Thái Dương</b></p>
+          </div>
+          <div class="col" style="flex:.9">
+            <svg viewBox="0 0 420 380" role="img" aria-label="Lộ trình 6 paper, Qwen-VLA là trạm thứ 3">
+              <line x1="60" y1="60" x2="60" y2="330" stroke="var(--rule)" stroke-width="6" stroke-linecap="round"/>
+              <line x1="60" y1="60" x2="60" y2="168" stroke="var(--accent)" stroke-width="6" stroke-linecap="round"/>
+              <g font-size="19">
+                <circle cx="60" cy="60" r="14" fill="var(--accent)"/><text x="90" y="66" fill="var(--muted)">LIBERO · benchmark</text>
+                <circle cx="60" cy="114" r="14" fill="var(--accent)"/><text x="90" y="120" fill="var(--muted)">GR00T N1 · VLM + DiT</text>
+                <circle cx="60" cy="168" r="20" fill="var(--amber)"/><text x="90" y="175" font-weight="800" font-size="24" fill="var(--ink)">Qwen-VLA</text>
+                <circle cx="60" cy="222" r="14" fill="var(--slide)" stroke="var(--indigo)" stroke-width="4"/><text x="90" y="228" fill="var(--muted)">RTC inference-time</text>
+                <circle cx="60" cy="276" r="14" fill="var(--slide)" stroke="var(--indigo)" stroke-width="4"/><text x="90" y="282" fill="var(--muted)">RTC training-time</text>
+                <circle cx="60" cy="330" r="14" fill="var(--slide)" stroke="var(--indigo)" stroke-width="4"/><text x="90" y="336" fill="var(--muted)">LingBot-VLA 2.0 · MoE</text>
+              </g>
+              <text x="250" y="20" font-size="14" fill="var(--accent-ink)" font-weight="700" text-anchor="middle">ĐỌC RỘNG</text>
+              <text x="320" y="256" font-size="14" fill="var(--indigo)" font-weight="700" text-anchor="middle">ĐỌC SÂU</text>
+            </svg>
+          </div>
+        </div>
+        <div class="pn">1 / 16</div>
+        <aside class="notes">
+          <p>Hôm nay em trình bày paper thứ ba trong lộ trình: Qwen-VLA của nhóm Qwen, Alibaba, công bố tháng 6 năm 2026.</p>
+          <p>Một câu tóm tắt: nhóm Qwen hỏi liệu có gom được thao tác tay robot, điều hướng và chuyển động tay người vào một mô hình duy nhất hay không. Câu trả lời của họ là một VLA gồm VLM Qwen3.5-4B và một action expert dạng DiT, trong đó loại robot được báo cho mô hình bằng câu chữ. Đây là paper cuối của phần đọc rộng, và cũng là cầu nối sang RTC và MoE ở phần đọc sâu.</p>
+        </aside>
+      </section>
+
+      <!-- 2 BRIDGE -->
+      <section class="slide" aria-label="Slide 2: Từ GR00T N1 sang Qwen-VLA">
+        <div class="kicker">Mở đầu · Nối từ GR00T N1</div>
+        <h2>Cùng khuôn VLM + DiT, đổi cách nối, cách tả robot và cách huấn luyện</h2>
+        <div class="grow">
+          <table class="t" style="font-size:17px">
+            <thead><tr><th style="width:22%">Điểm</th><th>GR00T N1</th><th>Qwen-VLA</th><th style="width:9%"></th></tr></thead>
+            <tbody>
+              <tr><td>Khuôn chung</td><td>VLM + DiT, flow matching, chunk H = 16</td><td>VLM + DiT, flow matching, chunk H = 16</td><td><span class="tag" style="background:var(--accent-soft);color:var(--accent-ink)">Giữ</span></td></tr>
+              <tr><td>VLM</td><td>Eagle-2, 1,34B, LLM đóng băng</td><td>Qwen3.5-4B, mở băng từ CPT</td><td><span class="tag on">Đổi</span></td></tr>
+              <tr><td>Nối VLM ↔ DiT</td><td>Cross-attention xen self-attention</td><td><b>Joint self-attention</b> trên một chuỗi chung</td><td><span class="tag on">Đổi</span></td></tr>
+              <tr><td>Nhiều loại robot</td><td>MLP encoder/decoder riêng mỗi robot</td><td><b>Câu prompt</b> + đệm 0 + mask, MLP chung</td><td><span class="tag on">Đổi</span></td></tr>
+              <tr><td>Trạng thái robot</td><td>Có (state encoder)</td><td>Không dùng mặc định</td><td><span class="tag on">Đổi</span></td></tr>
+              <tr><td>Quy ước τ</td><td>τ = 0 nhiễu → τ = 1 sạch, K = 4 bước</td><td><b>τ = 1 nhiễu → τ = 0 sạch</b>, "vài bước"</td><td><span class="tag on">Đảo</span></td></tr>
+              <tr><td>Huấn luyện</td><td>Pre-train → post-train từng robot</td><td><b>T2A → CPT → SFT → RL</b></td><td><span class="tag on">Đổi</span></td></tr>
+              <tr><td>Báo kết quả</td><td>Mô hình riêng cho từng benchmark</td><td>Một mô hình cho mọi benchmark</td><td><span class="tag on">Đổi</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row" style="gap:10px;flex-wrap:wrap;margin-top:12px">
+          <span class="tag">1 · Motivation</span><span class="tag">2 · Kiến trúc, prompt, flow matching</span><span class="tag">3 · Dữ liệu & 4 giai đoạn</span><span class="tag">4 · Kết quả</span><span class="tag on">5 · Phản biện, nối RTC & MoE</span>
+        </div>
+        <div class="src">Nguồn: PDF GR00T N1 (2503.14734) và PDF Qwen-VLA (2605.30280).</div>
+        <div class="pn">2 / 16</div>
+        <aside class="notes">
+          <p>Trước khi vào paper, em nối với GR00T N1 mà em đã trình bày. Hai mô hình dùng chung một khuôn: một VLM để hiểu ảnh và câu lệnh, một DiT sinh chunk 16 hành động bằng flow matching.</p>
+          <p>Qwen-VLA đổi năm chỗ chính. Một, VLM to hơn khoảng ba lần và được mở băng để học tiếp. Hai, VLM nối với DiT bằng một chuỗi chung thay cho cross-attention. Ba, mỗi robot không còn MLP riêng mà được mô tả bằng một câu prompt. Bốn, quy ước τ bị đảo: τ bằng 1 là nhiễu. Năm, huấn luyện chia thành bốn giai đoạn. Em sẽ đi qua từng điểm, rồi tới kết quả và phản biện.</p>
+        </aside>
+      </section>
+
+      <!-- 3 MOTIVATION -->
+      <section class="slide" aria-label="Slide 3: Motivation">
+        <div class="kicker">1 · Motivation</div>
+        <h2>Mỗi việc một mô hình riêng thì không học chéo được: gom về một bài toán</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.2">
+            <svg viewBox="0 0 620 400" role="img" aria-label="Bốn loại dữ liệu khác nhau cùng đổ vào một mô hình đoán chuỗi y">
+              <defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+              <g font-size="16">
+                <rect x="10" y="20" width="230" height="74" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="125" y="50" text-anchor="middle" font-weight="700" fill="var(--ink)">Thao tác tay robot</text><text x="125" y="74" text-anchor="middle" font-size="14" fill="var(--muted)">ΔEEF, góc khớp, kẹp</text>
+                <rect x="10" y="114" width="230" height="74" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="125" y="144" text-anchor="middle" font-weight="700" fill="var(--ink)">Điều hướng (VLN)</text><text x="125" y="168" text-anchor="middle" font-size="14" fill="var(--muted)">waypoint (Δx, Δy, Δθ)</text>
+                <rect x="10" y="208" width="230" height="74" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="125" y="238" text-anchor="middle" font-weight="700" fill="var(--ink)">Video tay người</text><text x="125" y="262" text-anchor="middle" font-size="14" fill="var(--muted)">cổ tay + bàn tay (MANO)</text>
+                <rect x="10" y="302" width="230" height="74" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="125" y="332" text-anchor="middle" font-weight="700" fill="var(--ink)">Ảnh + chữ (VL)</text><text x="125" y="356" text-anchor="middle" font-size="14" fill="var(--muted)">VQA, grounding, lái xe</text>
+                <path d="M244 57 L360 180" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#m3)"/>
+                <path d="M244 151 L360 190" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#m3)"/>
+                <path d="M244 245 L360 205" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#m3)"/>
+                <path d="M244 339 L360 215" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#m3)"/>
+                <rect x="365" y="140" width="245" height="110" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
+                <text x="487" y="182" text-anchor="middle" font-weight="800" font-size="22" fill="var(--accent-ink)">Qwen-VLA</text>
+                <text x="487" y="210" text-anchor="middle" font-size="15" fill="var(--ink)">một bộ trọng số</text>
+                <text x="487" y="232" text-anchor="middle" font-size="15" fill="var(--ink)">→ chuỗi y hoặc câu trả lời chữ</text>
+              </g>
+            </svg>
+          </div>
+          <div class="col">
+            <p style="font-size:20px;margin:0 0 8px">Mọi tác vụ chung một dạng:</p>
+            <div class="math">\[ p_\theta\big(y_{t:t+H-1} \mid o_t,\, x,\, e,\, z\big) \]</div>
+            <table class="t" style="font-size:17px;margin-top:6px">
+              <tr><td class="n">\(o_t\)</td><td>ảnh, video, lịch sử</td></tr>
+              <tr><td class="n">\(x\)</td><td>câu lệnh</td></tr>
+              <tr><td class="n">\(e\)</td><td><b>câu mô tả robot</b> (embodiment)</td></tr>
+              <tr><td class="n">\(z\)</td><td>loại tác vụ (khi cần)</td></tr>
+              <tr><td class="n">\(y\)</td><td>H bước hành động / waypoint / quỹ đạo tay</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 1, 2.1 và Hình 1 của paper.</div>
+        <div class="pn">3 / 16</div>
+        <aside class="notes">
+          <p>Động lực của paper: hiện nay mô hình thao tác chỉ làm thao tác, mô hình điều hướng chỉ làm điều hướng. Chia nhỏ như vậy thì kỹ năng không truyền chéo được, ví dụ nhận ra cái cốc khi đi trong nhà không giúp gì khi gắp cốc. Nhóm Qwen muốn làm như LLM đã làm với chữ: một mô hình lớn học từ mọi loại dữ liệu.</p>
+          <p>Quan sát chính của họ: bề ngoài các bài toán khác nhau, nhưng đều là nhìn ảnh, đọc câu lệnh, biết mình là robot gì, rồi đoán H bước tiếp theo. Vì vậy mọi tác vụ được viết chung một công thức: xác suất của chuỗi y khi biết quan sát o, câu lệnh x, mô tả robot e và loại tác vụ z. Biến e, câu mô tả robot, là điểm mới quan trọng mà em sẽ nói kỹ ở slide 6.</p>
+        </aside>
+      </section>
+
+      <!-- 4 ARCHITECTURE -->
+      <section class="slide" aria-label="Slide 4: Kiến trúc">
+        <div class="kicker">2 · Method · Kiến trúc</div>
+        <h2>VLM Qwen3.5-4B hiểu tình huống, DiT 1,15B sinh chunk hành động</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.6">
+            <svg viewBox="0 0 760 420" role="img" aria-label="Sơ đồ kiến trúc Qwen-VLA">
+              <defs><marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+              <g font-size="15" text-anchor="middle">
+                <rect x="10" y="30" width="150" height="60" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="85" y="56" fill="var(--ink)" font-weight="700">Ảnh</text><text x="85" y="76" font-size="13" fill="var(--muted)">nhiều camera</text>
+                <rect x="10" y="110" width="150" height="60" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="85" y="136" fill="var(--ink)" font-weight="700">Prompt</text><text x="85" y="156" font-size="13" fill="var(--muted)">mô tả robot + câu lệnh</text>
+                <rect x="200" y="30" width="190" height="140" rx="12" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2"/><text x="295" y="88" fill="var(--ink)" font-weight="800" font-size="19">Qwen3.5-4B</text><text x="295" y="112" font-size="13" fill="var(--muted)">VLM, early fusion</text><text x="295" y="132" font-size="13" fill="var(--muted)">attention lai</text>
+                <path d="M164 60H196M164 140H196" stroke="var(--muted)" stroke-width="2" marker-end="url(#m4)"/>
+                <path d="M392 100H430" stroke="var(--muted)" stroke-width="2" marker-end="url(#m4)"/>
+                <rect x="434" y="70" width="140" height="60" rx="10" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2"/><text x="504" y="96" fill="var(--ink)" font-weight="700">Hidden states</text><text x="504" y="116" font-size="13" fill="var(--muted)">→ Linear (3,9M)</text>
+                <path d="M504 132V232" stroke="var(--muted)" stroke-width="2" marker-end="url(#m4)"/>
+                <rect x="10" y="250" width="150" height="66" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="85" y="276" fill="var(--ink)" font-weight="700">Chunk nhiễu Y<tspan baseline-shift="sub" font-size="11">τ</tspan></text><text x="85" y="298" font-size="13" fill="var(--muted)">16 × K, đệm 0</text>
+                <rect x="10" y="336" width="150" height="56" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="85" y="369" fill="var(--ink)" font-weight="700">Mức nhiễu τ</text>
+                <path d="M164 283H226" stroke="var(--muted)" stroke-width="2" marker-end="url(#m4)"/>
+                <path d="M164 364H226" stroke="var(--muted)" stroke-width="2" marker-end="url(#m4)"/>
+                <text x="195" y="274" font-size="12" fill="var(--muted)">MLP chung</text><text x="195" y="355" font-size="12" fill="var(--muted)">→ AdaLN</text>
+                <rect x="230" y="236" width="380" height="170" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
+                <text x="420" y="262" fill="var(--accent-ink)" font-weight="800" font-size="18">DiT × 16 khối (~1,15B)</text>
+                <g transform="translate(262,276)">
+                  <rect x="0" y="0" width="22" height="20" rx="4" fill="var(--amber)"/><rect x="26" y="0" width="22" height="20" rx="4" fill="var(--amber)"/><rect x="52" y="0" width="22" height="20" rx="4" fill="var(--amber)"/><text x="98" y="15" font-size="14" fill="var(--muted)">…</text>
+                  <rect x="122" y="0" width="22" height="20" rx="4" fill="var(--indigo)"/><rect x="148" y="0" width="22" height="20" rx="4" fill="var(--indigo)"/><text x="190" y="15" font-size="14" fill="var(--muted)">…</text><rect x="210" y="0" width="22" height="20" rx="4" fill="var(--indigo)"/>
+                  <text x="290" y="15" font-size="13" fill="var(--ink)">một chuỗi</text>
+                </g>
+                <rect x="262" y="308" width="316" height="26" rx="6" fill="var(--slide)" stroke="var(--rule)"/><text x="420" y="326" font-size="14" fill="var(--ink)">Joint self-attention</text>
+                <rect x="262" y="338" width="316" height="22" rx="6" fill="var(--slide)" stroke="var(--rule)"/><text x="420" y="354" font-size="14" fill="var(--ink)">AdaLN theo τ</text>
+                <rect x="262" y="364" width="316" height="26" rx="6" fill="var(--slide)" stroke="var(--accent)" stroke-width="2"/><text x="420" y="382" font-size="14" fill="var(--ink)" font-weight="700">Feed-Forward MLP</text>
+                <path d="M612 320H650" stroke="var(--muted)" stroke-width="2" marker-end="url(#m4)"/>
+                <rect x="654" y="280" width="100" height="80" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="704" y="312" fill="var(--ink)" font-weight="700">vận tốc</text><text x="704" y="334" font-size="13" fill="var(--muted)">16 × K</text>
+                <path d="M704 278V150" stroke="var(--muted)" stroke-width="2" marker-end="url(#m4)"/><text x="728" y="220" font-size="12" fill="var(--muted)">vài</text><text x="728" y="236" font-size="12" fill="var(--muted)">bước</text>
+                <rect x="634" y="90" width="120" height="56" rx="10" fill="var(--slide)" stroke="var(--rule)" stroke-width="2"/><text x="694" y="115" fill="var(--ink)" font-weight="700">Chunk sạch</text><text x="694" y="134" font-size="13" fill="var(--muted)">→ robot</text>
+              </g>
+              <g font-size="12" transform="translate(-200,0)"><rect x="430" y="186" width="12" height="12" rx="2" fill="var(--amber)"/><text x="448" y="197" fill="var(--muted)">token ảnh + chữ</text><rect x="556" y="186" width="12" height="12" rx="2" fill="var(--indigo)"/><text x="574" y="197" fill="var(--muted)">token hành động</text></g>
+            </svg>
+          </div>
+          <div class="col" style="flex:.7">
+            <div class="card" style="margin-bottom:10px;padding:12px 16px"><div class="big" style="font-size:40px">4B</div><p style="font-size:16px">VLM Qwen3.5 (GR00T: 1,34B)</p></div>
+            <div class="card teal" style="margin-bottom:10px;padding:12px 16px"><div class="big" style="font-size:40px">1,15B</div><p style="font-size:16px">DiT: 16 khối × 70,8M = 1,13B + các MLP chiếu</p></div>
+            <div class="card" style="padding:12px 16px"><div class="big" style="font-size:40px">4,9M</div><p style="font-size:16px">MLP chiếu hành động, <b>dùng chung</b> mọi robot</p></div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 2.2, Hình 1. Paper không nói lấy hidden states ở lớp nào và không ghi số bước Euler.</div>
+        <div class="pn">4 / 16</div>
+        <aside class="notes">
+          <p>Đây là kiến trúc, vẽ lại từ Hình 1. Bên trái, ảnh từ nhiều camera và prompt đi vào VLM Qwen3.5-4B. Qwen3.5 là mô hình đọc ảnh và chữ ngay từ gốc: token ảnh được xen thẳng vào chuỗi chữ. Mỗi ảnh được bọc bằng thẻ tên camera, ví dụ camera đầu hay camera cổ tay trái, để mô hình biết ảnh đến từ đâu.</p>
+          <p>Hidden states của VLM đi qua một lớp Linear rồi vào action expert. Expert là một DiT 16 khối, khoảng 1,15 tỷ tham số, mỗi khối 70,8 triệu. Mỗi khối gồm self-attention, AdaLN theo mức nhiễu τ, và một FFN. Chunk nhiễu đi vào qua một MLP dùng chung cho mọi robot, chỉ 4,9 triệu tham số. DiT đoán vận tốc, đi vài bước Euler là ra chunk sạch. Paper không ghi cụ thể bao nhiêu bước, và cũng không nói lấy hidden states ở lớp nào. GR00T thì ghi rõ: 4 bước, lớp 12.</p>
+        </aside>
+      </section>
+
+      <!-- 5 JOINT ATTENTION -->
+      <section class="slide" aria-label="Slide 5: Joint self-attention">
+        <div class="kicker">2 · Method · Cách nối VLM với DiT</div>
+        <h2>Joint self-attention: token ảnh-chữ và token hành động "họp chung một phòng"</h2>
+        <div class="row grow">
+          <div class="col">
+            <svg viewBox="0 0 540 380" role="img" aria-label="Hai ma trận attention: GR00T cross-attention một chiều, Qwen-VLA joint self-attention hai chiều">
+              <g font-size="15" text-anchor="middle">
+                <text x="130" y="22" font-weight="800" fill="var(--ink)">GR00T N1: cross-attention</text>
+                <text x="400" y="22" font-weight="800" fill="var(--ink)">Qwen-VLA: joint</text>
+                <text x="130" y="44" font-size="13" fill="var(--muted)">cột = token được nhìn</text>
+                <text x="400" y="44" font-size="13" fill="var(--muted)">cột = token được nhìn</text>
+              </g>
+              <g id="attA"></g><g id="attB"></g>
+              <g font-size="13" fill="var(--muted)" text-anchor="middle">
+                <text x="130" y="350">hàng = token hành động hỏi</text>
+                <text x="400" y="350">hàng = mọi token hỏi</text>
+              </g>
+              <g font-size="13"><rect x="120" y="362" width="12" height="12" rx="2" fill="var(--accent)"/><text x="138" y="373" fill="var(--muted)">có nhìn</text><rect x="210" y="362" width="12" height="12" rx="2" fill="var(--code-bg)" stroke="var(--rule)"/><text x="228" y="373" fill="var(--muted)">không nhìn / không được cập nhật</text></g>
+            </svg>
+          </div>
+          <div class="col" style="flex:.85">
+            <div class="card" style="margin-bottom:12px"><h4>GR00T: "tra sách"</h4><p>Token VLM như cuốn sách tham khảo cố định; token hành động mở ra tra, một chiều.</p></div>
+            <div class="card teal" style="margin-bottom:12px"><h4>Qwen-VLA: "ngồi chung bàn"</h4><p>Hai loại token xếp chung một hàng, cùng họp trong 16 khối DiT; ai cũng nghe được ai.</p></div>
+            <div class="card amb"><h4>Lưu ý</h4><p style="font-size:17px">Paper <b>không có thí nghiệm</b> so với cross-attention. Đây là lựa chọn thiết kế theo dòng DiT single-stream (SD3).</p></div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 2.2. Ma trận là sơ đồ minh họa: 4 token VLM + 4 token hành động, không phải số thật.</div>
+        <div class="pn">5 / 16</div>
+        <aside class="notes">
+          <p>Thay đổi kiến trúc lớn nhất nằm ở cách nối. Hai ma trận này là sơ đồ minh họa, không phải số thật. Mỗi hàng là một token đang hỏi, mỗi cột là token được nhìn.</p>
+          <p>Em hình dung thế này. Ở GR00T, đặc trưng của VLM giống một cuốn sách tham khảo đặt trên bàn: token hành động mở ra tra, còn sách thì không bao giờ thay đổi. Đó là cross-attention, thông tin chảy một chiều. Ở Qwen-VLA thì giống ngồi chung một bàn họp: paper nối hidden states của VLM với chunk nhiễu thành một chuỗi rồi cho qua joint self-attention. Vì vậy cả ma trận đều sáng: token hành động nghe token VLM và ngược lại, token VLM cũng được cập nhật qua 16 khối.</p>
+          <p>Em cần nói rõ: paper không có thí nghiệm so cách này với cross-attention, nên đây là lựa chọn thiết kế, theo kiểu DiT single-stream của Stable Diffusion 3 mà paper dẫn. Một hệ quả em tự suy ra: mỗi bước Euler, DiT phải xử lý cả chuỗi dài gồm token VLM, nên có thể chậm hơn. Điều này liên quan tới RTC.</p>
+        </aside>
+      </section>
+
+      <!-- 6 PROMPT -->
+      <section class="slide" aria-label="Slide 6: Embodiment prompt">
+        <div class="kicker">2 · Method · Embodiment prompt</div>
+        <h2>Báo cho mô hình "đây là robot nào" bằng câu chữ, không bằng MLP riêng</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.25">
+            <p style="font-size:16px;color:var(--muted);margin:0 0 6px"><b style="color:var(--accent-ink)">Khuôn nguyên văn trong paper</b> (Section 2.3)</p>
+            <pre class="pddl" style="white-space:pre-wrap;font-size:15px">The robot is <span class="c">{robot_tag}</span> with <span class="c">{single arm / dual arms}</span>[<span class="c">, waist</span>][<span class="c">, and mobile base</span>]. The control frequency is <span class="c">{FPS}</span> Hz. Please predict the next <span class="c">{chunk_size}</span> control actions to execute the following task: <span class="c">{ori_instruction}</span>.</pre>
+            <p style="font-size:16px;color:var(--amber);margin:12px 0 6px;font-weight:700">Một bản điền: minh họa tự điền (paper không in bản điền sẵn; FPS = 5 là số tự đặt)</p>
+            <pre class="pddl" style="white-space:pre-wrap;font-size:15px">The robot is WidowX with single arm. The control frequency is 5 Hz. Please predict the next 16 control actions to execute the following task: put the spoon on the towel.</pre>
+          </div>
+          <div class="col" style="flex:.9">
+            <p style="font-size:17px;margin:0 0 6px"><b>Vì sao bỏ MLP riêng?</b> Bảng 10:</p>
+            <table class="t" style="font-size:16px">
+              <thead><tr><th>Cách chiếu</th><th>Bridge</th><th>RoboCasa</th><th>Tham số</th></tr></thead>
+              <tbody>
+                <tr><td>MLP riêng (kiểu GR00T)</td><td class="n">63,3</td><td class="n">52,1</td><td class="n">2h·Σdᵢ</td></tr>
+                <tr><td>Nối dài</td><td class="n">63,0</td><td class="n">52,8</td><td class="n">2h·Σdᵢ</td></tr>
+                <tr style="background:var(--accent-soft)"><td><b>Đệm 0</b></td><td class="n">63,0</td><td class="n">53,2</td><td class="n"><b>2h·d<sub>max</sub></b></td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:17px;margin:10px 0 0">Chênh &lt; 1,2 điểm → chọn cách <b>nhẹ nhất</b>. Robot mới: <b>đổi câu prompt</b>, không thêm tham số.</p>
+            <p style="font-size:15px;color:var(--muted);margin:8px 0 0">Bảng 2: 11 nền tảng, từ WidowX một tay tới AgiBot, TienKung hai tay khéo, và "Real Human".</p>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 2.3, 2.4, 4.2, Bảng 2, Bảng 10. h = kích thước ẩn DiT, dᵢ = số chiều hành động của robot i.</div>
+        <div class="pn">6 / 16</div>
+        <aside class="notes">
+          <p>Đây là ý tưởng em thấy đáng nhớ nhất của paper. GR00T báo cho mô hình biết robot nào bằng cách chọn MLP riêng, tức là đổi kiến trúc. Qwen-VLA báo bằng câu chữ, tức là đổi đầu vào. Trên slide là khuôn prompt nguyên văn trong paper: robot gì, một hay hai tay, có eo hay đế di động không, tần số điều khiển bao nhiêu Hz, cần đoán bao nhiêu hành động, rồi tới câu lệnh gốc.</p>
+          <p>Paper chỉ in khuôn, không in bản nào đã điền sẵn. Dòng thứ hai là em tự điền để minh họa, con số 5 Hz là em tự đặt.</p>
+          <p>Vì sao bỏ MLP riêng? Bảng 10 so ba cách chiếu hành động: MLP riêng như GR00T, nối dài, và đệm 0. Điểm chênh dưới 1,2. Nên họ chọn đệm 0 vì ít tham số nhất. Thêm một lợi ích: khi đưa sang robot mới, paper nói chỉ cần thay câu prompt. Paper coi prompt là đầu vào duy nhất cho biết đặc thù robot.</p>
+        </aside>
+      </section>
+
+      <!-- 7 MASK LOSS -->
+      <section class="slide" aria-label="Slide 7: Đệm 0, mask và loss">
+        <div class="kicker">2 · Method · Đệm 0 + mask · Formula</div>
+        <h2>Một tensor chung H × K cho mọi robot; loss chỉ chấm ô thật</h2>
+        <div class="row grow">
+          <div class="col" style="flex:.95">
+            <svg id="chGrid" viewBox="0 0 520 380" role="img" aria-label="Lưới 16 bước nhân 32 kênh, 7 kênh đầu là dữ liệu thật, còn lại đệm 0"></svg>
+            <p style="font-size:15px;color:var(--muted);margin:0"><b>Số minh họa:</b> c = 7 kênh (robot một tay), K = 32. Paper không công bố K; chỉ biết K ≥ 32 vì tay người cần 32 kênh.</p>
+          </div>
+          <div class="col" style="flex:1.1">
+            <div class="callout" style="background:var(--accent-soft);margin-bottom:12px;font-size:21px"><b>Ý chính:</b> loss chỉ chấm <b>ô thật</b> (bỏ ô đệm 0), và mỗi kênh, mỗi mẫu đều nặng như nhau.</div>
+            <div class="card" style="margin-bottom:12px;padding:10px 18px">
+              <p style="font-size:15px;color:var(--muted);margin:0">Công thức (1) · tầng 1: mỗi kênh k, trung bình theo thời gian, chỉ ô thật</p>
+              <div class="math" style="font-size:17px">\[ \ell_k = \frac{\sum_h M_{h,k}\,\big[v_\theta - (Y_1 - Y_0)\big]_{h,k}^2}{\sum_h M_{h,k}} \]</div>
+              <p style="font-size:15px;color:var(--muted);margin:4px 0 0">Công thức (2), (4) · tầng 2: trung bình đều trên c kênh, cộng loss chữ</p>
+              <div class="math" style="font-size:17px">\[ \mathcal{L}_{act} = \mathbb{E}\Big[\tfrac{1}{c}\textstyle\sum_{k=0}^{c-1}\ell_k\Big], \qquad \mathcal{L} = \lambda_{act}\mathcal{L}_{act} + \lambda_{vl}\mathcal{L}_{vl} \]</div>
+            </div>
+            <div class="callout" style="background:var(--amber-soft);font-size:18px">Vì sao cần "nặng như nhau": nếu cộng dồn mọi ô thật, mẫu tay người (32 kênh) sẽ nặng gấp ~<b>4,6 lần</b> mẫu 7 kênh (32/7).</div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 2.4, 2.5, công thức (1), (2), (4). Ở SFT: λ<sub>act</sub> = 1,0; λ<sub>vl</sub> = 0,1.</div>
+        <div class="pn">7 / 16</div>
+        <aside class="notes">
+          <p>Khi đã bỏ MLP riêng, mọi robot phải dùng chung một "mẫu phiếu". Paper dùng một tensor H nhân K, với H bằng 16 bước và K là số kênh cố định. Robot nào dùng c kênh thì điền vào c cột đầu, các cột còn lại đệm 0. Một mask 0, 1 đánh dấu ô nào là thật. Trong hình, c bằng 7 và K bằng 32 là số em tự đặt để minh họa. Paper không công bố K, chỉ biết K ít nhất 32 vì dữ liệu tay người có 32 kênh.</p>
+          <p>Ý chính của loss chỉ có một câu: chỉ chấm ô thật, và mỗi kênh, mỗi mẫu nặng như nhau. Công thức trên slide là cách paper viết câu đó. Tầng 1, với mỗi kênh, lấy trung bình sai số theo thời gian nhưng chỉ trên ô thật, nên ô đệm không ảnh hưởng gradient. Tầng 2 lấy trung bình đều trên c kênh. Vì sao cần vậy: nếu cộng dồn tất cả ô, mẫu tay người 32 kênh sẽ nặng gấp khoảng 4,6 lần một mẫu robot 7 kênh. Cuối cùng cộng thêm loss chữ L-vl; ở SFT trọng số là 1 và 0,1.</p>
+        </aside>
+      </section>
+
+      <!-- 8 FLOW -->
+      <section class="slide" aria-label="Slide 8: Flow matching quy ước Qwen">
+        <div class="kicker">2 · Method · Flow matching · Formula</div>
+        <h2>Cùng đường thẳng như GR00T, nhưng τ = 1 là nhiễu và đi ngược về 0</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.05">
+            <div class="math">\[ Y_\tau = (1-\tau)\,Y_0 + \tau\,Y_1, \qquad Y_1 \sim \mathcal N(0, I) \]</div>
+            <div class="math">\[ \text{mục tiêu: } \frac{dY_\tau}{d\tau} = Y_1 - Y_0 \quad (\text{nhiễu} - \text{sạch}) \]</div>
+            <div class="math">\[ \text{suy luận: } Y \leftarrow Y - \Delta\tau\, v_\theta(Y, \tau), \quad \tau: 1 \to 0 \]</div>
+            <div class="card amb" style="margin-top:10px;padding:12px 18px"><h4 style="font-size:20px">p(τ) khi huấn luyện</h4><p style="font-size:17px">T2A: <b>Sigmoid-Normal</b> (dồn vào mức nhiễu trung bình). CPT, SFT: <b>Beta</b>. Tổ hợp này tốt nhất: 71,1% (Hình 6b).</p></div>
+          </div>
+          <div class="col">
+            <svg viewBox="0 0 560 380" role="img" aria-label="Hai trục số: GR00T và Qwen-VLA gọi cùng một điểm bằng hai giá trị tau khác nhau">
+              <defs><marker id="m8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker>
+              <marker id="m8b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--amber)"/></marker></defs>
+              <g font-size="15" text-anchor="middle">
+                <text x="280" y="24" fill="var(--muted)">giá trị một chiều hành động (đã chuẩn hóa)</text>
+                <line x1="50" y1="70" x2="510" y2="70" stroke="var(--rule)" stroke-width="2"/>
+                <circle cx="70" cy="70" r="9" fill="var(--muted)"/><text x="70" y="52" font-size="14" fill="var(--ink)">ε = −1,2</text><text x="70" y="98" font-size="13" fill="var(--muted)">nhiễu</text>
+                <circle cx="490" cy="70" r="9" fill="var(--accent)"/><text x="490" y="52" font-size="14" fill="var(--ink)">a = 0,6</text><text x="490" y="98" font-size="13" fill="var(--muted)">sạch</text>
+                <circle cx="175" cy="70" r="7" fill="var(--amber)"/><text x="175" y="52" font-size="14" fill="var(--ink)">−0,75</text>
+
+                <text x="40" y="150" text-anchor="start" font-weight="800" fill="var(--ink)">GR00T N1</text>
+                <path d="M70 172 H486" stroke="var(--accent)" stroke-width="3" marker-end="url(#m8)"/>
+                <text x="70" y="198" font-size="14" fill="var(--muted)">τ = 0</text><text x="490" y="198" font-size="14" fill="var(--muted)">τ = 1</text><text x="175" y="198" font-size="14" fill="var(--amber)" font-weight="700">τ = 0,25</text>
+                <text x="280" y="222" font-size="14" fill="var(--ink)">học A − ε = +1,8 · Euler <tspan font-weight="800">cộng</tspan>, K = 4</text>
+
+                <text x="40" y="270" text-anchor="start" font-weight="800" fill="var(--ink)">Qwen-VLA</text>
+                <path d="M70 292 H486" stroke="var(--amber)" stroke-width="3" marker-end="url(#m8b)"/>
+                <text x="70" y="318" font-size="14" fill="var(--muted)">τ = 1</text><text x="490" y="318" font-size="14" fill="var(--muted)">τ = 0</text><text x="175" y="318" font-size="14" fill="var(--amber)" font-weight="700">τ = 0,75</text>
+                <text x="280" y="342" font-size="14" fill="var(--ink)">học Y₁ − Y₀ = −1,8 · Euler <tspan font-weight="800">trừ</tspan>, τ giảm dần</text>
+              </g>
+            </svg>
+            <p style="font-size:15px;color:var(--muted);margin:0"><b>Số minh họa:</b> a = 0,6 và ε = −1,2 (cùng ví dụ ở bài GR00T). Điểm cam = đã đi 25% đường từ nhiễu.</p>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 2.5, 5.2.1, Hình 6b. Paper ghi "a few Euler integration steps", không ghi số bước.</div>
+        <div class="pn">8 / 16</div>
+        <aside class="notes">
+          <p>Flow matching ở đây giống GR00T về bản chất: nối nhiễu và hành động thật bằng một đường thẳng, rồi dạy mạng đoán vận tốc. Khác biệt là cách đặt tên. Ở Qwen-VLA, τ bằng 0 là sạch, τ bằng 1 là nhiễu thuần, nên Y-tau bằng một trừ tau nhân Y0 cộng tau nhân Y1. Đạo hàm theo tau là Y1 trừ Y0, tức nhiễu trừ sạch, và đó là mục tiêu học. Khi suy luận, xuất phát ở τ bằng 1 và trừ vận tốc để đi về 0.</p>
+          <p>Hình bên phải dùng lại ví dụ ở bài GR00T: hành động 0,6, nhiễu âm 1,2. Cùng một điểm đã đi được 1/4 đường, có giá trị âm 0,75. GR00T gọi điểm đó là τ bằng 0,25, còn Qwen gọi là 0,75. Vận tốc đổi dấu và Euler đổi từ cộng sang trừ, nhưng kết quả giống hệt. Một điểm cộng nhỏ cho Qwen: công thức của họ nhất quán về dấu, trong khi GR00T ghi ε trừ A, mà theo phép toán thì phải là A trừ ε.</p>
+          <p>Về phân phối τ khi huấn luyện, paper dùng Sigmoid-Normal ở T2A và Beta ở các giai đoạn sau. Tổ hợp này đạt 71,1%, cao nhất trong Hình 6b.</p>
+        </aside>
+      </section>
+
+      <!-- 9 DATA -->
+      <section class="slide" aria-label="Slide 9: Dữ liệu pretraining">
+        <div class="kicker">3 · Dữ liệu pretraining</div>
+        <h2>Ba phần tư là quỹ đạo robot, phần còn lại giữ "đầu óc" của VLM</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.35">
+            <svg id="chMix" viewBox="0 0 680 400" role="img" aria-label="Biểu đồ thanh tỉ lệ các nguồn dữ liệu pretraining theo Bảng 1"></svg>
+          </div>
+          <div class="col">
+            <div class="card" style="margin-bottom:10px;padding:12px 16px"><h4 style="font-size:19px">Robot thật &gt; 10.000 giờ</h4><p style="font-size:16px">DROID, BridgeData V2, AgiBot World, RoboMIND…, cộng hơn 1.000 giờ nội bộ (~20% hỗn hợp)</p></div>
+            <div class="card" style="margin-bottom:10px;padding:12px 16px"><h4 style="font-size:19px">Tay người → 32 số mỗi bước</h4><p style="font-size:16px">mỗi tay: 6 số cổ tay + 10 hệ số "eigengrasp"</p></div>
+            <div class="card teal" style="margin-bottom:10px;padding:12px 16px"><h4 style="font-size:19px">~7,2 triệu quỹ đạo chữ → hành động</h4><p style="font-size:16px">6 mẫu tác vụ × 6 tay robot, không render ảnh; dùng cho T2A</p></div>
+            <div class="card" style="padding:12px 16px"><h4 style="font-size:19px">Chuẩn hóa theo phân vị</h4><p style="font-size:16px">mỗi chiều về [−1, 1] theo q₀₁, q₉₉ của từng dataset; giữ quy ước gốc</p></div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 3.2, Bảng 1, công thức (5).</div>
+        <div class="pn">9 / 16</div>
+        <aside class="notes">
+          <p>Dữ liệu pretraining theo Bảng 1. Quỹ đạo thao tác robot chiếm 74,2%, gồm hơn 10.000 giờ dữ liệu công khai như DROID, Bridge, AgiBot World, cộng hơn 1.000 giờ dữ liệu nội bộ, chiếm khoảng 20% hỗn hợp. Điều hướng 7,5%, video tay người 6%, dữ liệu mô phỏng do nhóm tự sinh 3,7%. Phần dữ liệu ảnh-chữ cộng lại 8,5%: VL chung, grounding, VQA lái xe và caption hành động.</p>
+          <p>Ba chi tiết đáng nhớ. Tay người được đổi thành 32 số mỗi bước: mỗi tay 6 số cho cổ tay và 10 hệ số "eigengrasp" tìm bằng PCA. Có khoảng 7,2 triệu quỹ đạo chữ-hành động sinh bằng bộ lập kế hoạch chuyển động mà không cần render ảnh, rất rẻ, dùng cho giai đoạn T2A. Và mỗi dataset giữ quy ước hành động gốc, chỉ chuẩn hóa từng chiều về khoảng âm 1 đến 1 theo phân vị 1% và 99%.</p>
+        </aside>
+      </section>
+
+      <!-- 10 STAGES -->
+      <section class="slide" aria-label="Slide 10: Bốn giai đoạn huấn luyện">
+        <div class="kicker">3 · Huấn luyện · Bốn giai đoạn</div>
+        <h2>T2A → CPT → SFT → RL: mỗi giai đoạn lấp đúng một lỗ hổng</h2>
+        <div class="row grow" style="gap:14px">
+          <div class="col card" style="padding:14px 16px"><span class="tag">I · T2A</span>
+            <p style="font-size:16px;margin:8px 0 0;color:var(--amber);font-style:italic;font-weight:600">≈ đọc sách nghề, chưa vào xưởng</p>
+            <p style="font-size:15px;margin:8px 0 4px"><span class="tag" style="background:var(--accent-soft);color:var(--accent-ink)">VLM ❄</span> <span class="tag on">DiT 🔥</span></p>
+            <p style="font-size:16px;margin-top:8px"><b>Dữ liệu:</b> chỉ chữ, không ảnh. Quỹ đạo chữ→hành động tổng hợp + teleop thật bỏ ảnh.</p>
+            <p style="font-size:16px;margin-top:8px"><b>Để làm gì:</b> cho DiT "từ điển động tác" trước khi thấy ảnh.</p></div>
+          <div class="col card" style="padding:14px 16px"><span class="tag">II · CPT</span>
+            <p style="font-size:16px;margin:8px 0 0;color:var(--amber);font-style:italic;font-weight:600">≈ đi thực tập ở rất nhiều xưởng</p>
+            <p style="font-size:15px;margin:8px 0 4px"><span class="tag on">VLM 🔥</span> <span class="tag on">DiT 🔥</span></p>
+            <p style="font-size:16px;margin-top:8px"><b>Dữ liệu:</b> hỗn hợp Bảng 1, ảnh + chữ, mô phỏng + thật.</p>
+            <p style="font-size:16px;margin-top:8px"><b>Để làm gì:</b> gắn hành động với hình ảnh; VLM quen nhận thức kiểu robot.</p></div>
+          <div class="col card" style="padding:14px 16px"><span class="tag">III · SFT</span>
+            <p style="font-size:16px;margin:8px 0 0;color:var(--amber);font-style:italic;font-weight:600">≈ luyện đúng dạng đề sắp thi</p>
+            <p style="font-size:15px;margin:8px 0 4px"><span class="tag on">VLM 🔥</span> <span class="tag on">DiT 🔥</span></p>
+            <p style="font-size:16px;margin-top:8px"><b>Dữ liệu:</b> demo mô phỏng của các benchmark đích (H = 16) + VLN (8 waypoint) + VL. Nhánh 2: teleop thật.</p>
+            <p style="font-size:16px;margin-top:8px"><b>Để làm gì:</b> từ "biết rộng" thành "làm chính xác".</p></div>
+          <div class="col card" style="padding:14px 16px"><span class="tag">IV · RL</span>
+            <p style="font-size:16px;margin:8px 0 0;color:var(--amber);font-style:italic;font-weight:600">≈ thi thử, chỉ chấm đỗ / trượt</p>
+            <p style="font-size:15px;margin:8px 0 4px"><span class="tag on">VLM 🔥</span> <span class="tag on">DiT 🔥</span></p>
+            <p style="font-size:16px;margin-top:8px"><b>Dữ liệu:</b> không demo; rollout của chính policy trong SimplerEnv, thưởng 0/1.</p>
+            <p style="font-size:16px;margin-top:8px"><b>Để làm gì:</b> tối ưu thẳng tỉ lệ thành công vòng kín.</p></div>
+        </div>
+        <svg viewBox="0 0 1136 60" style="margin-top:8px" role="img" aria-label="Hai checkpoint: Base sau CPT và Instruct sau RL">
+          <g font-size="16" text-anchor="middle">
+            <rect x="0" y="10" width="560" height="40" rx="8" fill="var(--accent-soft)"/><text x="280" y="36" fill="var(--accent-ink)" font-weight="800">Pretraining → Qwen-VLA-Base</text>
+            <rect x="576" y="10" width="560" height="40" rx="8" fill="var(--amber-soft)"/><text x="856" y="36" fill="var(--amber)" font-weight="800">Post-training → Qwen-VLA-Instruct</text>
+          </g>
+        </svg>
+        <div class="src">Nguồn: Section 3.1, 4, 4.1, 4.2, Hình 2. ❄ = đóng băng, 🔥 = được học.</div>
+        <div class="pn">10 / 16</div>
+        <aside class="notes">
+          <p>Đây là phần trả lời câu hỏi pretrain và finetune. Thường hay tóm tắt là T2A, SFT, RL, nhưng paper có bốn giai đoạn: giữa T2A và SFT còn CPT, và CPT mới là giai đoạn dùng hỗn hợp dữ liệu lớn.</p>
+          <p>Em hình dung bốn giai đoạn như một người học nghề: đọc sách nghề, đi thực tập nhiều xưởng, luyện đúng dạng đề, rồi thi thử. Lý do chia giai đoạn: VLM đã pretrain mạnh còn DiT thì khởi tạo ngẫu nhiên. Huấn luyện chung ngay thì chậm, và gradient lộn xộn của DiT có thể làm hỏng VLM. Nên giai đoạn một, T2A, đóng băng VLM, chỉ cho DiT học từ chữ ra hành động, không có ảnh. Giai đoạn hai, CPT, mở băng cả hai và học trên hỗn hợp lớn có ảnh. Hai giai đoạn này cho ra Qwen-VLA-Base.</p>
+          <p>Giai đoạn ba, SFT, dùng demo chất lượng của chính các benchmark đích, cộng điều hướng và dữ liệu ảnh-chữ; có một nhánh riêng cho robot thật. Giai đoạn bốn, RL, không dùng demo nữa mà cho robot tự thử trong SimplerEnv và nhận thưởng 0 hoặc 1. Kết quả cuối là Qwen-VLA-Instruct.</p>
+        </aside>
+      </section>
+
+      <!-- 11 T2A -->
+      <section class="slide" aria-label="Slide 11: T2A">
+        <div class="kicker">3 · Huấn luyện · T2A</div>
+        <h2>T2A cố tình bỏ ảnh: dạy DiT "giải nén" câu lệnh thành quỹ đạo</h2>
+        <div class="row grow">
+          <div class="col" style="flex:.8">
+            <svg viewBox="0 0 400 300" role="img" aria-label="Vài token câu lệnh được giải nén thành quỹ đạo hàng nghìn con số">
+              <g font-size="15" text-anchor="middle">
+                <rect x="10" y="20" width="380" height="58" rx="10" fill="var(--code-bg)"/>
+                <text x="200" y="45" fill="var(--ink)" font-family="var(--f-mono)" font-size="14">"pick up the red cup"</text>
+                <text x="200" y="66" fill="var(--muted)" font-size="13">+ prompt robot · vài token</text>
+                <path d="M120 86 L80 150 M280 86 L320 150" stroke="var(--rule)" stroke-width="2"/>
+                <text x="200" y="124" font-weight="800" fill="var(--accent-ink)" font-size="17">DiT "giải nén"</text>
+                <rect x="10" y="156" width="380" height="96" rx="10" fill="var(--accent-soft)"/>
+                <polyline points="30,230 70,210 110,222 150,190 190,198 230,172 270,180 310,170 350,182 375,176" fill="none" stroke="var(--accent)" stroke-width="3"/>
+                <polyline points="30,200 70,206 110,190 150,198 190,214 230,206 270,218 310,224 350,214 375,220" fill="none" stroke="var(--amber)" stroke-width="3"/>
+                <text x="200" y="276" fill="var(--muted)" font-size="13">quỹ đạo: hàng nghìn số, hàng chục bậc tự do</text>
+              </g>
+            </svg>
+            <p style="font-size:17px;margin:6px 0 0">Không có ảnh → DiT không thể "đi tắt" nhìn ảnh mà buộc phải nối <b>chữ ↔ hành động</b>.</p>
+          </div>
+          <div class="col" style="flex:1.2">
+            <svg id="chT2A" viewBox="0 0 640 380" role="img" aria-label="Biểu đồ thanh tỉ lệ thành công sau SFT với các lựa chọn T2A khác nhau, Hình 6"></svg>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 3.1, 3.2.3, 5.2.1, Hình 6. Chấm sau SFT trên Simpler-WidowX. "Tổng hợp" = quỹ đạo chữ→hành động.</div>
+        <div class="pn">11 / 16</div>
+        <aside class="notes">
+          <p>Vì sao giai đoạn đầu lại bỏ ảnh? Paper nhìn việc học hành động như bài toán nén. Câu "pick up the red cup" cộng prompt robot chỉ vài token, nhưng quỹ đạo tương ứng có hàng nghìn con số. Đi từ mô tả ngắn ra quỹ đạo dài là bài toán giải nén. T2A dạy DiT làm việc đó trước. Không có ảnh thì DiT không thể đi tắt bằng cách nhìn ảnh rồi bắt chước, nó buộc phải học quan hệ giữa chữ và động tác.</p>
+          <p>Hình 6 chấm sau SFT trên Simpler-WidowX. Không có T2A: 60,9%. Có T2A với 20% dữ liệu tổng hợp và 80% dữ liệu thật bỏ ảnh: 71,1%, tăng 10,2 điểm. Chỉ dùng một nguồn đều kém hơn. Nếu thêm ảnh vào T2A, điểm giảm khoảng 2,9. Và T2A chỉ cần ngắn: 2.000 bước tốt nhất, 40.000 bước tụt xuống 60,4% vì học thuộc lòng.</p>
+        </aside>
+      </section>
+
+      <!-- 12 RL -->
+      <section class="slide" aria-label="Slide 12: RL">
+        <div class="kicker">3 · Huấn luyện · RL · Formula</div>
+        <h2>RL: robot tự thử, thưởng 0/1; thêm nhiễu để tính được xác suất</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.1">
+            <ol style="font-size:20px;padding-left:26px;margin:0 0 12px">
+              <li><b>Robot tự thử</b> trong SimplerEnv: xong việc thưởng <b>1</b>, hỏng <b>0</b>. Không dùng demo.</li>
+              <li><b>PPO:</b> mỗi lần cập nhật chỉ sửa policy <b>một chút</b>.</li>
+              <li><b>Mẹo:</b> thêm nhiễu vào mỗi bước Euler (ODE → SDE) để <b>tính được xác suất</b> của hành động (hình bên).</li>
+            </ol>
+            <div class="card" style="padding:10px 16px">
+              <p style="font-size:15px;color:var(--muted);margin:0">Công thức (6), PPO "clip", để chỉ khi được hỏi</p>
+              <div class="math" style="font-size:17px">\[ \mathcal{L}_{actor} = -\,\mathbb{E}_t\Big[\min\big(r_t\hat A_t,\; \mathrm{clip}(r_t, 1{-}\epsilon, 1{+}\epsilon)\,\hat A_t\big)\Big] \]</div>
+              <p style="font-size:15px;color:var(--muted);margin:0">\(r_t\) = xác suất mới / cũ, ε = 0,2 · \(a_t\) = cả chunk 16 bước · \(\hat A_t\): "tốt hơn kỳ vọng bao nhiêu" (GAE)</p>
+            </div>
+          </div>
+          <div class="col">
+            <svg viewBox="0 0 520 330" role="img" aria-label="Bước Euler tất định so với bước có nhiễu là một Gaussian">
+              <g font-size="15" text-anchor="middle">
+                <text x="130" y="24" font-weight="800" fill="var(--ink)">ODE: tất định</text>
+                <text x="390" y="24" font-weight="800" fill="var(--ink)">SDE: thêm nhiễu</text>
+                <circle cx="60" cy="160" r="9" fill="var(--muted)"/><text x="60" y="190" font-size="13" fill="var(--muted)">Y hiện tại</text>
+                <line x1="70" y1="160" x2="190" y2="160" stroke="var(--accent)" stroke-width="3"/>
+                <circle cx="200" cy="160" r="9" fill="var(--accent)"/><text x="200" y="190" font-size="13" fill="var(--muted)">Y kế tiếp</text>
+                <text x="130" y="236" font-size="14" fill="var(--bad)">không có "xác suất" để tính</text>
+                <circle cx="320" cy="160" r="9" fill="var(--muted)"/>
+                <line x1="330" y1="160" x2="440" y2="160" stroke="var(--accent)" stroke-width="3" stroke-dasharray="5 4"/>
+                <circle cx="450" cy="160" r="52" fill="var(--accent-soft)" stroke="var(--accent)"/>
+                <circle cx="450" cy="160" r="26" fill="none" stroke="var(--accent)" stroke-dasharray="3 3"/>
+                <circle cx="466" cy="148" r="7" fill="var(--amber)"/>
+                <text x="420" y="236" font-size="14" fill="var(--accent-ink)">Gaussian → log π tính được</text>
+              </g>
+            </svg>
+            <p style="font-size:17px;margin:0">Mỗi rollout chỉ chọn <b>ngẫu nhiên 1 bước</b> khử nhiễu để tính log-xác suất (thêm 1 lần chạy DiT).</p>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 4.2, công thức (6), (7). RLinf; 128 môi trường; 8.192 chunk mỗi vòng; lr actor 5×10⁻⁶, value 10⁻⁴.</div>
+        <div class="pn">12 / 16</div>
+        <aside class="notes">
+          <p>Giai đoạn cuối là RL. Lý do: SFT chỉ dạy bắt chước, nhưng thứ cần là robot làm xong việc. Khi bắt chước, lệch một chút là gặp tình huống chưa thấy, rồi lệch tiếp. RL giống thi thử: robot tự làm và chỉ được chấm đỗ hoặc trượt.</p>
+          <p>Em tóm ba ý. Một, robot tự thử trong SimplerEnv, xong việc được 1, hỏng được 0, không dùng demo nữa. Hai, thuật toán là PPO, có luật "clip" để mỗi lần cập nhật chỉ sửa policy một chút, không học hỏng. Ở đây mỗi hành động là cả một chunk 16 bước.</p>
+          <p>Ba, mẹo kỹ thuật: PPO cần xác suất của hành động, nhưng khử nhiễu bằng Euler là tất định nên không có xác suất. Paper thêm một chút nhiễu ở mỗi bước, đổi ODE thành SDE, nên mỗi bước thành một phân phối Gaussian và tính được xác suất. Để rẻ, mỗi rollout chỉ chọn ngẫu nhiên một bước để tính. Công thức PPO em để ở dưới, nếu mọi người muốn xem chi tiết.</p>
+        </aside>
+      </section>
+
+      <!-- 13 RESULTS -->
+      <section class="slide" aria-label="Slide 13: Kết quả LIBERO và RoboCasa">
+        <div class="kicker">4 · Kết quả · LIBERO & RoboCasa-GR1</div>
+        <h2>Một mô hình chung theo kịp các mô hình chuyên biệt</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.7">
+            <svg id="chT4" viewBox="0 0 820 420" role="img" aria-label="Biểu đồ thanh Bảng 4: LIBERO và RoboCasa-GR1, specialist so với Qwen-VLA"></svg>
+          </div>
+          <div class="col" style="flex:.8">
+            <ul style="font-size:18px;padding-left:20px">
+              <li><b>LIBERO gần trần:</b> 97,9 đứng nhì sau ABot-M0 (98,6).</li>
+              <li><b>RoboCasa-GR1</b> phân hóa rõ: 56,7, hơn GR00T N1.6 (49,9).</li>
+              <li><b>Base → Instruct:</b> +7,1 và +16,3 điểm.</li>
+              <li>Đối thủ là <b>GR00T N1.6</b>. GR00T N1 trên GR-1 Tabletop: 50,0 (100 demo); khác giao thức.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="src">Nguồn: Bảng 4 (Qwen-VLA, trang 16); số GR00T N1 từ Bảng 2/4 của PDF GR00T N1. RoboCasa-GR1 = robot GR-1, 24 tác vụ.</div>
+        <div class="pn">13 / 16</div>
+        <aside class="notes">
+          <p>Kết quả chính ở Bảng 4. Thanh xám là các mô hình specialist: mỗi mô hình được fine-tune riêng cho từng benchmark. Thanh cam là Qwen-VLA: một mô hình duy nhất chấm trên mọi benchmark.</p>
+          <p>Với LIBERO mà em đã trình bày, các mô hình đều ở khoảng 95 đến 98, gần trần. Qwen-VLA-Instruct 97,9, đứng nhì sau ABot-M0 98,6, nên paper dùng chữ "ngang hàng". RoboCasa-GR1 là bộ 24 tác vụ với robot hình người GR-1, khác RoboCasa Kitchen tay Franka mà GR00T dùng. Ở đây điểm phân hóa rõ hơn: Qwen-VLA 56,7, hơn GR00T N1.6 49,9 nhưng sau ABot-M0 58,3.</p>
+          <p>Hai lưu ý. Một, bản Base chỉ có pretrain: LIBERO 90,8, RoboCasa 40,4, thấp hơn hầu hết specialist. Finetune mới đưa lên: tăng 7,1 và 16,3 điểm. Hai, đối thủ là GR00T N1.6, không phải N1. GR00T N1 trên bộ GR-1 Tabletop đạt 50,0% ở 100 demo, nhưng hai paper chấm theo giao thức khác nhau, nên chỉ so được bậc độ lớn.</p>
+        </aside>
+      </section>
+
+      <!-- 14 PRETRAIN VS FINETUNE -->
+      <section class="slide" aria-label="Slide 14: Pretrain và finetune">
+        <div class="kicker">4 · Kết quả · Pretrain vs finetune</div>
+        <h2>Pretrain cho nền rộng, SFT làm phần lớn việc, RL thêm một chút</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.45">
+            <svg id="chStage" viewBox="0 0 700 410" role="img" aria-label="Biểu đồ đường tỉ lệ thành công qua ba mốc CPT, SFT, RL theo Bảng 11"></svg>
+          </div>
+          <div class="col">
+            <p style="font-size:17px;margin:0 0 8px;color:var(--muted)">Robot thật ALOHA, <b>cùng kiến trúc</b> (Bảng 5, 6)</p>
+            <div class="card" style="margin-bottom:10px;padding:12px 16px"><span class="tag">Trong miền · 6 nhóm việc</span>
+              <div class="big" style="margin:8px 0 4px;font-size:44px">48,5 → 83,6</div><p style="font-size:16px">không pretrain → có pretrain (π0.5: 71,6)</p></div>
+            <div class="card teal" style="padding:12px 16px"><span class="tag on">OOD · màu, vật, vị trí, nền, câu lệnh</span>
+              <div class="big" style="margin:8px 0 4px;font-size:44px">36,2 → 76,9</div><p style="font-size:16px">khoảng cách còn lớn hơn ở tình huống lạ</p></div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Bảng 11 (CPT = Base, + SFT, + RL = Instruct), Bảng 5, 6. RL chỉ chạy trong SimplerEnv.</div>
+        <div class="pn">14 / 16</div>
+        <aside class="notes">
+          <p>Slide này trả lời trực tiếp câu hỏi pretrain và finetune. Bảng 11 chấm cùng một mô hình qua ba mốc: sau CPT, sau SFT, sau RL. Từ CPT lên SFT tăng mạnh ở mọi benchmark: RoboCasa thêm 15,6 điểm, RoboTwin Easy thêm 22 điểm. Từ SFT lên RL chỉ tăng rõ ở SimplerEnv, thêm 2,9 điểm, đúng môi trường RL được chạy. Ở các benchmark khác, RL gần như giữ nguyên, từ âm 0,2 đến cộng 0,9.</p>
+          <p>Còn pretrain có cần không? Thí nghiệm robot thật ALOHA trả lời rõ nhất: cùng kiến trúc, không pretrain đạt 48,5%, có pretrain đạt 83,6%. Ở tình huống lạ như màu mới, vật mới, nền mới, khoảng cách còn lớn hơn: 36,2 so với 76,9.</p>
+          <p>Câu trả lời em rút ra: pretrain cho mô hình biết rộng ở mức thô, finetune biến nó thành policy chính xác. Khác với LIBERO, nơi pretrain trên LIBERO-90 làm hại, ở đây pretrain trên dữ liệu lớn và đa dạng thì giúp.</p>
+        </aside>
+      </section>
+
+      <!-- 15 CRITIQUE -->
+      <section class="slide" aria-label="Slide 15: Hạn chế và phản biện">
+        <div class="kicker">5 · Hạn chế · Góc nhìn phản biện</div>
+        <h2>Paper tự nhận gì, và chỗ nào nên đọc thận trọng</h2>
+        <div class="row grow">
+          <div class="col" style="flex:.8">
+            <div class="card teal" style="height:100%"><h4>Paper tự nhận (Section 7)</h4>
+              <ul style="font-size:18px;padding-left:20px;margin-top:8px">
+                <li>Dữ liệu hành động vẫn nhỏ hơn nhiều dữ liệu ảnh-chữ.</li>
+                <li>Huấn luyện chung làm <b>giảm nhẹ</b> một số điểm VL và điều hướng.</li>
+                <li>Đánh giá phần lớn ngắn hạn, theo benchmark.</li>
+              </ul></div>
+          </div>
+          <div class="col" style="flex:1.25">
+            <div class="card red" style="height:100%"><h4>Nên dè dặt</h4>
+              <ul style="font-size:17px;padding-left:20px;margin-top:8px">
+                <li><b>"Generalist" nhưng đã thấy dữ liệu benchmark:</b> SFT trên demo mô phỏng của chính các benchmark, RL trong SimplerEnv.</li>
+                <li><b>Không báo số bước Euler, độ trễ, K</b>, dù nhấn mạnh "low-latency".</li>
+                <li><b>p(τ) Beta mô tả mâu thuẫn:</b> "dồn về đầu sạch" rồi lại "trải đều".</li>
+                <li><b>RL tăng rất nhỏ</b> ngoài SimplerEnv (−0,2 đến +0,9), một lần chạy, không có thanh sai số.</li>
+                <li><b>Joint attention, bỏ state</b>: không so với cross-attention; state chỉ thử trên RoboTwin.</li>
+              </ul></div>
+          </div>
+        </div>
+        <div class="src">Nguồn: Section 4.1, 4.2, 5.2.1, 5.2.3, 5.2.4, 7; Bảng 11, 12.</div>
+        <div class="pn">15 / 16</div>
+        <aside class="notes">
+          <p>Paper tự nhận ba hạn chế: dữ liệu hành động vẫn nhỏ hơn rất nhiều dữ liệu ảnh-chữ; huấn luyện chung làm giảm nhẹ một số điểm VL và điều hướng; và đánh giá vẫn chủ yếu ngắn hạn.</p>
+          <p>Em thấy thêm năm điểm nên dè dặt. Một, chữ "generalist": mô hình không fine-tune riêng từng benchmark, nhưng SFT đã dùng demo mô phỏng của chính các benchmark đó, và RL chạy trong SimplerEnv. Hai, paper nhấn mạnh điều khiển thời gian thực nhưng không báo số bước Euler, độ trễ hay giá trị K. Ba, cách paper mô tả phân phối Beta tự mâu thuẫn: câu trước nói dồn về đầu sạch, câu sau nói trải đều; cần xem code. Bốn, RL tăng rất nhỏ ngoài SimplerEnv, và chỉ một lần chạy. Năm, joint attention không được so với cross-attention, còn quyết định bỏ state chỉ dựa trên một benchmark.</p>
+        </aside>
+      </section>
+
+      <!-- 16 TAKEAWAYS -->
+      <section class="slide" aria-label="Slide 16: Tổng kết">
+        <div class="kicker">Tổng kết</div>
+        <h2>Bốn ý mang theo, và chỗ RTC, MoE sẽ "cắm vào"</h2>
+        <div class="row grow">
+          <div class="col" style="flex:1.15">
+            <ol style="font-size:19px;padding-left:26px;margin:0">
+              <li><b>Cùng khuôn GR00T</b>, nối bằng một chuỗi chung (joint self-attention).</li>
+              <li><b>Robot = câu prompt</b> + đệm 0 + mask; robot mới chỉ cần đổi câu.</li>
+              <li><b>τ = 1 là nhiễu</b>; học Y₁ − Y₀, Euler đi từ 1 về 0.</li>
+              <li><b>T2A → CPT</b> cho nền rộng (Base), <b>SFT → RL</b> cho độ chính xác (Instruct).</li>
+            </ol>
+            <div class="card amb" style="margin-top:14px;padding:12px 16px"><h4 style="font-size:19px">Câu hỏi thảo luận</h4>
+              <p style="font-size:16px">• Prompt hay MLP riêng: cách nào mở rộng sang robot mới dễ hơn khi <i>chưa có dữ liệu</i>?</p>
+              <p style="font-size:16px;margin-top:4px">• "Generalist" đã SFT trên dữ liệu benchmark thì còn so công bằng với specialist không?</p>
+              <p style="font-size:16px;margin-top:4px">• Joint attention có đáng cái giá tính toán ở mỗi bước Euler?</p></div>
+          </div>
+          <div class="col" style="flex:.95">
+            <svg viewBox="0 0 470 400" role="img" aria-label="Khối DiT với chỗ RTC và MoE sẽ can thiệp">
+              <defs><marker id="m16" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--indigo)"/></marker></defs>
+              <g font-size="15" text-anchor="middle">
+                <rect x="20" y="20" width="250" height="250" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+                <text x="145" y="48" font-weight="800" fill="var(--accent-ink)">Khối DiT × 16</text>
+                <rect x="45" y="66" width="200" height="44" rx="8" fill="var(--slide)" stroke="var(--rule)"/><text x="145" y="94" fill="var(--ink)">Joint self-attention</text>
+                <rect x="45" y="120" width="200" height="34" rx="8" fill="var(--slide)" stroke="var(--rule)"/><text x="145" y="143" fill="var(--ink)">AdaLN (τ)</text>
+                <rect x="45" y="164" width="200" height="54" rx="8" fill="var(--slide)" stroke="var(--indigo)" stroke-width="3"/><text x="145" y="196" fill="var(--ink)" font-weight="700">FFN</text>
+                <text x="145" y="250" font-size="13" fill="var(--muted)">→ chunk 16 bước, vài bước Euler</text>
+                <path d="M300 191 H252" stroke="var(--indigo)" stroke-width="2.5" marker-end="url(#m16)"/>
+                <rect x="302" y="150" width="160" height="84" rx="10" fill="var(--slide)" stroke="var(--indigo)" stroke-width="2"/>
+                <text x="382" y="178" font-weight="800" fill="var(--indigo)">MoE</text><text x="382" y="200" font-size="13" fill="var(--ink)">thay FFN bằng</text><text x="382" y="218" font-size="13" fill="var(--ink)">nhiều chuyên gia</text>
+                <path d="M145 330 V272" stroke="var(--indigo)" stroke-width="2.5" marker-end="url(#m16)"/>
+                <rect x="20" y="320" width="440" height="70" rx="10" fill="var(--slide)" stroke="var(--indigo)" stroke-width="2"/>
+                <text x="240" y="348" font-weight="800" fill="var(--indigo)">RTC</text><text x="240" y="372" font-size="13" fill="var(--ink)">can thiệp các bước khử nhiễu để chunk mới khớp chunk đang chạy</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p style="font-size:18px;margin:10px 0 0;color:var(--muted)">Cảm ơn mọi người đã lắng nghe.</p>
+        <div class="pn">16 / 16</div>
+        <aside class="notes">
+          <p>Tóm lại bốn ý. Một, Qwen-VLA giữ khuôn của GR00T nhưng nối VLM với DiT bằng một chuỗi chung. Hai, robot được mô tả bằng câu prompt, cộng đệm 0 và mask, nên robot mới chỉ cần đổi câu. Ba, quy ước τ đảo lại: τ bằng 1 là nhiễu. Bốn, T2A và CPT cho nền rộng, SFT và RL cho độ chính xác.</p>
+          <p>Em đưa ba câu hỏi để thảo luận, trên slide.</p>
+          <p>Về hai paper tiếp theo. Paper MoE sẽ thay lớp FFN trong mỗi khối DiT bằng nhiều chuyên gia có router. Qwen-VLA dồn mọi robot và mọi việc vào một DiT chung, nên đây là chỗ các chuyên gia có thể chia việc; chính paper cũng đề xuất "modular specialization" trong phần hướng tương lai. RTC sẽ can thiệp vào các bước khử nhiễu để chunk mới khớp với chunk robot đang chạy. Để áp RTC cho Qwen-VLA, cần biết số bước Euler và độ trễ mà paper chưa báo, và nhớ lật quy ước τ. Em cảm ơn mọi người.</p>
+        </aside>
+      </section>
+
+    </div>
+  </div>
+  <div class="notes-panel" id="notesPanel" aria-live="polite"><h6>Lời thuyết trình</h6><div id="notesBody"></div></div>
+  <div class="bar">
+    <button type="button" id="prevBtn" aria-label="Slide trước">← Trước</button>
+    <span class="count" id="count">1 / 16</span>
+    <button type="button" id="nextBtn" aria-label="Slide sau">Sau →</button>
+    <button type="button" id="notesBtn" aria-pressed="false">Lời thuyết trình (N)</button>
+    <button type="button" id="fsBtn">Toàn màn hình (F)</button>
+    <span class="hint">Phím ← → để chuyển slide · N bật lời thuyết trình · F toàn màn hình</span>
+    <div class="progress"><span id="prog"></span></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var css = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
+  var app = document.getElementById("app"), deck = document.getElementById("deck"), vp = document.getElementById("viewport");
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length, cur = 0;
+
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight, pad = Math.min(24, w * 0.03);
+    var s = Math.min((w - 2 * pad) / 1280, (h - 2 * pad) / 720);
+    deck.style.transform = "translate(" + (-640 * s) + "px," + (-360 * s) + "px) scale(" + s + ")";
+  }
+  function go(i, push) {
+    cur = Math.max(0, Math.min(N - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("active", k === cur); s.setAttribute("aria-hidden", k === cur ? "false" : "true"); });
+    document.getElementById("count").textContent = (cur + 1) + " / " + N;
+    document.getElementById("prog").style.width = ((cur + 1) / N * 100) + "%";
+    var notes = slides[cur].querySelector(".notes");
+    document.getElementById("notesBody").innerHTML = notes ? notes.innerHTML : "";
+    if (push !== false) { try { history.replaceState(null, "", "#s" + (cur + 1)); } catch (e) {} }
+  }
+  function toggleNotes() {
+    var on = !app.classList.contains("show-notes");
+    app.classList.toggle("show-notes", on);
+    document.getElementById("notesBtn").setAttribute("aria-pressed", on ? "true" : "false");
+    setTimeout(fit, 220);
+  }
+  function toggleFs() {
+    try {
+      if (!document.fullscreenElement) { var p = document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(function () {}); }
+      else { document.exitFullscreen(); }
+    } catch (e) {}
+  }
+  document.getElementById("prevBtn").addEventListener("click", function () { go(cur - 1); });
+  document.getElementById("nextBtn").addEventListener("click", function () { go(cur + 1); });
+  document.getElementById("notesBtn").addEventListener("click", toggleNotes);
+  document.getElementById("fsBtn").addEventListener("click", toggleFs);
+  document.addEventListener("keydown", function (e) {
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") go(0);
+    else if (k === "End") go(N - 1);
+    else if (k === "n" || k === "N") toggleNotes();
+    else if (k === "f" || k === "F") toggleFs();
+  });
+  var tx = null;
+  vp.addEventListener("touchstart", function (e) { tx = e.touches[0].clientX; }, { passive: true });
+  vp.addEventListener("touchend", function (e) {
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1));
+    tx = null;
+  }, { passive: true });
+  window.addEventListener("resize", fit);
+  document.addEventListener("fullscreenchange", function () { setTimeout(fit, 50); });
+
+  /* ---------- charts ---------- */
+  var NS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function vn(v, d) { return v.toFixed(d === undefined ? 1 : d).replace(".", ","); }
+  function hbar(svg, x0, y, w, h, fill, title) {
+    var r = Math.min(4, h / 2, Math.max(w, 0) / 2);
+    var p = el("path", { d: "M" + x0 + " " + y + "h" + (w - r) + "a" + r + " " + r + " 0 0 1 " + r + " " + r + "v" + (h - 2 * r) + "a" + r + " " + r + " 0 0 1 " + (-r) + " " + r + "h" + (-(w - r)) + "z", fill: fill });
+    if (title) p.appendChild(el("title", {}, title));
+    svg.appendChild(p);
+  }
+
+  /* slide 5: attention matrices (sơ đồ minh họa) */
+  function drawAtt() {
+    [["attA", 42, false], ["attB", 312, true]].forEach(function (cfg) {
+      var g = document.getElementById(cfg[0]); clear(g);
+      var x0 = cfg[1] + 22, y0 = 82, c = 22, n = 8;
+      for (var i = 0; i < n; i++) {
+        var tc = i < 4 ? css("--amber") : css("--indigo");
+        g.appendChild(el("rect", { x: x0 + i * c + 4, y: y0 - 18, width: c - 8, height: 12, rx: 2, fill: tc }));
+        g.appendChild(el("rect", { x: x0 - 18, y: y0 + i * c + 4, width: 12, height: c - 8, rx: 2, fill: tc }));
+      }
+      for (var r = 0; r < n; r++) for (var k = 0; k < n; k++) {
+        var on = cfg[2] ? true : (r >= 4);
+        g.appendChild(el("rect", { x: x0 + k * c + 1, y: y0 + r * c + 1, width: c - 2, height: c - 2, rx: 3, fill: on ? css("--accent") : css("--code-bg"), stroke: on ? "none" : css("--rule"), opacity: on ? (cfg[2] ? 0.9 : (k < 4 ? 0.9 : 0.55)) : 1 }));
+      }
+      g.appendChild(el("text", { x: x0 + 2 * c, y: y0 + n * c + 22, "text-anchor": "middle", "font-size": 13, fill: css("--amber") }, "VLM"));
+      g.appendChild(el("text", { x: x0 + 6 * c, y: y0 + n * c + 22, "text-anchor": "middle", "font-size": 13, fill: css("--indigo") }, "hành động"));
+      if (!cfg[2]) {
+        g.appendChild(el("text", { x: x0 + 4 * c, y: y0 + 2 * c + 5, "text-anchor": "middle", "font-size": 13, fill: css("--muted") }, "token VLM không đổi"));
+        g.appendChild(el("text", { x: x0 + 6 * c, y: y0 + n * c + 40, "text-anchor": "middle", "font-size": 12, fill: css("--muted") }, "(phần nhạt: self-attn ở khối xen kẽ)"));
+      }
+    });
+  }
+
+  /* slide 7: mask grid (số minh họa c = 7, K = 32) */
+  function drawGrid() {
+    var svg = document.getElementById("chGrid"); clear(svg);
+    var x0 = 50, y0 = 40, c = 14, H = 16, K = 32, cv = 7;
+    svg.appendChild(el("text", { x: x0, y: 22, "font-size": 15, fill: css("--muted"), "font-weight": 600 }, "kênh k (K = 32) →"));
+    svg.appendChild(el("text", { x: 22, y: y0 + H * c / 2 + 20, "font-size": 15, fill: css("--muted"), "font-weight": 600, "text-anchor": "middle", transform: "rotate(-90 22 " + (y0 + H * c / 2 + 20) + ")" }, "bước h (H = 16) →"));
+    var rh = 17;
+    for (var h = 0; h < H; h++) for (var k = 0; k < K; k++) {
+      var on = k < cv;
+      svg.appendChild(el("rect", { x: x0 + k * c + 1, y: y0 + h * rh + 1, width: c - 2, height: rh - 2, rx: 2, fill: on ? css("--accent") : css("--slide"), stroke: on ? "none" : css("--rule"), "stroke-dasharray": on ? "" : "2 2" }));
+    }
+    var yb = y0 + H * rh + 14;
+    svg.appendChild(el("path", { d: "M" + (x0 + 1) + " " + yb + "v6h" + (cv * c - 2) + "v-6", stroke: css("--accent"), fill: "none", "stroke-width": 2 }));
+    svg.appendChild(el("text", { x: x0 + cv * c / 2, y: yb + 26, "text-anchor": "middle", "font-size": 15, "font-weight": 700, fill: css("--accent-ink") }, "c = 7 ô thật, M = 1"));
+    svg.appendChild(el("path", { d: "M" + (x0 + cv * c + 3) + " " + yb + "v6h" + ((K - cv) * c - 4) + "v-6", stroke: css("--muted"), fill: "none", "stroke-width": 2 }));
+    svg.appendChild(el("text", { x: x0 + cv * c + (K - cv) * c / 2, y: yb + 26, "text-anchor": "middle", "font-size": 15, fill: css("--muted") }, "đệm 0, M = 0 (không tính loss)"));
+  }
+
+  /* slide 9: data mixture (Bảng 1) */
+  function drawMix() {
+    var svg = document.getElementById("chMix"); clear(svg);
+    var data = [["Robot manipulation", 74.2, 0], ["Điều hướng", 7.5, 0], ["Video tay người", 6.0, 0], ["Mô phỏng tổng hợp", 3.7, 0], ["VL chung", 3.4, 1], ["Grounding 2D", 2.5, 1], ["VQA lái xe", 2.4, 1], ["Caption hành động", 0.2, 1]];
+    var L = 190, R = 70, T = 40, rowH = 42, W = 680;
+    var X = function (v) { return L + v / 80 * (W - L - R); };
+    svg.appendChild(el("rect", { x: L, y: 10, width: 12, height: 12, rx: 3, fill: css("--accent") }));
+    svg.appendChild(el("text", { x: L + 18, y: 21, "font-size": 14, fill: css("--ink") }, "có nhãn hành động"));
+    svg.appendChild(el("rect", { x: L + 170, y: 10, width: 12, height: 12, rx: 3, fill: css("--indigo") }));
+    svg.appendChild(el("text", { x: L + 188, y: 21, "font-size": 14, fill: css("--ink") }, "ảnh + chữ (8,5%)"));
+    data.forEach(function (d, i) {
+      var y = T + i * rowH, bh = 22, by = y + (rowH - bh) / 2;
+      svg.appendChild(el("text", { x: L - 10, y: by + 16, "text-anchor": "end", "font-size": 16, fill: css("--ink") }, d[0]));
+      hbar(svg, X(0), by, Math.max(2, X(d[1]) - X(0)), bh, d[2] ? css("--indigo") : css("--accent"), d[0] + ": " + d[1] + "%");
+      svg.appendChild(el("text", { x: X(d[1]) + 7, y: by + 16, "font-size": 15, fill: css("--ink"), "font-family": css("--f-mono") }, vn(d[1]) + "%"));
+    });
+  }
+
+  /* slide 11: T2A ablation (Hình 6) */
+  function drawT2A() {
+    var svg = document.getElementById("chT2A"); clear(svg);
+    var data = [
+      ["Không có T2A", 60.9, "base"], ["T2A: chỉ dữ liệu thật", 51.0, ""], ["T2A: chỉ tổng hợp", 64.1, ""],
+      ["T2A: 20% tổng hợp + 80% thật", 71.1, "best"], ["Chunk, không ảnh (10% t.h.)", 60.4, ""], ["Chunk, CÓ ảnh (10% t.h.)", 57.6, "bad"], ["T2A quá lâu: 40.000 bước", 60.4, "bad"]
+    ];
+    var L = 250, R = 60, T = 30, rowH = 46, W = 640;
+    var X = function (v) { return L + v / 80 * (W - L - R); };
+    svg.appendChild(el("text", { x: L, y: 18, "font-size": 15, fill: css("--muted"), "font-weight": 600 }, "Tỉ lệ thành công sau SFT (%)"));
+    data.forEach(function (d, i) {
+      var y = T + i * rowH, bh = 24, by = y + (rowH - bh) / 2;
+      var col = d[2] === "best" ? css("--accent") : d[2] === "bad" ? css("--bad") : d[2] === "base" ? css("--muted") : css("--c3");
+      svg.appendChild(el("text", { x: L - 10, y: by + 17, "text-anchor": "end", "font-size": 15, fill: css("--ink"), "font-weight": d[2] === "best" ? 700 : 400 }, d[0]));
+      hbar(svg, X(0), by, X(d[1]) - X(0), bh, col, d[0] + ": " + d[1] + "%");
+      svg.appendChild(el("text", { x: X(d[1]) + 7, y: by + 17, "font-size": 15, fill: css("--ink"), "font-family": css("--f-mono"), "font-weight": d[2] === "best" ? 700 : 400 }, vn(d[1])));
+    });
+    var yb = T + data.length * rowH;
+    svg.appendChild(el("line", { x1: X(60.9), x2: X(60.9), y1: T, y2: yb, stroke: css("--muted"), "stroke-dasharray": "5 4", "stroke-width": 1.5 }));
+    svg.appendChild(el("text", { x: X(60.9), y: yb + 18, "text-anchor": "middle", "font-size": 13, fill: css("--muted") }, "mốc không T2A: 60,9"));
+  }
+
+  /* slide 13: Table 4 */
+  function drawT4() {
+    var svg = document.getElementById("chT4"); clear(svg);
+    var panels = [
+      ["LIBERO", [["π0", 94.4, 0], ["StarVLA-OFT", 96.6, 0], ["GR00T N1.6", 97.2, 2], ["π0.5", 97.6, 0], ["ABot-M0", 98.6, 0], ["Being-H0.5", 97.6, 0], ["Qwen-VLA-Base", 90.8, 1], ["Qwen-VLA-Instruct", 97.9, 1]]],
+      ["RoboCasa-GR1", [["StarVLA-OFT", 48.8, 0], ["GR00T N1.6", 49.9, 2], ["π0.5", 37.0, 0], ["ABot-M0", 58.3, 0], ["Being-H0.5", 53.3, 0], ["Qwen-VLA-Base", 40.4, 1], ["Qwen-VLA-Instruct", 56.7, 1]]]
+    ];
+    var colors = [css("--muted"), css("--amber"), css("--indigo")];
+    var lg = [["specialist", 0], ["GR00T N1.6", 2], ["Qwen-VLA (generalist)", 1]], lx = 0;
+    lg.forEach(function (l) {
+      svg.appendChild(el("rect", { x: lx + 4, y: 4, width: 12, height: 12, rx: 3, fill: colors[l[1]] }));
+      var t = el("text", { x: lx + 22, y: 15, "font-size": 14, fill: css("--ink") }, l[0]); svg.appendChild(t);
+      lx += 22 + (t.getComputedTextLength ? t.getComputedTextLength() : l[0].length * 8) + 22;
+    });
+    panels.forEach(function (p, pi) {
+      var ox = pi * 415, L = ox + 150, W = 395, rowH = 42, T = 64;
+      var X = function (v) { return L + v / 100 * (W - 150 - 40); };
+      svg.appendChild(el("text", { x: ox + 4, y: 50, "font-size": 19, "font-weight": 800, fill: css("--ink") }, p[0]));
+      [0, 50, 100].forEach(function (g) {
+        svg.appendChild(el("line", { x1: X(g), x2: X(g), y1: T, y2: T + p[1].length * rowH, stroke: css("--rule") }));
+        svg.appendChild(el("text", { x: X(g), y: T + p[1].length * rowH + 18, "text-anchor": "middle", "font-size": 13, fill: css("--muted") }, g + "%"));
+      });
+      p[1].forEach(function (d, i) {
+        var by = T + i * rowH + 9, bh = 24;
+        svg.appendChild(el("text", { x: L - 8, y: by + 17, "text-anchor": "end", "font-size": 14, fill: css("--ink"), "font-weight": d[2] === 1 ? 700 : 400 }, d[0]));
+        hbar(svg, X(0), by, X(d[1]) - X(0), bh, colors[d[2]], d[0] + ": " + d[1] + "%");
+        svg.appendChild(el("text", { x: X(d[1]) + 6, y: by + 17, "font-size": 14, fill: css("--ink"), "font-family": css("--f-mono"), "font-weight": d[2] === 1 ? 700 : 400 }, vn(d[1])));
+      });
+    });
+  }
+
+  /* slide 14: Table 11 */
+  function drawStage() {
+    var svg = document.getElementById("chStage"); clear(svg);
+    var xs = ["CPT (Base)", "+ SFT", "+ RL (Instruct)"];
+    var series = [
+      ["LIBERO", [90.8, 97.8, 97.9], css("--c1")],
+      ["RoboTwin-H", [66.4, 87.1, 87.2], css("--c3")],
+      ["RoboTwin-E", [64.3, 86.3, 86.1], css("--muted")],
+      ["Simpler", [64.3, 70.8, 73.7], css("--c2")],
+      ["RoboCasa-GR1", [40.4, 56.0, 56.7], css("--bad")]
+    ];
+    var L = 60, R = 150, T = 20, B = 46, W = 700, H = 410;
+    var X = function (i) { return L + i * (W - L - R) / 2; };
+    var Y = function (v) { return T + (100 - v) / 70 * (H - T - B); };
+    [30, 50, 70, 90].forEach(function (g) {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: Y(g), y2: Y(g), stroke: css("--rule") }));
+      svg.appendChild(el("text", { x: L - 10, y: Y(g) + 5, "text-anchor": "end", "font-size": 14, fill: css("--muted") }, g + "%"));
+    });
+    xs.forEach(function (x, i) { svg.appendChild(el("text", { x: X(i), y: H - 16, "text-anchor": "middle", "font-size": 15, "font-weight": 600, fill: css("--ink") }, x)); });
+    var labY = [];
+    series.forEach(function (s) {
+      var d = s[1].map(function (v, i) { return (i ? "L" : "M") + X(i) + " " + Y(v); }).join("");
+      svg.appendChild(el("path", { d: d, stroke: s[2], "stroke-width": 3, fill: "none" }));
+      s[1].forEach(function (v, i) {
+        var c = el("circle", { cx: X(i), cy: Y(v), r: 5, fill: s[2] }); c.appendChild(el("title", {}, s[0] + " · " + xs[i] + ": " + v)); svg.appendChild(c);
+      });
+      var ly = Y(s[1][2]) + 5; labY.forEach(function (p) { if (Math.abs(ly - p) < 17) ly = p + 17; }); labY.push(ly);
+      svg.appendChild(el("text", { x: X(2) + 12, y: ly, "font-size": 14, fill: s[2], "font-weight": 700 }, s[0] + " " + vn(s[1][2])));
+    });
+    svg.appendChild(el("text", { x: (X(0) + X(1)) / 2, y: Y(32) , "text-anchor": "middle", "font-size": 13, fill: css("--accent-ink"), "font-weight": 700 }, "SFT: +6,5 đến +22,0"));
+    svg.appendChild(el("text", { x: (X(1) + X(2)) / 2, y: Y(32), "text-anchor": "middle", "font-size": 13, fill: css("--amber"), "font-weight": 700 }, "RL: −0,2 đến +2,9"));
+  }
+
+  function drawAll() { drawAtt(); drawGrid(); drawMix(); drawT2A(); drawT4(); drawStage(); }
+
+  var start = 0;
+  var m = /^#s(\d+)$/.exec(location.hash || "");
+  if (m) start = parseInt(m[1], 10) - 1;
+  go(start, false);
+  fit();
+  drawAll();
+  try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll); } catch (e) {}
+  new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { drawAll(); fit(); });
+})();
+</script>
+</body>
+</html>

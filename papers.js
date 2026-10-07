@@ -56,10 +56,10 @@ const PAPERS = [
     nhom: "Đọc rộng",
     bia: "qwen",
     moTa: "Mô hình VLA của Qwen",
-    trangThai: "chua-doc",
+    trangThai: "da-present",
     files: {
-      docHieu: null,
-      slide: null,
+      docHieu: "Qwen-VLA/Qwen-VLA · Đọc hiểu paper.html",
+      slide: "Qwen-VLA/Qwen-VLA · Slide trình bày.html",
       pdfGoc: "Docs/QwenVLA.pdf",
       pdfViet: "Docs/translated/QwenVLA-vi.pdf"
     }
