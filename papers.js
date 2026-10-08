@@ -110,7 +110,7 @@ const PAPERS = [
     trangThai: "dang-doc",
     files: {
       docHieu: "LingBot/LingBot · Đọc hiểu paper.html",
-      slide: null,   // "LingBot/LingBot · Slide trình bày.html"
+      slide: "LingBot/LingBot · Slide trình bày.html",
       pdfGoc: "Docs/Moe.pdf",
       pdfViet: "Docs/translated/Moe-vi.pdf"
     }

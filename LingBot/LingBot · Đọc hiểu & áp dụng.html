@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LingBot · Đọc hiểu &amp; áp dụng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+
+/* layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+
+/* paper viết / nghĩa là */
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+
+/* callouts */
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+
+/* tables */
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+
+/* misc */
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* checklist */
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+
+/* steps */
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* details */
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+
+/* arch svg */
+.n{cursor:pointer}
+.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.n.emb rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.frz rect.b0{fill:var(--blue-soft);stroke:var(--blue)}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.n text{fill:var(--text);font-size:13px;text-anchor:middle;pointer-events:none}
+.n text.s{fill:var(--muted);font-size:11.5px}
+.ar{stroke:var(--grey);stroke-width:1.8;fill:none}
+.lbl{fill:var(--muted);font-size:11.5px}
+#archInfo{min-height:96px}
+
+/* bars */
+.bars .row{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{display:flex;flex-direction:column;gap:2px}
+.bars .bar{height:11px;border-radius:4px;position:relative;min-width:2px}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-4px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .dp{background:var(--grey)}
+.bars .gr{background:var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:120px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cells{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.cells span{width:26px;height:26px;border-radius:5px;background:var(--pri-soft);border:1px solid var(--pri);font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cells span.used{background:var(--accent);border-color:var(--accent);color:#fff}
+.cells span.over{background:var(--red);border-color:var(--red);color:#fff}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+
+/* ===== thêm cho trang Qwen-VLA ===== */
+details.more{border:1px dashed var(--line);border-radius:12px;padding:8px 14px;margin:12px 0;background:var(--card)}
+details.more>summary{cursor:pointer;font-weight:600;color:var(--pri);font-size:.93rem}
+details.more>summary::marker{color:var(--pri)}
+details.more[open]>summary{margin-bottom:8px}
+.key{border:2px solid var(--pri);border-radius:14px;padding:12px 18px;margin:14px 0;background:var(--pri-soft)}
+.key b.t{display:block;color:var(--pri-strong);margin-bottom:2px}
+.idea{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:center;border-top:1px solid var(--line);padding:16px 0}
+.idea h3{margin:0 0 6px}
+.idea .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;font-size:.95rem}
+.idea .go{font-size:.85rem;color:var(--muted)}
+.stat div div{border:0;padding:0;border-radius:0}
+.idea svg text{font-size:13px}
+@media (max-width:760px){.idea{grid-template-columns:1fr}}
+.lv{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;vertical-align:middle;margin-left:8px;letter-spacing:.02em;line-height:1.6}
+.lv.m{background:var(--accent);color:#fff}
+.lv.s{background:var(--blue-soft);color:var(--blue)}
+.lv.k{background:var(--code-bg);color:var(--muted);border:1px solid var(--line)}
+nav.toc a i.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+i.d.m{background:var(--accent)} i.d.s{background:var(--blue)} i.d.k{background:var(--grey);opacity:.6}
+.legend-lv{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.9rem;margin:10px 0}
+.basics{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.basics>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.basics>div b.h{display:block;color:var(--pri-strong);margin-bottom:4px}
+.basics>div .why{display:block;margin-top:6px;font-size:.86rem;color:var(--muted)}
+table.t td.keep{color:var(--pri-strong);font-weight:600;white-space:nowrap}
+table.t td.chg{color:var(--accent);font-weight:600;white-space:nowrap}
+table.t td.unk{color:var(--muted);font-weight:600;white-space:nowrap}
+.prompt{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--code-bg);border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:10px;padding:12px 14px;white-space:pre-wrap;line-height:1.6}
+.prompt .v{background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:0 3px}
+.ctrl select,.ctrl input[type=text],.ctrl input[type=number]{font:inherit;font-size:.9rem;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+.grid{display:grid;gap:2px;margin:10px 0;max-width:100%;overflow-x:auto}
+.grid span{width:13px;height:13px;border-radius:2px;background:var(--code-bg);border:1px solid var(--line)}
+.grid span.on{background:var(--pri);border-color:var(--pri)}
+.grid span.pad{background:var(--card);border:1px dashed var(--grey);opacity:.6}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+@media (max-width:760px){.stages{grid-template-columns:1fr 1fr}}
+.stg{border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;background:var(--card);text-align:center;font-size:.85rem}
+.stg.sel{border-color:var(--accent)}
+.stg .nm{font-weight:700;color:var(--pri-strong);font-size:.95rem}
+.stg .blk{border-radius:7px;padding:3px 4px;margin:5px 0;font-size:.8rem;border:1.5px solid}
+.stg .blk.fz{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.stg .blk.tr{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stg .inp{color:var(--muted);font-size:.78rem}
+.stg .ck{margin-top:6px;font-size:.76rem;font-weight:600}
+.arrowrow{display:flex;justify-content:space-around;color:var(--grey);font-size:.8rem;margin:-4px 0 4px}
+.bars .q{background:var(--accent)}
+.bars .g6{background:var(--blue)}
+.delta-up{color:var(--pri-strong);font-weight:600}
+.delta-dn{color:var(--red);font-weight:600}
+.n.vlm rect.b0{fill:var(--accent-soft);stroke:var(--accent)}
+.n.dit rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.rl rect.b0{stroke-dasharray:5 4}
+.say{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:14px 0}
+.say b.t{display:block;color:var(--accent);margin-bottom:4px}
+
+/* ===== thêm cho trang RTC ===== */
+#smSvg,#btSvg,#sfSvg{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px}
+#smMeth label{font-size:.88rem}
+.out .tw{margin:0 0 8px}
+pre code#torchCode{font-size:.82rem}
+.two>div{min-width:0}
+mjx-container[display="true"]{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0;position:relative}
+mjx-container:not([display]){max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle;position:relative}
+.chk code{word-break:break-all}
+.bars .bb{min-width:0;padding-right:118px}
+@media (max-width:600px){.bars .bb{padding-right:96px}}
+
+#tkSvg{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px}
+header.top a{color:#fff}
+
+/* ===== thêm cho trang LingBot (MoE) ===== */
+.rt{border-collapse:collapse;font-size:.82rem;margin:6px 0}
+.rt td,.rt th{border:1px solid var(--line);padding:3px 6px;text-align:center;font-variant-numeric:tabular-nums}
+.rt th{background:var(--code-bg);font-weight:600}
+.rt td.sel{background:var(--accent);color:#fff;font-weight:700}
+.rt td.tk{text-align:left;white-space:nowrap}
+.rt td.tk i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.load{display:flex;align-items:flex-end;gap:6px;height:110px;margin:8px 0 2px;padding:0 4px;border-bottom:1px solid var(--line)}
+.load div{flex:1;background:var(--pri);border-radius:4px 4px 0 0;position:relative;min-height:2px}
+.load div.hot{background:var(--red)}
+.load div span{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:.72rem;color:var(--muted)}
+.loadlab{display:flex;gap:6px;padding:0 4px;font-size:.74rem;color:var(--muted)}
+.loadlab span{flex:1;text-align:center}
+.heat{border-collapse:collapse;font-size:.74rem;margin:6px 0}
+.heat td,.heat th{width:30px;height:24px;text-align:center;border:1px solid var(--card);font-variant-numeric:tabular-nums}
+.heat th{color:var(--muted);font-weight:500}
+.heat td.rl{width:auto;text-align:left;padding-right:8px;color:var(--text);white-space:nowrap}
+.blkcol{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.blkcol{grid-template-columns:1fr}}
+.ex{font-size:.8rem;color:var(--muted)}
+.wout{font-family:'JetBrains Mono',monospace;font-size:.8rem;white-space:pre-wrap;background:var(--code-bg);border-radius:10px;padding:10px 12px;border:1px solid var(--line);overflow-x:auto}
+nav.toc b{margin-top:6px}
+pre code{white-space:pre}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.flow div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.88rem;background:var(--card)}
+.flow div b{display:block;color:var(--pri-strong)}
+.opt3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+@media (max-width:800px){.opt3{grid-template-columns:1fr}}
+.opt3>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.opt3>div h4{margin:0 0 6px;color:var(--pri-strong)}
+.opt3 .tag{margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>LingBot · Đọc hiểu &amp; áp dụng</h1>
+  <p>Bản dễ đọc cho người mới về phần <b>Mixture-of-Experts (MoE) trong action expert</b> của <b>LingBot-VLA 2.0</b> (arXiv 2607.06403, Robbyant, 07/2026).</p>
+  <p>Đi từ "nó là gì" tới "làm việc với nó trong codebase thế nào". Gần như không có công thức; công thức của paper gập lại để đối chiếu. Muốn đi sâu: xem trang <a href="LingBot%20%C2%B7%20%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20paper.html">LingBot · Đọc hiểu paper</a> cùng thư mục.</p>
+  <div class="meta">
+    <span class="pill">Phần A: hiểu</span><span class="pill">Phần B: áp dụng (4 việc)</span><span class="pill">Code mẫu đã chạy thử</span><span class="pill">Viết chung cho VLM + action expert</span>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#one"><i class="d m"></i>Một phút</a>
+  <b style="margin-top:10px">Phần A · Hiểu</b>
+  <a href="#what"><i class="d m"></i>1. MoE là gì, giải quyết gì</a>
+  <a href="#base"><i class="d m"></i>2. Sáu khái niệm nền</a>
+  <a href="#paper"><i class="d m"></i>3. LingBot làm MoE thế nào: 6 bước</a>
+  <a href="#proof"><i class="d m"></i>4. Paper chứng minh được gì</a>
+  <b style="margin-top:10px">Phần B · Áp dụng</b>
+  <a href="#map"><i class="d m"></i>5. Bản đồ: MoE chạm vào đâu</a>
+  <a href="#job1"><i class="d m"></i>6. Việc 1: đọc code MoE có sẵn</a>
+  <a href="#job2"><i class="d m"></i>7. Việc 2: tự thêm MoE</a>
+  <a href="#job3"><i class="d m"></i>8. Việc 3: thí nghiệm dense vs MoE</a>
+  <a href="#job4"><i class="d s"></i>9. Việc 4: chuyển checkpoint dense → MoE</a>
+  <a href="#eval"><i class="d s"></i>10. Đánh giá: mô phỏng & robot thật</a>
+  <a href="#check"><i class="d m"></i>11. Kiểm tra đã cài đúng</a>
+  <a href="#bugs"><i class="d m"></i>12. Lỗi hay gặp</a>
+  <a href="#plan"><i class="d m"></i>13. Kế hoạch & câu hỏi cho nhóm</a>
+  <a href="#quiz"><i class="d s"></i>14. Tự kiểm tra</a>
+  <a href="#sources"><i class="d k"></i>15. Nguồn</a>
+</nav>
+
+<main>
+
+<!-- ============ ONE ============ -->
+<section class="sec" id="one">
+<h2>Một phút <span class="lv m">Phải nắm</span></h2>
+<div class="key"><b class="t">MoE trong một câu</b>Thay vì cho mọi token hành động đi qua <b>một</b> mạng FFN to, ta có <b>nhiều mạng nhỏ</b> ("chuyên gia"), và một bộ chọn (router) cho mỗi token đi qua <b>vài</b> chuyên gia hợp nhất với nó. Mô hình "biết nhiều" hơn mà mỗi token không tốn thêm phép tính.</div>
+<div class="tldr">
+  <div><b>Vấn đề</b>LingBot pretrain trên dữ liệu của 20 robot rất khác nhau (8 tới 32 khớp, tay kẹp hoặc bàn tay, có hoặc không có bánh xe). Một FFN chung phải học mọi kiểu điều khiển một lúc.</div>
+  <div><b>Cách làm</b>Ở mọi khối của action expert: bỏ FFN, đặt vào 1 chuyên gia chung (luôn chạy) + nhiều chuyên gia nhỏ (mỗi token chọn K cái). Phần còn lại của mô hình giữ nguyên.</div>
+  <div><b>Giữ cho công bằng</b>Mỗi chuyên gia có một "điểm cộng xếp hàng". Chuyên gia nào đông quá bị trừ, vắng quá được cộng, để không ai bị bỏ không. Không thêm loss phụ.</div>
+  <div><b>Với bạn</b>MoE đụng 3 chỗ trong code: <b>lớp FFN</b> trong action expert, <b>một dòng sau optimizer.step()</b> để chỉnh điểm cộng, và <b>đo đạc</b> (tải, độ trễ, bộ nhớ). Phần B đi qua 4 việc cụ thể.</div>
+</div>
+</section>
+
+<!-- ============ 1 ============ -->
+<section class="sec" id="what">
+<h2>1. MoE là gì, giải quyết vấn đề gì <span class="lv m">Phải nắm</span></h2>
+
+<h3>1.1 Nhắc lại: action expert và lớp FFN nằm ở đâu</h3>
+<p>Một VLA hiện đại (Qwen-VLA, GR00T, π0, LingBot) có hai phần: <b>VLM</b> đọc ảnh và câu lệnh, và <b>action expert</b> nặn ra một đoạn hành động (chunk) từ nhiễu. Action expert là một chồng các <b>khối</b> giống nhau. Mỗi khối có hai việc chính:</p>
+<svg class="svgbox" viewBox="0 0 900 230" role="img" aria-label="VLA gồm VLM và action expert; action expert là chồng khối; mỗi khối có attention rồi FFN">
+<defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<g style="font-size:14px" text-anchor="middle">
+<rect x="20" y="60" width="170" height="80" rx="12" style="fill:var(--code-bg);stroke:var(--line);stroke-width:2"/>
+<text x="105" y="95" style="fill:var(--text);font-weight:800">VLM</text><text x="105" y="117" style="fill:var(--muted);font-size:12.5px">ảnh + câu lệnh</text>
+<rect x="230" y="30" width="210" height="140" rx="12" style="fill:var(--pri-soft);stroke:var(--pri);stroke-width:2"/>
+<text x="335" y="56" style="fill:var(--pri-strong);font-weight:800">Action expert</text>
+<rect x="250" y="70" width="170" height="24" rx="5" style="fill:var(--card);stroke:var(--line)"/><text x="335" y="87" style="fill:var(--text);font-size:12.5px">khối 1</text>
+<rect x="250" y="100" width="170" height="24" rx="5" style="fill:var(--card);stroke:var(--accent);stroke-width:2"/><text x="335" y="117" style="fill:var(--accent);font-size:12.5px;font-weight:700">khối 2 (phóng to →)</text>
+<text x="335" y="148" style="fill:var(--muted);font-size:12.5px">… khối N</text>
+<line x1="192" y1="100" x2="226" y2="100" style="stroke:#8a9895;stroke-width:2" marker-end="url(#ar1)"/>
+<line x1="422" y1="112" x2="490" y2="112" style="stroke:var(--accent);stroke-width:2;stroke-dasharray:5 4"/>
+<rect x="490" y="30" width="390" height="160" rx="12" style="fill:var(--card);stroke:var(--accent);stroke-width:2"/>
+<rect x="510" y="50" width="160" height="60" rx="8" style="fill:var(--blue-soft);stroke:var(--blue)"/><text x="590" y="76" style="fill:var(--text);font-weight:700">Attention</text><text x="590" y="96" style="fill:var(--muted);font-size:12px">các token "họp chung"</text>
+<rect x="700" y="50" width="160" height="60" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/><text x="780" y="76" style="fill:var(--accent);font-weight:800">FFN</text><text x="780" y="96" style="fill:var(--muted);font-size:12px">mỗi token "tự nghĩ"</text>
+<line x1="672" y1="80" x2="696" y2="80" style="stroke:#8a9895;stroke-width:2" marker-end="url(#ar1)"/>
+<text x="685" y="140" style="fill:var(--text)">FFN chiếm phần lớn trọng số của khối.</text>
+<text x="685" y="164" style="fill:var(--accent);font-weight:700">MoE thay đúng hộp FFN này.</text>
+</g>
+</svg>
+<p><b>Attention</b> cho các token trao đổi thông tin với nhau. <b>FFN</b> (feed-forward network, một mạng nhỏ 2–3 lớp) xử lý <b>từng token một mình</b>. Vì FFN làm việc riêng từng token, ta có thể cho mỗi token đi một FFN khác nhau mà không ảnh hưởng token khác. Đó là lý do MoE luôn thay FFN.</p>
+
+<h3>1.2 Vấn đề: một FFN cho mọi robot</h3>
+<p>Dữ liệu pretrain của LingBot-VLA 2.0: khoảng <b>50.000 giờ</b> từ <b>20 robot</b>, cộng 10.000 giờ video người. Robot nhỏ nhất (Franka) có 8 bậc tự do, lớn nhất (Fourier GR-2) có 32. Có robot dùng tay kẹp, có robot có bàn tay 6 ngón mỗi bên, có robot có bánh xe, eo, đầu xoay.</p>
+<div class="co note"><b class="t">Ví dụ đời thường</b>FFN dense giống <b>một bác sĩ</b> phải khám mọi bệnh: gãy tay, đau mắt, trẻ em, người già. Muốn giỏi hơn thì thuê bác sĩ "to" hơn, và ai đến cũng tốn đúng thời gian của ông bác sĩ to đó. Paper gọi dữ liệu này là "dị chủng": không gian hành động không khớp, động lực học khác nhau, tác vụ khác nhau (Sec 4.1).</div>
+
+<h3>1.3 Ý tưởng MoE: phòng khám nhiều chuyên khoa</h3>
+<svg class="svgbox" viewBox="0 0 900 220" role="img" aria-label="Token đến lễ tân router, router gửi tới bác sĩ đa khoa và 2 trong 8 chuyên khoa, kết quả cộng lại">
+<g style="font-size:14px" text-anchor="middle">
+<rect x="20" y="80" width="120" height="56" rx="10" style="fill:var(--code-bg);stroke:var(--line);stroke-width:2"/><text x="80" y="105" style="fill:var(--text);font-weight:700">1 token</text><text x="80" y="124" style="fill:var(--muted);font-size:12px">(1 bệnh nhân)</text>
+<rect x="180" y="80" width="140" height="56" rx="10" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/><text x="250" y="105" style="fill:var(--accent);font-weight:800">Router</text><text x="250" y="124" style="fill:var(--muted);font-size:12px">lễ tân chấm điểm</text>
+<rect x="380" y="18" width="330" height="40" rx="8" style="fill:var(--blue-soft);stroke:var(--blue);stroke-width:2"/><text x="545" y="44" style="fill:var(--blue);font-weight:700">bác sĩ đa khoa (chuyên gia chung): ai cũng gặp</text>
+<g style="font-size:13px">
+<rect x="380" y="76" width="74" height="44" rx="8" style="fill:var(--accent)"/><text x="417" y="103" style="fill:#fff;font-weight:700">E1</text>
+<rect x="464" y="76" width="74" height="44" rx="8" style="fill:var(--card);stroke:var(--line)"/><text x="501" y="103" style="fill:var(--text)">E2</text>
+<rect x="548" y="76" width="74" height="44" rx="8" style="fill:var(--card);stroke:var(--line)"/><text x="585" y="103" style="fill:var(--text)">E3</text>
+<rect x="632" y="76" width="74" height="44" rx="8" style="fill:var(--accent)"/><text x="669" y="103" style="fill:#fff;font-weight:700">E4</text>
+<rect x="380" y="128" width="74" height="44" rx="8" style="fill:var(--card);stroke:var(--line)"/><text x="417" y="155" style="fill:var(--text)">E5</text>
+<rect x="464" y="128" width="74" height="44" rx="8" style="fill:var(--card);stroke:var(--line)"/><text x="501" y="155" style="fill:var(--text)">E6</text>
+<rect x="548" y="128" width="74" height="44" rx="8" style="fill:var(--card);stroke:var(--line)"/><text x="585" y="155" style="fill:var(--text)">E7</text>
+<rect x="632" y="128" width="74" height="44" rx="8" style="fill:var(--card);stroke:var(--line)"/><text x="669" y="155" style="fill:var(--text)">E8</text>
+</g>
+<text x="545" y="198" style="fill:var(--muted);font-size:12.5px">chuyên khoa (chuyên gia định tuyến): token này gặp E1 và E4</text>
+<rect x="760" y="80" width="120" height="56" rx="10" style="fill:var(--pri-soft);stroke:var(--pri);stroke-width:2"/><text x="820" y="105" style="fill:var(--pri-strong);font-weight:700">cộng kết quả</text><text x="820" y="124" style="fill:var(--muted);font-size:12px">theo tỉ lệ điểm</text>
+<line x1="142" y1="108" x2="176" y2="108" style="stroke:#8a9895;stroke-width:2" marker-end="url(#ar1)"/>
+<line x1="322" y1="108" x2="376" y2="98" style="stroke:#8a9895;stroke-width:2" marker-end="url(#ar1)"/>
+<line x1="712" y1="98" x2="756" y2="108" style="stroke:#8a9895;stroke-width:2" marker-end="url(#ar1)"/>
+</g>
+</svg>
+<p>Phòng khám có nhiều bác sĩ (tổng kiến thức lớn), nhưng mỗi bệnh nhân chỉ gặp bác sĩ đa khoa và <b>K</b> bác sĩ chuyên khoa (thời gian khám ngắn). Trong ngôn ngữ mô hình: <b>tổng tham số</b> lớn, <b>tham số dùng cho mỗi token</b> (active) nhỏ.</p>
+
+<h3>1.4 Bấm thử: router chọn chuyên gia</h3>
+<div class="widget" id="wPick">
+<h4>Mỗi loại token được gửi tới đâu?</h4>
+<p class="ex">Đồ chơi tự dựng: 8 chuyên gia, mỗi token chọn K = 2. Chọn một token, xem điểm router cho từng chuyên gia (cột), hai cột cao nhất (cam) là chuyên gia được gọi.</p>
+<div class="ctrl" id="pkBtns"></div>
+<div class="load" id="pkBars" style="height:120px"></div>
+<div class="loadlab"><span>E1</span><span>E2</span><span>E3</span><span>E4</span><span>E5</span><span>E6</span><span>E7</span><span>E8</span></div>
+<div class="out" id="pkOut"></div>
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="sec" id="base">
+<h2>2. Sáu khái niệm nền <span class="lv m">Phải nắm</span></h2>
+<div class="basics">
+  <div><b class="h">① Chuyên gia (expert)</b>Một FFN nhỏ, cùng kiểu với FFN gốc (paper dùng SwiGLU) nhưng hẹp hơn. Đầu vào và đầu ra cùng kích thước với FFN gốc, nên cắm vào được đúng chỗ cũ.<span class="why">Trong code: một <code>nn.Module</code> nhỏ, nằm trong <code>nn.ModuleList</code>.</span></div>
+  <div><b class="h">② Router</b>Một lớp tuyến tính nhỏ cho mỗi token một điểm với từng chuyên gia. LingBot dùng <b>sigmoid</b>: mỗi điểm nằm trong (0, 1), chấm <b>độc lập</b> từng chuyên gia, không bắt các chuyên gia "giành nhau" một tổng cố định như softmax.<span class="why">Trong code: <code>nn.Linear(d, N, bias=False)</code>, tính bằng float32.</span></div>
+  <div><b class="h">③ Top-K</b>Chọn K chuyên gia điểm cao nhất. Kết quả của K chuyên gia được cộng lại theo tỉ lệ điểm (tỉ lệ cộng lại bằng 1).<span class="why">Trong code: <code>torch.topk</code>.</span></div>
+  <div><b class="h">④ Chuyên gia chung (shared expert)</b>Một chuyên gia <b>luôn chạy</b> cho mọi token, giữ những gì token nào cũng cần. Nhờ vậy các chuyên gia còn lại không phải học lại phần chung.<span class="why">LingBot: đúng 1 chuyên gia chung.</span></div>
+  <div><b class="h">⑤ Tổng vs active</b><b>Tổng</b>: mọi tham số lưu trong mô hình (quyết định bộ nhớ). <b>Active</b>: tham số thật sự nhân với một token (quyết định phép tính). Ví dụ trong paper: "1.6B-A-0.6B" = tổng 1,6 tỉ, active 0,6 tỉ.<span class="why">Cùng active ≠ cùng độ trễ (mục 10).</span></div>
+  <div><b class="h">⑥ Cân bằng tải</b>Nếu router thích một chuyên gia, chuyên gia đó được học nhiều hơn, lại càng được chọn: "giàu càng giàu", các chuyên gia khác bỏ không (<b>sụp chuyên gia</b>). Cần một cơ chế giữ tải đều.<span class="why">LingBot: điểm cộng (bias), không dùng loss phụ.</span></div>
+</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="sec" id="paper">
+<h2>3. LingBot làm MoE thế nào: 6 bước <span class="lv m">Phải nắm</span></h2>
+<p>Toàn bộ phần MoE nằm ở <b>Sec 4.1, trang 7–9</b> của PDF (và khung "Detail of MoE Layer" trong Hình 1, trang 2). Mỗi bước dưới đây ghi chỗ đối chiếu.</p>
+
+<h3>Bước 1. Đặt MoE ở đâu</h3>
+<p>Chỉ trong <b>action expert</b>, ở <b>mọi khối</b>. VLM (paper gọi là "understanding expert") giữ nguyên. Theo Hình 1, các token đi qua action expert là <b>trạng thái robot</b> và <b>chunk hành động đang nhiễu</b>.</p>
+<p class="ex">Paper viết: "<i>we instantiate sparse MoE layers inside the action expert, which replace the feed-forward network (FFN)… all action-expert transformer blocks are equipped with MoE FFNs</i>".</p>
+
+<h3>Bước 2. Thay FFN bằng "1 chung + nhiều nhỏ"</h3>
+<p>Mỗi FFN cũ được thay bằng: 1 chuyên gia chung + N<sub>r</sub> chuyên gia định tuyến, tất cả <b>hẹp hơn</b> FFN gốc. Đầu vào là đúng thứ FFN cũ nhận (sau chuẩn hóa và AdaLN), đầu ra cộng vào đúng chỗ FFN cũ cộng. Từ bên ngoài, lớp mới trông y hệt FFN.</p>
+<div class="co note"><b class="t">Vì sao "hẹp hơn" vẫn đủ</b>Một FFN có h đơn vị ẩn bằng đúng <b>tổng</b> của nhiều FFN nhỏ, mỗi cái giữ một nhóm đơn vị ẩn (mình đã kiểm bằng số ở trang đọc hiểu chi tiết, mục 6.2). Nên "nhiều chuyên gia nhỏ cùng bật" chính là FFN cũ. MoE chỉ khác ở chỗ: mỗi token <b>chỉ bật vài cái</b>, và mỗi cái được học riêng.</div>
+
+<h3>Bước 3. Router chấm điểm</h3>
+<p>Với mỗi token: nhân với router ra N<sub>r</sub> con số, đưa qua sigmoid được N<sub>r</sub> điểm trong (0, 1). Tính bằng float32 (bf16 có thể làm tròn hai điểm sát nhau thành bằng nhau, làm việc chọn chập chờn).</p>
+
+<h3>Bước 4. Chọn K, trộn kết quả</h3>
+<p>Chọn K chuyên gia, chạy chúng, cộng kết quả theo tỉ lệ điểm, nhân thêm một hệ số λ, rồi cộng kết quả của chuyên gia chung.</p>
+<div class="co warn"><b class="t">Điểm tinh tế nhất của paper</b>Việc <b>chọn</b> dùng "điểm + điểm cộng xếp hàng" (s + b). Việc <b>trộn</b> dùng điểm thật s. Ví dụ: điểm thật [0,88; 0,73; 0,62; 0,27], K = 2. Không có điểm cộng: chọn E1, E2, tỉ lệ 0,55 / 0,45. Nếu E1 đang quá tải (b₁ = −0,5) và E3 đang vắng (b₃ = +0,3): chọn E3, E2, nhưng tỉ lệ vẫn tính từ điểm thật: 0,46 / 0,54. Điểm cộng đổi <i>ai được khám</i>, không đổi <i>kết quả được cộng theo tỉ lệ nào</i>.</div>
+
+<h3>Bước 5. Giữ tải đều bằng điểm cộng</h3>
+<p>Trong lúc huấn luyện, đếm xem mỗi chuyên gia nhận bao nhiêu token (cộng qua mọi GPU). Mỗi lần cập nhật: chuyên gia đông hơn trung bình bị trừ một lượng nhỏ cố định γ, vắng hơn được cộng γ. Điểm cộng <b>không học bằng gradient</b>, chỉ chỉnh theo luật này, nên không phải thêm loss phụ vào loss hành động.</p>
+<div class="widget" id="wBal">
+<h4>Bật / tắt điểm cộng, xem tải</h4>
+<p class="ex">Đồ chơi: 8 chuyên gia, K = 2, router cố tình thiên vị E1. Mỗi bấm = 1 lô 64 token rồi chỉnh điểm cộng một lần.</p>
+<div class="ctrl">
+  <label><input type="checkbox" id="blOn" checked> bật điểm cộng (γ = 0,01)</label>
+  <button class="b" type="button" id="blStep">+10 bước</button>
+  <button class="b o" type="button" id="blReset">Làm lại</button>
+</div>
+<div class="load" id="blLoad"></div>
+<div class="loadlab"><span>E1</span><span>E2</span><span>E3</span><span>E4</span><span>E5</span><span>E6</span><span>E7</span><span>E8</span></div>
+<div class="out" id="blOut"></div>
+<p class="ex">Thử: tắt điểm cộng, bấm vài lần: E1 vẫn nhận gần hết. Bật lên: sau vài chục bước tải đều ra.</p>
+</div>
+
+<h3>Bước 6. So với dense cùng phép tính</h3>
+<p>Paper so <b>dense 0,6 tỉ</b> với <b>MoE tổng 1,6 tỉ, active 0,6 tỉ</b>: cùng số phép tính mỗi token. MoE có loss huấn luyện và lỗi hành động trên tập kiểm tra thấp hơn ở cả 5 mốc từ 10 tới 50 nghìn bước (Hình 7, trang 9). Mục 4 nói rõ điều này chứng minh được gì.</p>
+
+<details class="more"><summary>Đối chiếu với công thức trong paper (Eq. 2–8)</summary>
+<div class="tw"><table class="t">
+<tr><th>Bước</th><th>Công thức</th><th>Bằng lời</th></tr>
+<tr><td>2, 4 · Eq. 2</td><td>\(m(u) = E^{(s)}(u) + \lambda\sum_{j\in\mathcal R(u)} g_j(u)\,E^{(r)}_j(u)\)</td><td>chung + λ × (tổng các chuyên gia được chọn, theo tỉ lệ)</td></tr>
+<tr><td>2 · Eq. 3</td><td>\(E(u) = W_\text{down}(\mathrm{SiLU}(W_\text{gate}u)\odot W_\text{up}u)\)</td><td>mỗi chuyên gia là một SwiGLU</td></tr>
+<tr><td>3 · Eq. 4–5</td><td>\(s_j = \mathrm{sigmoid}(u^\top e_j)\)</td><td>điểm của token cho chuyên gia j</td></tr>
+<tr><td>4 · Eq. 7</td><td>\(\mathcal R(u) = \mathrm{TopK}(s_j + b_j)\)</td><td>chọn bằng điểm + điểm cộng</td></tr>
+<tr><td>4 · Eq. 6</td><td>\(g_j = s_j / \sum_{k\in\mathcal R} s_k\)</td><td>tỉ lệ trộn bằng điểm thật</td></tr>
+<tr><td>5 · Eq. 8</td><td>\(b_j \leftarrow b_j - \gamma\,\mathrm{sign}(n_j - \bar n)\)</td><td>đông thì trừ γ, vắng thì cộng γ</td></tr>
+</table></div>
+<p class="ex">N<sub>r</sub>, K, λ, γ: paper không công bố giá trị.</p>
+</details>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="sec" id="proof">
+<h2>4. Paper chứng minh được gì <span class="lv m">Phải nắm</span></h2>
+<div class="tw"><table class="t">
+<tr><th>Kết quả</th><th>Đo cái gì</th><th>Có chứng minh riêng MoE?</th></tr>
+<tr><td><b>Hình 7</b> (trang 9)</td><td>Dense 0,6B vs MoE 1,6B-A-0,6B: loss huấn luyện, lỗi hành động trên dữ liệu GM-100 (so hành động dự đoán với hành động thật, <b>không chạy robot</b>). Ở 50k bước: ≈ 0,076 vs ≈ 0,090.</td><td class="keep">Có, nhưng chỉ offline, 1 lần chạy</td></tr>
+<tr><td><b>Bảng 5</b> (trang 12)</td><td>9 tác vụ hai tay trên 2 robot thật. LingBot 2.0 trung bình 66,2 / 34,4 (progress / thành công) trên Agilex, hơn π0.5 và bản 1.0.</td><td class="chg">Không: so cả hệ thống</td></tr>
+<tr><td><b>Bảng 6</b> (trang 13)</td><td>2 tác vụ di động dài hạn, hơn π0.5 ở cả 4 ô (15 lượt mỗi ô).</td><td class="chg">Không: so cả hệ thống</td></tr>
+</table></div>
+<div class="co crit"><b class="t">Điều này quan trọng cho công việc của bạn</b>Paper <b>không</b> cho biết MoE giúp robot thành công thêm bao nhiêu, không công bố N<sub>r</sub>, K, λ, γ, và không đo độ trễ hay bộ nhớ. Nếu nhóm muốn dùng MoE, chính nhóm sẽ phải trả lời những câu đó bằng thí nghiệm. Đó là Việc 3 (mục 8).</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="sec" id="map">
+<h2>5. Bản đồ: MoE chạm vào đâu trong codebase <span class="lv m">Phải nắm</span></h2>
+<p>Mình chưa biết nhóm dùng codebase nào, nên mô tả theo khuôn chung của một codebase VLA (kiểu openpi/π0, Isaac-GR00T, StarVLA/Qwen-VLA). Tên file và hàm thật sẽ khác.</p>
+<svg class="svgbox" viewBox="0 0 900 300" role="img" aria-label="Ba lớp code: mô hình, huấn luyện, suy luận và đánh giá; đánh dấu chỗ MoE chạm vào">
+<g style="font-size:14px">
+<rect x="20" y="20" width="270" height="250" rx="14" style="fill:var(--card);stroke:var(--line);stroke-width:2"/>
+<text x="155" y="48" text-anchor="middle" style="fill:var(--text);font-weight:800">Lớp 1 · Mô hình</text>
+<rect x="40" y="66" width="230" height="40" rx="8" style="fill:var(--code-bg)"/><text x="155" y="91" text-anchor="middle" style="fill:var(--text)">VLM: không đổi</text>
+<rect x="40" y="116" width="230" height="40" rx="8" style="fill:var(--code-bg)"/><text x="155" y="141" text-anchor="middle" style="fill:var(--text)">attention, AdaLN: không đổi</text>
+<rect x="40" y="166" width="230" height="84" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/><text x="155" y="192" text-anchor="middle" style="fill:var(--text)">FFN trong action expert</text><text x="155" y="214" text-anchor="middle" style="fill:var(--accent);font-weight:700">→ MoEFFN (Việc 2)</text><text x="155" y="236" text-anchor="middle" style="fill:var(--muted);font-size:12px">router, bias, chuyên gia</text>
+<rect x="315" y="20" width="270" height="250" rx="14" style="fill:var(--card);stroke:var(--line);stroke-width:2"/>
+<text x="450" y="48" text-anchor="middle" style="fill:var(--text);font-weight:800">Lớp 2 · Huấn luyện</text>
+<rect x="335" y="66" width="230" height="40" rx="8" style="fill:var(--code-bg)"/><text x="450" y="91" text-anchor="middle" style="fill:var(--text)">hàm loss: không đổi</text>
+<rect x="335" y="116" width="230" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/><text x="450" y="140" text-anchor="middle" style="fill:var(--text)">sau optimizer.step()</text><text x="450" y="161" text-anchor="middle" style="fill:var(--accent);font-weight:700">+ cập nhật bias, all-reduce tải</text>
+<rect x="335" y="184" width="230" height="66" rx="8" style="fill:var(--blue-soft);stroke:var(--blue);stroke-width:2"/><text x="450" y="208" text-anchor="middle" style="fill:var(--text)">nạp checkpoint</text><text x="450" y="230" text-anchor="middle" style="fill:var(--blue);font-weight:700">dense → MoE (Việc 4)</text>
+<rect x="610" y="20" width="270" height="250" rx="14" style="fill:var(--card);stroke:var(--line);stroke-width:2"/>
+<text x="745" y="48" text-anchor="middle" style="fill:var(--text);font-weight:800">Lớp 3 · Suy luận & đánh giá</text>
+<rect x="630" y="66" width="230" height="40" rx="8" style="fill:var(--code-bg)"/><text x="745" y="91" text-anchor="middle" style="fill:var(--text)">vòng sinh hành động: không đổi</text>
+<rect x="630" y="116" width="230" height="58" rx="8" style="fill:var(--pri-soft);stroke:var(--pri);stroke-width:2"/><text x="745" y="140" text-anchor="middle" style="fill:var(--text)">log & đo</text><text x="745" y="161" text-anchor="middle" style="fill:var(--pri-strong);font-weight:700">tải, độ trễ, bộ nhớ (Việc 3)</text>
+<rect x="630" y="184" width="230" height="66" rx="8" style="fill:var(--pri-soft);stroke:var(--pri);stroke-width:2"/><text x="745" y="208" text-anchor="middle" style="fill:var(--text)">eval sim / robot</text><text x="745" y="230" text-anchor="middle" style="fill:var(--pri-strong);font-weight:700">so dense vs MoE (mục 10)</text>
+<text x="450" y="292" text-anchor="middle" style="fill:var(--muted);font-size:12.5px">Cam: phải sửa · xanh dương: chỉ khi khởi tạo từ dense · xanh ngọc: thêm đo đạc</text>
+</g>
+</svg>
+<div class="co note"><b class="t">So với RTC</b>RTC sửa vòng sinh hành động và vòng chạy robot, không đụng kiến trúc. MoE thì ngược lại: <b>đổi kiến trúc</b> (một lớp bên trong action expert), không đụng vòng sinh hành động hay hàm loss. Hai thứ ở hai tầng khác nhau nên dùng chung được; điều duy nhất phải để ý là độ trễ (mục 10).</div>
+<div class="co warn"><b class="t">Câu hỏi đầu tiên khi mở codebase: kiến trúc một chuỗi hay hai tháp?</b>
+<b>Hai tháp</b> (kiểu π0, và LingBot theo Hình 1): action expert có trọng số riêng, chỉ token phía hành động đi qua FFN của nó → thay FFN đó là đúng ý paper. <b>Một chuỗi</b> (kiểu Qwen-VLA): token VLM cũng nằm trong chuỗi của DiT → nếu thay FFN, router sẽ định tuyến cả token VLM. Không sai, nhưng là một lựa chọn khác paper, nên ghi rõ khi báo cáo.</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="sec" id="job1">
+<h2>6. Việc 1: đọc hiểu code MoE có sẵn <span class="lv m">Phải nắm</span></h2>
+<p>Dùng khi codebase đã có MoE (code của LingBot, hoặc nhóm đã cài). Mục tiêu: trả lời được 10 câu dưới đây. Cột "tìm bằng" là từ khóa để <code>grep</code>; đó là tên <b>thường gặp</b> trong các repo MoE (DeepSeek, Qwen-MoE…), không phải tên chắc chắn của LingBot.</p>
+<div class="tw"><table class="t">
+<tr><th>#</th><th>Câu hỏi</th><th>Tìm bằng</th><th>LingBot (theo paper)</th></tr>
+<tr><td>1</td><td>Lớp MoE nằm ở đâu, thay FFN nào?</td><td><code>MoE</code>, <code>experts</code>, <code>ModuleList</code>, <code>mlp</code></td><td>FFN mọi khối action expert</td></tr>
+<tr><td>2</td><td>Bao nhiêu chuyên gia, chọn mấy?</td><td><code>num_experts</code>, <code>n_routed_experts</code>, <code>top_k</code>, <code>num_experts_per_tok</code></td><td>N<sub>r</sub>, K: không công bố</td></tr>
+<tr><td>3</td><td>Có chuyên gia chung không?</td><td><code>shared_expert</code>, <code>n_shared_experts</code></td><td>1</td></tr>
+<tr><td>4</td><td>Router chấm điểm bằng gì?</td><td><code>sigmoid</code>, <code>softmax</code>, <code>scoring_func</code></td><td>sigmoid, float32</td></tr>
+<tr><td>5</td><td>Có chuẩn hóa trọng số trong top-K?</td><td><code>norm_topk_prob</code>, <code>/ sum</code></td><td>có (Eq. 6)</td></tr>
+<tr><td>6</td><td>Có bias cân bằng? Cập nhật ở đâu, bao lâu, tốc độ?</td><td><code>bias</code>, <code>correction</code>, <code>update_speed</code>, <code>register_buffer</code></td><td>có; γ, tần suất: không công bố</td></tr>
+<tr><td>7</td><td>Có loss phụ không?</td><td><code>aux_loss</code>, <code>balance_loss</code>, <code>z_loss</code></td><td>không</td></tr>
+<tr><td>8</td><td>Có giới hạn sức chứa, bỏ token?</td><td><code>capacity</code>, <code>drop</code></td><td>không nói</td></tr>
+<tr><td>9</td><td>Hệ số nhân phần định tuyến?</td><td><code>routed_scaling_factor</code>, <code>scale</code></td><td>λ: không công bố</td></tr>
+<tr><td>10</td><td>Token được gom/chia cho chuyên gia thế nào?</td><td><code>index_add</code>, <code>scatter</code>, <code>grouped_gemm</code>, <code>all_to_all</code>, <code>expert_parallel</code></td><td>không nói</td></tr>
+</table></div>
+
+<h3>Đi theo một token qua lớp MoE</h3>
+<div class="flow">
+  <div><b>1. Vào</b>vector u của token (đã qua chuẩn hóa + AdaLN)</div>
+  <div><b>2. Điểm</b>router → N<sub>r</sub> điểm sigmoid</div>
+  <div><b>3. Chọn</b>top-K của điểm + bias</div>
+  <div><b>4. Tỉ lệ</b>điểm thật của K cái, chia tổng</div>
+  <div><b>5. Chạy</b>K chuyên gia + chuyên gia chung</div>
+  <div><b>6. Cộng</b>chung + λ × tổng có tỉ lệ</div>
+  <div><b>7. Ra</b>cộng vào residual như FFN cũ</div>
+</div>
+<p>Khi đọc code, đặt một <code>breakpoint()</code> trong <code>forward</code> của lớp MoE, chạy một batch nhỏ, rồi in shape ở từng bước: u là (số token, d), điểm là (số token, N<sub>r</sub>), chỉ số chọn và tỉ lệ là (số token, K).</p>
+
+<h3>Nên log gì khi chạy code có sẵn</h3>
+<div class="tw"><table class="t">
+<tr><th>Số liệu</th><th>Bình thường</th><th>Đáng lo</th></tr>
+<tr><td>Tải lớn nhất / trung bình, mỗi lớp</td><td>khoảng 1–1,5 sau giai đoạn đầu</td><td>≥ 2 kéo dài, hoặc tăng dần</td></tr>
+<tr><td>Số chuyên gia không nhận token nào</td><td>0</td><td>&gt; 0 sau vài nghìn bước</td></tr>
+<tr><td>Khoảng giá trị của bias</td><td>nhỏ, ổn định</td><td>một chuyên gia bias trôi mãi một phía (router "chống" lại cân bằng)</td></tr>
+<tr><td>Điểm sigmoid trung bình</td><td>không dính 0 hay 1</td><td>gần 1 cho mọi chuyên gia (bão hòa, router không phân biệt)</td></tr>
+</table></div>
+<pre><code># gắn hook để lấy chỉ số chuyên gia đã chọn ở mọi lớp (dùng thuộc tính .last của lớp mẫu ở mục 7)
+def routing_report(model):
+    rows = []
+    for name, m in model.named_modules():
+        if isinstance(m, MoEFFN) and "idx" in m.last:
+            load = torch.bincount(m.last["idx"].flatten(), minlength=m.n).float()
+            rows.append((name, round((load.max() / load.mean()).item(), 2), int((load == 0).sum()),
+                         round(m.bias.min().item(), 3), round(m.bias.max().item(), 3)))
+    return rows   # (tên lớp, max/mean, số chuyên gia rảnh, bias min, bias max)</code></pre>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="sec" id="job2">
+<h2>7. Việc 2: tự thêm MoE vào action expert <span class="lv m">Phải nắm</span></h2>
+<p>Năm bước. Code là bản giản lược mình viết theo paper và <b>đã chạy</b> (PyTorch 2.14, CPU), không phải code của tác giả.</p>
+
+<h3>Bước 0. Điền 8 thông tin trước khi viết</h3>
+<div class="tw"><table class="t">
+<tr><th>#</th><th>Cần biết</th><th>Tìm bằng</th><th>Vì sao cần</th></tr>
+<tr><td>1</td><td>Class khối của action expert</td><td><code>DiTBlock</code>, <code>TransformerBlock</code>, <code>action_expert</code>, <code>gemma_expert</code></td><td>Chỗ sẽ thay</td></tr>
+<tr><td>2</td><td>Tên và kiểu lớp FFN</td><td><code>mlp</code>, <code>ffn</code>, <code>feed_forward</code>; SwiGLU (3 ma trận) hay GELU (2)</td><td>Chuyên gia nên cùng kiểu</td></tr>
+<tr><td>3</td><td>d (độ rộng) và h (chiều ẩn FFN)</td><td><code>hidden_size</code>, <code>intermediate_size</code>, <code>mlp_ratio</code></td><td>Tính cấu hình cùng active</td></tr>
+<tr><td>4</td><td>Số khối, có dùng chung trọng số không</td><td><code>num_layers</code>, <code>depth</code></td><td>Số lớp MoE</td></tr>
+<tr><td>5</td><td>Token nào qua action expert, bao nhiêu mỗi lần gọi</td><td>hàm <code>forward</code> của action expert</td><td>Một chuỗi hay hai tháp (mục 5); độ trễ (mục 10)</td></tr>
+<tr><td>6</td><td>Vòng huấn luyện, có hook/callback sau mỗi bước?</td><td><code>train_step</code>, <code>optimizer.step</code>, <code>callbacks</code></td><td>Chỗ cập nhật bias</td></tr>
+<tr><td>7</td><td>Nhiều GPU: DDP, FSDP, DeepSpeed?</td><td><code>DistributedDataParallel</code>, <code>FSDP</code>, <code>deepspeed</code></td><td>All-reduce tải; bọc lớp MoE</td></tr>
+<tr><td>8</td><td>Cách nạp checkpoint (strict?)</td><td><code>load_state_dict</code>, <code>strict</code></td><td>Nạp dense vào mô hình MoE (Việc 4)</td></tr>
+</table></div>
+
+<h3>Bước 1. Lớp MoE</h3>
+<pre><code>class SwiGLU(nn.Module):
+    def __init__(self, d, h):
+        super().__init__()
+        self.gate = nn.Linear(d, h, bias=False)
+        self.up = nn.Linear(d, h, bias=False)
+        self.down = nn.Linear(h, d, bias=False)
+    def forward(self, u):
+        return self.down(F.silu(self.gate(u)) * self.up(u))
+
+class MoEFFN(nn.Module):
+    """1 chuyên gia chung + Nr chuyên gia định tuyến, chọn K (LingBot-VLA 2.0, Sec 4.1)."""
+    def __init__(self, d, h_shared, h_routed, n_routed, top_k, scale=1.0, bias_speed=1e-3):
+        super().__init__()
+        self.shared = SwiGLU(d, h_shared) if h_shared > 0 else None
+        self.experts = nn.ModuleList([SwiGLU(d, h_routed) for _ in range(n_routed)])
+        self.router = nn.Linear(d, n_routed, bias=False)
+        nn.init.normal_(self.router.weight, std=d ** -0.5)
+        self.register_buffer("bias", torch.zeros(n_routed))   # điểm cộng: KHÔNG học bằng gradient
+        self.register_buffer("load", torch.zeros(n_routed))   # đếm token
+        self.n, self.k, self.scale, self.speed = n_routed, top_k, scale, bias_speed
+        self.last = {}
+
+    def route(self, u):
+        s = torch.sigmoid(F.linear(u.float(), self.router.weight.float()))   # điểm, float32
+        idx = torch.topk(s + self.bias, self.k, dim=-1).indices              # CHỌN: có điểm cộng
+        w = s.gather(-1, idx); w = w / w.sum(-1, keepdim=True)              # TRỘN: điểm thật
+        return s, idx, w
+
+    def forward(self, u):
+        shape = u.shape; u = u.reshape(-1, shape[-1])
+        s, idx, w = self.route(u)
+        out = torch.zeros_like(u)
+        for j, expert in enumerate(self.experts):                            # gom token theo chuyên gia
+            tok, slot = (idx == j).nonzero(as_tuple=True)
+            if tok.numel():
+                out.index_add_(0, tok, w[tok, slot, None].to(u.dtype) * expert(u[tok]))
+        if self.training:
+            self.load += torch.bincount(idx.flatten(), minlength=self.n).float()
+        self.last = {"idx": idx.detach(), "score": s.detach()}
+        y = self.scale * out
+        if self.shared is not None: y = y + self.shared(u)
+        return y.reshape(shape)
+
+    @torch.no_grad()
+    def update_bias(self, center=True):
+        load = self.load.clone()
+        if dist.is_available() and dist.is_initialized():
+            dist.all_reduce(load)                                  # cộng tải qua mọi GPU
+        self.bias -= self.speed * torch.sign(load - load.mean())   # đông: trừ, vắng: cộng
+        if center: self.bias -= self.bias.mean()                   # không đổi top-K
+        stats = {"max_over_mean": (load.max() / load.mean().clamp_min(1)).item(),
+                 "unused": int((load == 0).sum())}
+        self.load.zero_()
+        return stats</code></pre>
+<p class="ex">Vòng <code>for</code> qua chuyên gia là để dễ đọc; khi chạy thật nên thay bằng gom token một lần (sort theo chỉ số chuyên gia) hoặc grouped GEMM.</p>
+
+<h3>Bước 2. Thay FFN, chỉ trong action expert</h3>
+<pre><code>def replace_ffn_with_moe(model, is_target, make_moe, init_from_dense=None):
+    replaced = []
+    for name, parent in list(model.named_modules()):
+        for child_name, child in list(parent.named_children()):
+            full = f"{name}.{child_name}" if name else child_name
+            if is_target(full, child):
+                moe = make_moe()
+                if init_from_dense is not None: init_from_dense(child, moe)   # Việc 4
+                setattr(parent, child_name, moe); replaced.append(full)
+    return replaced
+
+# ví dụ: tên khối và tên FFN phải đổi theo codebase thật
+replaced = replace_ffn_with_moe(
+    model,
+    is_target=lambda n, m: n.startswith("action_expert") and n.endswith(".ffn"),
+    make_moe=lambda: MoEFFN(d=1024, h_shared=1024, h_routed=512, n_routed=32, top_k=6))
+print(replaced)   # luôn in ra để chắc KHÔNG thay nhầm FFN của VLM</code></pre>
+
+<h3>Bước 3. Cập nhật bias trong vòng huấn luyện</h3>
+<pre><code>class MoEBalancer:
+    def __init__(self, model, every=1):
+        self.layers = [m for m in model.modules() if isinstance(m, MoEFFN)]
+        self.every, self.step = every, 0
+    def __call__(self):
+        self.step += 1
+        if self.step % self.every: return None
+        return [l.update_bias() for l in self.layers]
+
+balancer = MoEBalancer(model, every=1)
+for batch in loader:
+    for micro in split(batch):              # gradient accumulation: tải cộng dồn qua micro-batch
+        loss = model.compute_loss(micro)    # loss KHÔNG đổi
+        loss.backward()
+    optimizer.step(); optimizer.zero_grad()
+    stats = balancer()                      # Eq. 8, sau optimizer.step()
+    if stats: log({"moe/max_over_mean_l0": stats[0]["max_over_mean"]})</code></pre>
+
+<h3>Bước 4. Những chỗ dễ quên</h3>
+<ul>
+<li><b>Bias là buffer</b>: không nằm trong <code>model.parameters()</code> → không vào optimizer, không bị weight decay, nhưng <b>có</b> trong <code>state_dict</code> → được lưu và nạp cùng checkpoint.</li>
+<li><b>Router float32</b> kể cả khi huấn luyện bf16 / autocast: code ép <code>u.float()</code> và <code>weight.float()</code>.</li>
+<li><b>Nhiều GPU</b>: mỗi GPU đếm tải trên phần dữ liệu của nó; <code>all_reduce</code> trước khi cập nhật để mọi GPU có cùng bias. Nếu dùng FSDP, cân nhắc bọc mỗi lớp MoE thành một đơn vị.</li>
+<li><b>Eval</b>: gọi <code>model.eval()</code> để không đếm tải; bias đứng yên lúc suy luận.</li>
+</ul>
+
+<h3>Kết quả chạy thử (đồ chơi: 4 khối action expert, d = 64)</h3>
+<div class="wout">T1 thay: ['action_expert.0.ffn', 'action_expert.1.ffn', 'action_expert.2.ffn', 'action_expert.3.ffn'] | vlm còn SwiGLU: True | out (2, 17, 64)
+T2 bias trong optimizer: False | trong state_dict: 4 lớp
+T3 grad router khác 0: True | grad bias: None
+T4 stats lớp 0: {'max_over_mean': 1.49, 'unused': 0}
+    cộng hằng số vào bias, top-K giữ nguyên: True</div>
+<p class="ex">T1: chỉ 4 FFN của action expert bị thay, FFN của VLM giữ nguyên, hình dạng ra không đổi. T2: bias ở ngoài optimizer nhưng trong checkpoint. T3: router nhận gradient, bias thì không. T4: balancer chạy; cộng cùng một số vào mọi bias không đổi lựa chọn (nên căn giữa là an toàn).</p>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="sec" id="job3">
+<h2>8. Việc 3: thí nghiệm dense vs MoE <span class="lv m">Phải nắm</span></h2>
+<p>Paper chưa trả lời "MoE giúp robot bao nhiêu" (mục 4), nên đây rất có thể là việc nhóm cần. Câu hỏi thí nghiệm: <b>với cùng phép tính mỗi token, MoE có tốt hơn dense không, và trả giá gì?</b></p>
+
+<h3>8.1 Năm nguyên tắc để so sánh công bằng</h3>
+<ol class="steps">
+<li><b>Cùng tham số active</b>: chọn h<sub>s</sub> + K·h<sub>r</sub> ≈ h của FFN dense (dùng máy tính dưới). Đây là cách paper làm ở Hình 7.</li>
+<li><b>Cùng mọi thứ khác</b>: dữ liệu và thứ tự dữ liệu, số bước, batch, lịch learning rate, VLM, checkpoint khởi đầu.</li>
+<li><b>Nhiều seed</b>: ít nhất 2–3 seed mỗi cấu hình. Paper chỉ có 1 lần chạy; đừng lặp lại điểm yếu đó.</li>
+<li><b>Thêm một dense cùng tổng tham số</b> nếu đủ tài nguyên: để biết lợi thế đến từ "chia" hay chỉ từ "nhiều tham số".</li>
+<li><b>Đo cả cái giá</b>: độ trễ batch 1, bộ nhớ GPU, tốc độ huấn luyện, không chỉ độ chính xác.</li>
+</ol>
+<div class="widget" id="wParam">
+<h4>Chọn cấu hình MoE cùng active với dense</h4>
+<p class="ex">Số tự đặt để minh họa; điền d, h thật của codebase.</p>
+<div class="ctrl">
+  <label>d <select id="pmD"><option>512</option><option selected>1024</option><option>2048</option></select></label>
+  <label>h dense <select id="pmH"><option>2048</option><option selected>4096</option><option>8192</option></select></label>
+  <label>h<sub>s</sub> <input type="range" id="pmHs" min="256" max="4096" step="256" value="1024"> <b id="pmHsv"></b></label>
+  <label>h<sub>r</sub> <input type="range" id="pmHr" min="128" max="4096" step="128" value="512"> <b id="pmHrv"></b></label>
+  <label>N<sub>r</sub> <input type="range" id="pmN" min="2" max="64" step="1" value="32"> <b id="pmNv"></b></label>
+  <label>K <input type="range" id="pmK" min="1" max="16" step="1" value="6"> <b id="pmKv"></b></label>
+</div>
+<div class="out" id="pmOut"></div>
+</div>
+
+<h3>8.2 Các lượt chạy nên có</h3>
+<div class="tw"><table class="t">
+<tr><th>Lượt</th><th>Cấu hình</th><th>Trả lời câu hỏi</th><th>Ưu tiên</th></tr>
+<tr><td>R0</td><td>Dense gốc</td><td>Mốc so sánh</td><td class="keep">bắt buộc</td></tr>
+<tr><td>R1</td><td>MoE cùng active, có bias (đúng paper)</td><td>MoE có giúp không?</td><td class="keep">bắt buộc</td></tr>
+<tr><td>R2</td><td>Dense cùng tổng tham số với R1</td><td>Giúp do "chia" hay do "nhiều"?</td><td class="chg">nên có</td></tr>
+<tr><td>R3</td><td>R1 nhưng tắt bias (γ = 0)</td><td>Cân bằng tải có cần không?</td><td class="chg">nên có</td></tr>
+<tr><td>R4</td><td>R1 nhưng bỏ chuyên gia chung</td><td>Chuyên gia chung có tác dụng không?</td><td class="unk">nếu dư</td></tr>
+<tr><td>R5</td><td>R1 với router softmax</td><td>Sigmoid có quan trọng không?</td><td class="unk">nếu dư</td></tr>
+</table></div>
+
+<h3>8.3 Đo những gì</h3>
+<div class="tw"><table class="t">
+<tr><th>Nhóm</th><th>Số liệu</th><th>Ghi chú</th></tr>
+<tr><td>Học</td><td>Loss huấn luyện; lỗi hành động trên tập validation (offline)</td><td>Giống Hình 7; rẻ, chạy được sớm</td></tr>
+<tr><td>Kết quả</td><td>Tỉ lệ thành công trong mô phỏng hoặc trên robot (mục 10)</td><td>Thứ paper thiếu; quan trọng nhất</td></tr>
+<tr><td>MoE</td><td>Tải max/mean mỗi lớp; số chuyên gia rảnh; bias min/max</td><td>Mục 6</td></tr>
+<tr><td>Chuyên hóa</td><td>Với mỗi robot / tác vụ: tỉ lệ token đi vào từng chuyên gia</td><td>Paper không có; rất đáng làm</td></tr>
+<tr><td>Cái giá</td><td>Độ trễ một lần gọi action expert ở batch 1; bộ nhớ GPU; số bước/giây khi huấn luyện</td><td>Mục 10</td></tr>
+</table></div>
+
+<h3>8.4 Kết quả mẫu trên đồ chơi</h3>
+<p>Để thấy thí nghiệm trông thế nào, mình đã chạy R0, R1, R2 trên một bài đồ chơi "8 robot" (mỗi robot một ánh xạ riêng, 1.500 bước, 3 seed). Sai số validation (thấp là tốt):</p>
+<div class="tw"><table class="t">
+<tr><th>Lượt</th><th class="num">Tham số active</th><th class="num">Seed 0 / 1 / 2</th><th class="num">Trung bình</th></tr>
+<tr><td>R0 dense</td><td class="num">36.864</td><td class="num">0,214 / 0,213 / 0,207</td><td class="num">0,211</td></tr>
+<tr><td>R2 dense cùng tổng</td><td class="num">157.632</td><td class="num">0,208 / 0,213 / 0,204</td><td class="num">0,208</td></tr>
+<tr class="hl"><td>R1 MoE (N<sub>r</sub> = 16, K = 3)</td><td class="num">37.888</td><td class="num">0,185 / 0,182 / 0,177</td><td class="num">0,181</td></tr>
+</table></div>
+<p class="ex">Cách đọc: MoE thấp hơn dense ≈ 14% ở cả 3 seed (nhất quán, nên đáng tin hơn một lần chạy). Dense to gấp 4 lần gần như không hơn dense nhỏ, nên lợi thế ở đây đến từ việc chia, không từ số lượng. Đây là đồ chơi; trên dữ liệu robot thật kết quả có thể khác.</p>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="sec" id="job4">
+<h2>9. Việc 4: chuyển checkpoint dense sang MoE <span class="lv s">Nên biết</span></h2>
+<div class="co warn"><b class="t">Phần này ngoài paper</b>Paper không nói LingBot khởi tạo MoE thế nào (học từ đầu hay từ dense). Ba cách dưới là kỹ thuật chung (cách B có tên "sparse upcycling" trong tài liệu MoE). Mình kiểm cả ba bằng code.</div>
+<p>Tình huống: nhóm đã có một action expert dense huấn luyện tốt, muốn chuyển sang MoE mà không học lại từ đầu. Mục tiêu khởi tạo: <b>lúc vừa chuyển, đầu ra MoE giống hệt dense</b>, để mô hình không "quên" rồi mới fine-tune tiếp.</p>
+<div class="opt3">
+  <div><h4>A. Chép vào chuyên gia chung</h4><span class="tag">khớp tuyệt đối</span><p>Chuyên gia chung = bản sao FFN dense. Ma trận ra (W<sub>down</sub>) của mọi chuyên gia định tuyến = 0, nên lúc đầu chúng không đóng góp gì. Chúng học dần phần "bổ sung".</p><p class="ex"><b>Giá</b>: chuyên gia chung to bằng FFN cũ → active tăng (đồ chơi: 74k so với 49k).</p></div>
+  <div><h4>B. Chép vào mọi chuyên gia</h4><span class="tag">khớp tuyệt đối</span><p>Mỗi chuyên gia định tuyến = một bản sao FFN dense, không có chuyên gia chung, λ = 1. Vì tỉ lệ trộn cộng lại bằng 1, đầu ra = đúng dense. Huấn luyện tiếp làm các bản sao tách dần.</p><p class="ex"><b>Giá</b>: active = K lần dense (đồ chơi: 99k), tổng = N<sub>r</sub> lần.</p></div>
+  <div><h4>C. Cắt lát FFN</h4><span class="tag o">giữ đúng active</span><p>Chia các đơn vị ẩn của FFN dense: một phần làm chuyên gia chung, phần còn lại cắt thành N<sub>r</sub> lát. Chỉ khớp dense khi bật đủ mọi lát (K = N<sub>r</sub>).</p><p class="ex"><b>Giá</b>: với K nhỏ, lúc đầu lệch nhiều (đồ chơi: 63% khi K = 4/8, 77% khi K = 2/8) → cần fine-tune lâu hơn.</p></div>
+</div>
+<pre><code>@torch.no_grad()
+def init_copy_shared(dense, moe):          # cách A (cần h_shared = h_dense)
+    moe.shared.load_state_dict(dense.state_dict())
+    for e in moe.experts: e.down.weight.zero_()
+
+@torch.no_grad()
+def init_upcycle_copies(dense, moe):       # cách B (cần h_routed = h_dense, không shared, scale = 1)
+    for e in moe.experts: e.load_state_dict(dense.state_dict())
+
+# dùng cùng hàm thay FFN ở mục 7: FFN cũ được truyền vào init_from_dense trước khi bị thay
+replace_ffn_with_moe(model, is_target, make_moe, init_from_dense=init_copy_shared)</code></pre>
+<div class="wout">T5 cách A sai khác: 0.0 | cách B: 5.96e-08
+    cách C K=8/8: sai khác tương đối 0.000
+    cách C K=4/8: sai khác tương đối 0.631
+    cách C K=2/8: sai khác tương đối 0.765
+    tham số active: dense 49152 | A 74240 | B 98816 | C (K=2) 22016</div>
+<h3>Quy trình</h3>
+<ol class="steps">
+<li>Nạp checkpoint dense vào mô hình dense như bình thường.</li>
+<li>Gọi <code>replace_ffn_with_moe(..., init_from_dense=...)</code>; in danh sách lớp đã thay.</li>
+<li><b>Kiểm</b>: chạy một batch qua mô hình trước và sau khi thay; với cách A, B sai khác phải ≈ 0. Nếu không, có lớp bị bỏ sót hoặc chép sai.</li>
+<li>Fine-tune với learning rate có warmup; theo dõi tải từ những bước đầu (với cách B, router lúc đầu gần như ngẫu nhiên giữa các bản sao giống nhau, bias giúp chia đều).</li>
+<li>Lưu checkpoint MoE mới; lần sau nạp thẳng, không cần bước này.</li>
+</ol>
+<div class="co note"><b class="t">Gợi ý chọn</b>Muốn nhanh có mô hình chạy được, không tụt chất lượng: A hoặc B. Muốn so với dense đúng kiểu paper (cùng active): C hoặc huấn luyện MoE từ đầu, và chấp nhận fine-tune lâu hơn.</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sec" id="eval">
+<h2>10. Đánh giá: mô phỏng và robot thật <span class="lv s">Nên biết</span></h2>
+<p>Mình chưa biết nhóm đánh giá ở đâu, nên viết cả hai. Vòng đánh giá không cần sửa cho MoE (lớp MoE nằm trong mô hình); chỉ cần đo thêm.</p>
+<div class="two">
+<div class="co note"><b class="t">Trong mô phỏng (LIBERO, RoboCasa…)</b>
+<ul>
+<li>Dùng <b>cùng</b> danh sách tác vụ, cùng số episode, cùng seed môi trường cho dense và MoE.</li>
+<li>Báo tỉ lệ thành công kèm số episode (ví dụ 50 mỗi tác vụ) và độ lệch giữa các seed huấn luyện.</li>
+<li>Độ trễ ít quan trọng (mô phỏng thường chờ mô hình), nhưng vẫn ghi thời gian mỗi lần gọi.</li>
+</ul></div>
+<div class="co warn"><b class="t">Trên robot thật</b>
+<ul>
+<li>Cùng tác vụ, cùng vị trí đầu, xen kẽ dense và MoE để tránh lệch do thời gian (ánh sáng, pin).</li>
+<li><b>Độ trễ là chính</b>: nếu dùng RTC, độ trễ quyết định d.</li>
+<li><b>Bộ nhớ</b>: MoE phải giữ đủ tổng tham số trên GPU của robot.</li>
+</ul></div>
+</div>
+
+<h3>Vì sao "cùng phép tính" chưa chắc "cùng độ trễ"</h3>
+<p>Khi huấn luyện, mỗi lô có hàng nghìn token, mọi chuyên gia đều bận, nên MoE rẻ đúng như tính. Khi robot chạy, mỗi lần gọi chỉ có vài chục token (trạng thái + chunk), nhưng chúng tỏa ra gần như <b>mọi</b> chuyên gia, nên GPU vẫn phải đọc gần đủ tổng tham số từ bộ nhớ, cộng thêm chi phí gom/chia token.</p>
+<div class="widget" id="wRead">
+<h4>Một lần gọi chạm bao nhiêu chuyên gia?</h4>
+<p class="ex">Giả định (của mình, không có trong paper): router chọn đều. Số chuyên gia bị chạm trung bình = N<sub>r</sub> × [1 − (1 − K/N<sub>r</sub>)<sup>T</sup>], T = số token.</p>
+<div class="ctrl">
+  <label>N<sub>r</sub> <input type="range" id="rdN" min="4" max="64" step="4" value="32"> <b id="rdNv"></b></label>
+  <label>K <input type="range" id="rdK" min="1" max="8" step="1" value="4"> <b id="rdKv"></b></label>
+  <label>T token <input type="range" id="rdT" min="1" max="64" step="1" value="17"> <b id="rdTv"></b></label>
+</div>
+<div class="out" id="rdOut"></div>
+</div>
+<pre><code>@torch.no_grad()
+def latency_ms(module, x, reps=50, warm=10):
+    for _ in range(warm): module(x)
+    if x.is_cuda: torch.cuda.synchronize()
+    t = time.perf_counter()
+    for _ in range(reps): module(x)
+    if x.is_cuda: torch.cuda.synchronize()        # thiếu dòng này thì số đo trên GPU là sai
+    return 1000 * (time.perf_counter() - t) / reps
+
+tok = torch.randn(1, 17, d, device="cuda")       # batch 1, đúng số token một lần gọi thật
+print(latency_ms(dense_block, tok), latency_ms(moe_block, tok))
+print(torch.cuda.max_memory_allocated() / 2**30, "GB")</code></pre>
+<div class="wout">T6 latency CPU: dense 0.090 ms | moe 0.785 ms
+    số chuyên gia bị chạm trong 1 lần gọi: 8 / 8</div>
+<p class="ex">Số đo trên CPU của đồ chơi (vòng <code>for</code> chưa tối ưu), chỉ để minh họa: cùng phép tính nhưng MoE chậm hơn gần 9 lần vì chi phí chia token, và 17 token đã chạm cả 8 chuyên gia. Trên GPU với code tối ưu chênh lệch sẽ nhỏ hơn nhiều, nhưng phải <b>đo thật</b>, không suy từ số tham số active.</p>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="sec" id="check">
+<h2>11. Kiểm tra đã cài đúng <span class="lv m">Phải nắm</span></h2>
+<p>Chạy những kiểm tra này trước khi huấn luyện dài. Mỗi cái mất vài giây.</p>
+<div class="chk" id="chk">
+  <label><input type="checkbox" data-k="t1"><span><b>Đúng chỗ</b>: in danh sách lớp đã thay; chỉ có FFN của action expert, không có FFN của VLM (T1).</span></label>
+  <label><input type="checkbox" data-k="t2"><span><b>Hình dạng</b>: đầu ra mô hình trước và sau khi thay cùng shape (T1).</span></label>
+  <label><input type="checkbox" data-k="t3"><span><b>Bias ngoài optimizer, trong checkpoint</b> (T2). Lưu rồi nạp lại checkpoint: bias giữ nguyên giá trị.</span></label>
+  <label><input type="checkbox" data-k="t4"><span><b>Gradient</b>: router và chuyên gia được chọn có gradient khác 0; bias không có gradient (T3).</span></label>
+  <label><input type="checkbox" data-k="t5"><span><b>Căn giữa an toàn</b>: cộng một hằng số vào bias không đổi top-K (T4).</span></label>
+  <label><input type="checkbox" data-k="t6"><span><b>Cân bằng chạy</b>: cố ý làm lệch router, bật bias, sau vài chục bước max/mean giảm về gần 1; tắt bias thì không giảm.</span></label>
+  <label><input type="checkbox" data-k="t7"><span><b>Khớp dense khi khởi tạo</b> (nếu dùng Việc 4 cách A/B): sai khác ≈ 0 (T5).</span></label>
+  <label><input type="checkbox" data-k="t8"><span><b>K = N<sub>r</sub></b>: với cách C và mọi lát bật, MoE phải bằng đúng FFN dense (T5, K = 8/8).</span></label>
+  <label><input type="checkbox" data-k="t9"><span><b>Nhiều GPU</b>: sau một lần cập nhật, bias trên mọi GPU giống hệt nhau (in tổng của bias trên từng rank).</span></label>
+  <label><input type="checkbox" data-k="t10"><span><b>Eval không đếm tải</b>: sau <code>model.eval()</code>, chạy suy luận, bộ đếm tải vẫn bằng 0.</span></label>
+</div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="sec" id="bugs">
+<h2>12. Lỗi hay gặp <span class="lv m">Phải nắm</span></h2>
+<div class="tw"><table class="t">
+<tr><th>Triệu chứng</th><th>Nguyên nhân hay gặp</th><th>Cách sửa</th></tr>
+<tr><td>Một chuyên gia nhận gần hết token</td><td>Quên gọi cập nhật bias; γ quá nhỏ; gọi khi đang <code>eval()</code></td><td>Kiểm hook sau <code>optimizer.step()</code>; log max/mean</td></tr>
+<tr><td>Tải dao động mạnh, không ổn định</td><td>γ quá lớn hoặc cập nhật quá thường với batch nhỏ</td><td>Giảm γ hoặc cập nhật mỗi vài bước</td></tr>
+<tr><td>Bias khác nhau giữa các GPU</td><td>Quên <code>all_reduce</code> bộ đếm</td><td>All-reduce trước khi cập nhật</td></tr>
+<tr><td>Bias bị weight decay hoặc học bằng gradient</td><td>Khai báo bias là <code>nn.Parameter</code></td><td>Dùng <code>register_buffer</code></td></tr>
+<tr><td>Đầu ra mô hình méo khi cân bằng</td><td>Tính tỉ lệ trộn từ s + b thay vì s</td><td>Tỉ lệ trộn chỉ dùng s (Eq. 6)</td></tr>
+<tr><td>Kết quả chọn chuyên gia khác giữa hai lần chạy giống nhau</td><td>Router tính bf16, các điểm sát nhau bị làm tròn</td><td>Ép float32 cho router</td></tr>
+<tr><td>Nạp checkpoint báo thiếu/thừa khóa</td><td>Checkpoint dense không có router, bias, experts</td><td>Nạp dense trước rồi mới thay (Việc 4); hoặc <code>strict=False</code> và in danh sách khóa thiếu</td></tr>
+<tr><td>FFN của VLM cũng bị thay</td><td>Điều kiện chọn lớp quá rộng (chỉ khớp tên "mlp")</td><td>Lọc theo đường dẫn module của action expert; in danh sách đã thay</td></tr>
+<tr><td>MoE "cùng active" nhưng chạy robot chậm hơn</td><td>Batch 1 chạm mọi chuyên gia; vòng for qua chuyên gia; đọc bộ nhớ</td><td>Đo thật; gom token, grouped GEMM; cân nhắc N<sub>r</sub> nhỏ hơn</td></tr>
+<tr><td>Hết bộ nhớ GPU khi huấn luyện</td><td>Tổng tham số + trạng thái optimizer tăng theo N<sub>r</sub></td><td>Giảm N<sub>r</sub> hoặc h<sub>r</sub>; FSDP; expert parallel</td></tr>
+<tr><td>So sánh dense vs MoE không thuyết phục</td><td>Khác active, khác số bước, 1 seed</td><td>Theo 5 nguyên tắc ở mục 8.1</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="sec" id="plan">
+<h2>13. Kế hoạch làm việc & câu hỏi cho nhóm <span class="lv m">Phải nắm</span></h2>
+<h3>Thứ tự làm đề xuất</h3>
+<ol class="steps">
+<li><b>Đọc codebase</b> (nửa ngày): điền 8 thông tin ở mục 7 bước 0; xác định một chuỗi hay hai tháp.</li>
+<li><b>Chạy code mẫu trên trang</b> (1 giờ): đổi tham số, đoán trước kết quả, để chắc hiểu cơ chế.</li>
+<li><b>Cài MoE vào một nhánh riêng</b> (1–2 ngày): bước 1–4 ở mục 7; chạy đủ 10 kiểm tra ở mục 11.</li>
+<li><b>Đo cái giá trước</b> (nửa ngày): độ trễ batch 1, bộ nhớ, tốc độ huấn luyện của dense và MoE chưa huấn luyện.</li>
+<li><b>Thí nghiệm nhỏ</b>: R0 vs R1 trên một phần dữ liệu, ít bước, 2 seed; xem loss, lỗi validation, tải.</li>
+<li><b>Nếu có lợi</b>: thêm R2, R3; chạy dài; đánh giá trong mô phỏng / robot (mục 10).</li>
+<li><b>Nếu nhóm có checkpoint dense tốt</b>: thử Việc 4 (cách A hoặc B) thay vì học từ đầu.</li>
+</ol>
+<h3>Câu hỏi nên hỏi mentor hoặc nhóm</h3>
+<ul>
+<li>Codebase nào? Kiến trúc một chuỗi (kiểu Qwen-VLA) hay hai tháp (kiểu π0)?</li>
+<li>Nhóm muốn MoE để pretrain trên nhiều robot, hay để fine-tune một robot? (MoE có lý nhất khi dữ liệu dị chủng.)</li>
+<li>Có checkpoint dense nào cần giữ không, hay được huấn luyện từ đầu?</li>
+<li>Bao nhiêu GPU cho thí nghiệm? Có dùng FSDP / DeepSpeed không?</li>
+<li>Đánh giá ở mô phỏng nào, hay robot thật? Ngân sách độ trễ và bộ nhớ trên máy của robot là bao nhiêu?</li>
+<li>Có định dùng cùng RTC không? (Nếu có, độ trễ của MoE phải đo sớm.)</li>
+<li>Có truy cập được repo <code>github.com/robbyant/lingbot-vla-v2</code> để lấy N<sub>r</sub>, K, λ, γ thật không?</li>
+</ul>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="sec" id="quiz">
+<h2>14. Tự kiểm tra <span class="lv s">Nên biết</span></h2>
+<details class="q"><summary>1. MoE thay phần nào của mô hình, phần nào giữ nguyên?</summary>Thay lớp FFN trong mọi khối của action expert. Giữ nguyên VLM, attention, AdaLN, residual, hàm loss, vòng sinh hành động.</details>
+<details class="q"><summary>2. Vì sao chọn chuyên gia bằng "điểm + điểm cộng" nhưng trộn bằng "điểm thật"?</summary>Điểm cộng chỉ để chia đều token (luật giao thông). Nếu dùng nó để trộn, đầu ra mô hình bị méo theo chuyện cân bằng tải, không còn phản ánh độ hợp thật.</details>
+<details class="q"><summary>3. Bias nên khai báo thế nào trong PyTorch, và vì sao?</summary><code>register_buffer</code>: không học bằng gradient, không vào optimizer, nhưng được lưu trong checkpoint.</details>
+<details class="q"><summary>4. Khi nhiều GPU, cần thêm gì ở bước cập nhật bias?</summary>All-reduce bộ đếm tải trước khi cập nhật, để mọi GPU có cùng bias.</details>
+<details class="q"><summary>5. Thí nghiệm "dense 0,6B vs MoE 1,6B" của nhóm bạn cần thêm gì so với paper?</summary>Nhiều seed; tỉ lệ thành công thật (mô phỏng hoặc robot); dense cùng tổng tham số; đo độ trễ và bộ nhớ.</details>
+<details class="q"><summary>6. Bạn có checkpoint dense tốt và muốn chuyển sang MoE mà lúc đầu không tụt chất lượng. Chọn cách nào?</summary>Cách A (chép vào chuyên gia chung, W<sub>down</sub> của chuyên gia định tuyến = 0) hoặc B (chép vào mọi chuyên gia). Cả hai khớp dense tuyệt đối lúc đầu; giá là active tăng.</details>
+<details class="q"><summary>7. Robot chạy batch 1 với 17 token, N<sub>r</sub> = 32, K = 4. Vì sao MoE có thể chậm hơn dense cùng active?</summary>17 token chạm khoảng 29/32 chuyên gia, nên phải đọc gần đủ tổng tham số từ bộ nhớ, cộng chi phí gom/chia token. Phải đo thật.</details>
+</section>
+
+<!-- ============ 15 ============ -->
+<section class="sec" id="sources">
+<h2>15. Nguồn <span class="lv k">Đọc lướt</span></h2>
+<ul>
+<li>Wu, Wang và cs. <i>From Foundation to Application: Improving VLA Models in Practice</i> (LingBot-VLA 2.0). arXiv 2607.06403. PDF: <code>Docs/Moe.pdf</code>. Phần MoE: Sec 2.2 (trang 4), Sec 4.1 (trang 7–9), Hình 1 (trang 2), Hình 7 (trang 9); kết quả: Bảng 5–6 (trang 12–13).</li>
+<li>DeepSeek-V3 Technical Report (tham chiếu [19] của paper): router sigmoid, cân bằng bằng bias không cần loss phụ.</li>
+<li>"Sparse upcycling" (cách B ở mục 9) là kỹ thuật chung trong tài liệu MoE, không có trong paper LingBot.</li>
+<li>Trang chi tiết cùng thư mục: <a href="LingBot%20%C2%B7%20%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20paper.html">LingBot · Đọc hiểu paper</a> (công thức, ví dụ số, phản biện) và <a href="LingBot%20%C2%B7%20Slide%20tr%C3%ACnh%20b%C3%A0y.html">LingBot · Slide trình bày</a>.</li>
+<li>Trang áp dụng RTC: <a href="../RTC/RTC%20%C2%B7%20%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20%26%20%C3%A1p%20d%E1%BB%A5ng.html">RTC · Đọc hiểu &amp; áp dụng</a>.</li>
+<li>Code trên trang: mình tự viết theo paper và đã chạy (PyTorch 2.14, CPU); tên hàm tự đặt, không phải code của tác giả. Số trên robot thật chưa có.</li>
+</ul>
+</section>
+
+</main>
+</div>
+<footer>LingBot · Đọc hiểu &amp; áp dụng · viết cho Dương, 08/10/2026 · số liệu paper lấy từ PDF arXiv 2607.06403v1</footer>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function vn(x,d){if(!isFinite(x))return '∞';return (+x).toFixed(d===undefined?1:d).replace('-','−').replace('.',',');}
+function $(id){return document.getElementById(id);}
+function sigm(x){return 1/(1+Math.exp(-x));}
+function topk(a,k){return a.map(function(v,i){return [v,i];}).sort(function(p,q){return q[0]-p[0];}).slice(0,k).map(function(p){return p[1];});}
+
+/* checklist */
+(function(){var boxes=[].slice.call(document.querySelectorAll('#chk input')),saved={};
+ try{saved=JSON.parse(localStorage.getItem('lingbot-app-chk')||'{}');}catch(e){}
+ function upd(){boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);});}
+ boxes.forEach(function(b){b.checked=!!saved[b.dataset.k];b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem('lingbot-app-chk',JSON.stringify(saved));}catch(e){}upd();});});upd();})();
+
+/* toc spy */
+var links=[].slice.call(document.querySelectorAll('#toc a'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){var y=window.scrollY+120,idx=0;targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});links.forEach(function(a,i){a.classList.toggle('on',i===idx);});}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* 1.4 pick */
+(function(){
+  var R=rng(5);function rn(){var u=R()||1e-9,v=R();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  var D=6,N=8,i,j,e=[];for(j=0;j<N;j++){e.push([]);for(i=0;i<D;i++)e[j].push(rn()/Math.sqrt(D)*1.4);}
+  var types=[['Franka: khớp tay',[1.2,-0.6,0.3,0.9,-0.2,0.1]],['Unitree: ngón tay',[-0.9,1.1,0.8,-0.4,0.6,-0.7]],['Astribot: bánh xe',[0.2,0.4,-1.2,-0.3,1.0,0.9]],['Video người: cổ tay',[-0.5,-0.9,0.2,1.1,0.3,-1.0]]];
+  var box=$('pkBtns'),cur=0;
+  types.forEach(function(t,k){var b=document.createElement('button');b.type='button';b.className='b'+(k?' o':' on');b.textContent=t[0];b.addEventListener('click',function(){cur=k;draw();});box.appendChild(b);});
+  function draw(){
+    [].slice.call(box.children).forEach(function(b,k){b.className='b'+(k===cur?' on':' o');});
+    var x=types[cur][1],s=e.map(function(w){var z=0;for(var k=0;k<D;k++)z+=w[k]*x[k];return sigm(z);}),sel=topk(s,2),tot=s[sel[0]]+s[sel[1]];
+    $('pkBars').innerHTML=s.map(function(v,j){var on=sel.indexOf(j)>=0;return '<div style="height:'+(100*v)+'%;background:'+(on?'var(--accent)':'var(--grey)')+';opacity:'+(on?1:.45)+'"><span>'+vn(v,2)+'</span></div>';}).join('');
+    $('pkOut').innerHTML='Token "'+types[cur][0]+'" được gửi tới <b>E'+(sel[0]+1)+'</b> và <b>E'+(sel[1]+1)+'</b>, cộng thêm chuyên gia chung. Tỉ lệ trộn: '+vn(s[sel[0]]/tot,2)+' / '+vn(s[sel[1]]/tot,2)+' (điểm của hai chuyên gia chia cho tổng của chúng). Đổi loại token: router gửi tới chỗ khác.';
+  }
+  draw();
+})();
+
+/* 3 balance */
+(function(){
+  var R=rng(7);function rn(){var u=R()||1e-9,v=R();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  var D=6,N=8,G=4,mu=[],e=[],i,j;for(i=0;i<G;i++){mu.push([]);for(j=0;j<D;j++)mu[i].push(rn()*1.2);}
+  for(j=0;j<N;j++){e.push([]);for(i=0;i<D;i++)e[j].push(rn()/Math.sqrt(D)*0.8);}
+  var b,R2,step,load;
+  function rn2(){var u=R2()||1e-9,v=R2();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function lot(){var L=new Array(N).fill(0);for(var g=0;g<G;g++)for(var t=0;t<16;t++){var s=[];for(var jj=0;jj<N;jj++){var z=0;for(var k=0;k<D;k++)z+=(mu[g][k]+0.6*rn2())*e[jj][k];if(jj===0)z+=3;s.push(sigm(z)+b[jj]);}topk(s,2).forEach(function(q){L[q]++;});}return L;}
+  function reset(){b=new Array(N).fill(0);R2=rng(11);step=0;load=lot();draw();}
+  function run(n){var on=$('blOn').checked;for(var it=0;it<n;it++){var L=lot(),m=L.reduce(function(a,c){return a+c;},0)/N;if(on){for(var jj=0;jj<N;jj++)b[jj]-=0.01*Math.sign(L[jj]-m);var mb=b.reduce(function(a,c){return a+c;},0)/N;for(jj=0;jj<N;jj++)b[jj]-=mb;}step++;}load=lot();draw();}
+  function draw(){var mx=Math.max.apply(null,load),mean=load.reduce(function(a,c){return a+c;},0)/N;
+    $('blLoad').innerHTML=load.map(function(v){return '<div'+(v>1.6*mean?' class="hot"':'')+' style="height:'+(100*v/Math.max(mx,1))+'%"><span>'+v+'</span></div>';}).join('');
+    $('blOut').innerHTML='Đã chạy <b>'+step+'</b> bước. Lô mới nhất: tải lớn nhất / trung bình = <b>'+vn(mx/mean,2)+'</b> (1,00 là đều tuyệt đối; 4,00 là E1 nhận mọi token). Điểm cộng của E1: <b>'+vn(b[0],2)+'</b>.';}
+  $('blStep').addEventListener('click',function(){run(10);});
+  $('blReset').addEventListener('click',reset);
+  reset();
+})();
+
+/* 8 params */
+function fmtM(x){return x>=1e6?vn(x/1e6,1)+'M':vn(x/1e3,1)+'k';}
+function pmDraw(){
+  var d=+$('pmD').value,h=+$('pmH').value,hs=+$('pmHs').value,hr=+$('pmHr').value,N=+$('pmN').value,K=Math.min(+$('pmK').value,N);
+  $('pmHsv').textContent=hs;$('pmHrv').textContent=hr;$('pmNv').textContent=N;$('pmKv').textContent=K;
+  var dense=3*d*h,tot=3*d*(hs+N*hr)+N*d,act=3*d*(hs+K*hr)+N*d;
+  $('pmOut').innerHTML='Một lớp FFN dense: <b>'+fmtM(dense)+'</b> tham số.<br>MoE: tổng <b>'+fmtM(tot)+'</b>, active mỗi token <b>'+fmtM(act)+'</b> (h<sub>s</sub> + K·h<sub>r</sub> = '+(hs+K*hr)+', h dense = '+h+').<br>'+
+   'Active / dense = <b>'+vn(act/dense,2)+'</b> '+(Math.abs(act/dense-1)<0.05?'<span class="delta-up">≈ cùng phép tính: dùng được cho R1</span>':(act>dense?'<span class="delta-dn">tốn hơn dense: không công bằng</span>':'(rẻ hơn dense)'))+'. Tổng / dense = <b>'+vn(tot/dense,2)+'×</b>: dense cho R2 cần h ≈ '+Math.round(h*tot/dense)+'.';
+}
+['pmD','pmH','pmHs','pmHr','pmN','pmK'].forEach(function(id){$(id).addEventListener('input',pmDraw);});pmDraw();
+
+/* 10 read */
+function rdDraw(){
+  var N=+$('rdN').value,K=Math.min(+$('rdK').value,N),T=+$('rdT').value;
+  $('rdNv').textContent=N;$('rdKv').textContent=K;$('rdTv').textContent=T;
+  var E=N*(1-Math.pow(1-K/N,T));
+  $('rdOut').innerHTML='Mỗi token dùng <b>'+K+'</b> / '+N+' chuyên gia ('+vn(100*K/N,0)+'%). Một lần gọi với '+T+' token chạm trung bình <b>'+vn(E,1)+'</b> / '+N+' (<b>'+vn(100*E/N,0)+'%</b>). '+
+   (E/N>0.8?'<span class="delta-dn">Gần như phải đọc toàn bộ MoE từ bộ nhớ.</span>':'Còn tiết kiệm được băng thông bộ nhớ.');
+}
+['rdN','rdK','rdT'].forEach(function(id){$(id).addEventListener('input',rdDraw);});rdDraw();
+})();
+</script>
+</body>
+</html>
