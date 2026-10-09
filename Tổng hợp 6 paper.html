@@ -6,679 +6,363 @@
 <title>Tổng hợp 6 paper VLA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script>
-  window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
-  (function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
-</script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script>(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();</script>
 <style>
 :root{
   --bg:#f6f8f7; --surface:#ffffff; --surface2:#eef4f3; --text:#1b2724; --muted:#5b6b67; --line:#d8e2df;
-  --teal:#00897B; --teal-soft:#e0f2ef; --teal-ink:#00695c;
-  --amber:#c77700; --amber-soft:#fff3dd; --rose:#c2185b; --rose-soft:#fde7ef;
-  --violet:#5e35b1; --violet-soft:#ede7f6; --blue:#1565c0; --blue-soft:#e3eefb;
+  --teal:#00897B; --teal-soft:#e0f2ef; --teal-ink:#00695c; --amber:#b26a00; --amber-soft:#fff3dd;
   --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.05);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0f1514; --surface:#161f1d; --surface2:#1c2826; --text:#e3ece9; --muted:#97a8a3; --line:#2a3734;
-    --teal:#26a69a; --teal-soft:#123430; --teal-ink:#6fd3c6;
-    --amber:#ffb74d; --amber-soft:#3a2c12; --rose:#f06292; --rose-soft:#3a1826;
-    --violet:#9575cd; --violet-soft:#251c38; --blue:#64b5f6; --blue-soft:#13263a;
+    --teal:#26a69a; --teal-soft:#123430; --teal-ink:#6fd3c6; --amber:#ffb74d; --amber-soft:#3a2c12;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
   }
 }
 :root[data-theme="dark"]{
   --bg:#0f1514; --surface:#161f1d; --surface2:#1c2826; --text:#e3ece9; --muted:#97a8a3; --line:#2a3734;
-  --teal:#26a69a; --teal-soft:#123430; --teal-ink:#6fd3c6;
-  --amber:#ffb74d; --amber-soft:#3a2c12; --rose:#f06292; --rose-soft:#3a1826;
-  --violet:#9575cd; --violet-soft:#251c38; --blue:#64b5f6; --blue-soft:#13263a;
+  --teal:#26a69a; --teal-soft:#123430; --teal-ink:#6fd3c6; --amber:#ffb74d; --amber-soft:#3a2c12;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16px;line-height:1.7}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:17px;line-height:1.75}
 a{color:var(--teal-ink)}
-code,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
-.layout{display:grid;grid-template-columns:260px minmax(0,1fr);max-width:1240px;margin:0 auto;gap:32px;padding:0 16px}
-nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 0 40px;font-size:14px}
-nav.toc .brand{font-weight:800;color:var(--teal);letter-spacing:.02em;margin-bottom:14px;font-size:15px}
-nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-left:2px solid transparent;line-height:1.45}
-nav.toc a:hover,nav.toc a.on{color:var(--teal-ink);border-left-color:var(--teal);background:var(--teal-soft)}
-nav.toc .grp{margin:14px 0 4px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-main{padding:28px 0 80px;min-width:0}
-.topbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
-button.theme{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:6px 12px;border-radius:999px;cursor:pointer}
-header.hero{background:linear-gradient(135deg,var(--teal) 0%,#00695c 100%);color:#fff;border-radius:20px;padding:36px 32px;box-shadow:var(--shadow)}
-header.hero .kicker{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
-header.hero h1{font-size:clamp(26px,4vw,38px);line-height:1.2;margin:8px 0 12px;font-weight:800}
-header.hero p{margin:0;max-width:760px;opacity:.95}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:999px;font-size:13px}
-section{margin-top:48px;scroll-margin-top:16px}
-h2{font-size:26px;margin:0 0 6px;line-height:1.3}
-h2 .num{font-family:'JetBrains Mono',monospace;color:var(--teal);font-size:.75em;margin-right:8px}
-h3{font-size:19px;margin:26px 0 8px}
-.lead{color:var(--muted);margin:0 0 18px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:var(--shadow)}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 9px;border-radius:999px;font-weight:600;letter-spacing:.03em;vertical-align:middle}
-.t-must{background:var(--teal-soft);color:var(--teal-ink)}
-.t-should{background:var(--blue-soft);color:var(--blue)}
-.t-skim{background:var(--surface2);color:var(--muted)}
-.t-basic{background:var(--amber-soft);color:var(--amber)}
-.t-deep{background:var(--violet-soft);color:var(--violet)}
-table{width:100%;border-collapse:collapse;font-size:14.5px}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:700;background:var(--surface2)}
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
-.tablewrap table th:first-child,.tablewrap table td:first-child{padding-left:14px}
-/* timeline */
-.timeline{display:grid;gap:10px}
-.tl{display:grid;grid-template-columns:44px 170px minmax(0,1fr);gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
-.tl .n{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace}
-.tl .nm{font-weight:700;line-height:1.3}
-.tl .nm small{display:block;font-weight:400;color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace}
-.tl .q{color:var(--muted);font-size:14px}
-.tl .q b{color:var(--text)}
-.c1{background:#ef8f00}.c2{background:#e65100}.c3{background:#00897B}.c4{background:#5e35b1}.c5{background:#7e57c2}.c6{background:#c2185b}
-.divider{display:flex;align-items:center;gap:12px;margin:8px 0;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
-.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
-/* paper card */
-.paper{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-top:22px}
-.paper .ph{display:flex;gap:16px;align-items:flex-start;padding:22px 24px 16px;border-bottom:1px solid var(--line);background:var(--surface2)}
-.paper .ph .n{flex:0 0 44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;font-family:'JetBrains Mono',monospace}
-.paper .ph h3{margin:0;font-size:22px}
-.paper .ph .meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:4px}
-.paper .pb{padding:20px 24px 24px}
-.question{font-size:17px;border-left:4px solid var(--teal);padding:6px 0 6px 14px;margin:0 0 16px;background:linear-gradient(90deg,var(--teal-soft),transparent)}
-.paper ul{padding-left:20px;margin:8px 0}
-.paper li{margin:4px 0}
-.label{font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--teal-ink);font-weight:600;margin:18px 0 6px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:8px 0}
-.stat{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
-.stat .v{font-size:22px;font-weight:800;color:var(--teal-ink);line-height:1.2;font-variant-numeric:tabular-nums}
-.stat .k{font-size:13px;color:var(--muted);line-height:1.45;margin-top:2px}
-.takeaway{background:var(--teal-soft);border-radius:12px;padding:14px 16px;margin-top:16px}
-.takeaway b{color:var(--teal-ink)}
-.caution{background:var(--amber-soft);border-radius:12px;padding:12px 16px;margin-top:12px;font-size:14.5px}
-.caution .label{color:var(--amber);margin-top:0}
-.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
-.links a{font-size:13px;text-decoration:none;border:1px solid var(--line);padding:5px 12px;border-radius:999px;background:var(--surface);color:var(--text)}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 80px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;font-size:14px}
+.topbar nav{display:flex;flex-wrap:wrap;gap:6px}
+.topbar nav a{text-decoration:none;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.topbar nav a:hover{color:var(--teal-ink);border-color:var(--teal)}
+button.theme{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:5px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+header.hero{background:linear-gradient(135deg,#00897B,#00695c);color:#fff;border-radius:20px;padding:34px 30px;box-shadow:var(--shadow)}
+header.hero .k{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+header.hero h1{font-size:clamp(26px,4.5vw,36px);line-height:1.25;margin:8px 0 12px}
+header.hero p{margin:0 0 8px;opacity:.95}
+h2{font-size:25px;line-height:1.3;margin:52px 0 10px;scroll-margin-top:16px}
+h3{font-size:18px;margin:22px 0 6px;color:var(--teal-ink)}
+p{margin:8px 0}
+ul{padding-left:22px;margin:8px 0}
+li{margin:5px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 24px;box-shadow:var(--shadow);margin:14px 0}
+.terms dt{font-weight:700;margin-top:10px}
+.terms dd{margin:2px 0 0 0;color:var(--text)}
+.route{display:grid;gap:8px;margin:12px 0}
+.route a{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:center;text-decoration:none;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.route a:hover{border-color:var(--teal)}
+.route .n{width:30px;height:30px;border-radius:50%;background:var(--teal);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+.route .n.deep{background:#5e35b1}
+.route b{display:block}
+.route span{font-size:14.5px;color:var(--muted);line-height:1.5}
+.sep{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin:6px 0}
+.sep::before,.sep::after{content:"";flex:1;height:1px;background:var(--line)}
+.paper{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 26px;box-shadow:var(--shadow);margin:16px 0;scroll-margin-top:16px}
+.paper .meta{font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.paper h2{margin:4px 0 6px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--teal-soft);color:var(--teal-ink);vertical-align:middle}
+.badge.deep{background:#ede7f6;color:#5e35b1}
+:root[data-theme="dark"] .badge.deep{background:#251c38;color:#b39ddb}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .badge.deep{background:#251c38;color:#b39ddb}}
+.oneline{font-size:18px;font-weight:600;border-left:4px solid var(--teal);padding:4px 0 4px 14px;margin:14px 0}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.grid4 div{background:var(--surface2);border-radius:12px;padding:12px 14px;font-size:15.5px;line-height:1.6}
+.grid4 b{color:var(--teal-ink)}
+.learn{background:var(--teal-soft);border-radius:12px;padding:12px 18px;margin-top:16px}
+.learn b{color:var(--teal-ink)}
+.note{background:var(--amber-soft);border-radius:12px;padding:10px 16px;margin-top:10px;font-size:15.5px}
+.note b{color:var(--amber)}
+.bridge{border:1.5px dashed var(--teal);border-radius:14px;padding:12px 18px;margin:18px 0 0;font-size:15.5px;background:var(--surface)}
+.bridge b{color:var(--teal-ink)}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.links a{font-size:13px;text-decoration:none;border:1px solid var(--line);padding:4px 12px;border-radius:999px;background:var(--surface);color:var(--text)}
 .links a:hover{border-color:var(--teal);color:var(--teal-ink)}
-.bridge{margin:22px 0 0;border:1.5px dashed var(--teal);border-radius:14px;padding:14px 18px;background:var(--surface)}
-.bridge .label{margin-top:0}
-.analogy{background:var(--surface2);border-radius:12px;padding:12px 16px;margin:10px 0;font-size:15px}
-.analogy::before{content:"Hình dung · ";font-weight:700;color:var(--teal-ink)}
-.formula{background:var(--surface2);border-radius:12px;padding:6px 14px;overflow-x:auto;margin:10px 0}
-.formula p{margin:6px 0;font-size:14px;color:var(--muted)}
-mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
-/* lessons */
-.lesson{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
-.lesson:last-child{border-bottom:none}
-.lesson .i{width:32px;height:32px;border-radius:9px;background:var(--teal);color:#fff;display:grid;place-items:center;font-weight:800;font-family:'JetBrains Mono',monospace}
-.lesson h4{margin:2px 0 4px;font-size:17px}
-.lesson p{margin:0;color:var(--text)}
-.lesson .from{font-size:12.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:4px}
-details{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:8px 0}
-details summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style:none}
-details summary::-webkit-details-marker{display:none}
-details summary::before{content:"▸ ";color:var(--teal)}
-details[open] summary::before{content:"▾ "}
-details .ans{padding:0 16px 14px;color:var(--text);font-size:15px}
-.diagram{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;overflow-x:auto}
-.diagram svg{display:block;min-width:820px;width:100%;height:auto}
-.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;font-size:14px}
-.legend div{display:flex;gap:8px;align-items:flex-start}
-.legend .dot{flex:0 0 22px;height:22px;border-radius:50%;color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;margin-top:2px}
-.checklist li{list-style:none;margin-left:-20px}
-.checklist input{accent-color:var(--teal);margin-right:8px}
-footer{margin-top:60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
-@media (max-width:960px){
-  .layout{grid-template-columns:1fr}
-  nav.toc{display:none}
-  .grid2,.grid3,.legend{grid-template-columns:1fr}
-  .tl{grid-template-columns:40px minmax(0,1fr)}
-  .tl .q{grid-column:1 / -1}
-  header.hero{padding:26px 20px}
-  .paper .ph,.paper .pb{padding-left:16px;padding-right:16px}
-}
+.lessons li{margin:10px 0}
+footer{margin-top:50px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:600px){ .grid4{grid-template-columns:1fr} .paper{padding:18px 16px} header.hero{padding:26px 20px} .topbar nav{display:none} }
 </style>
 </head>
 <body>
-<div class="layout">
-<nav class="toc" id="toc">
-  <div class="brand">VLA · Tổng hợp 6 paper</div>
-  <a href="#doc-nhanh">★ Đọc nhanh 5 phút</a>
-  <a href="#nen">1. Nền tối thiểu</a>
-  <a href="#so-do">2. Sơ đồ chung: mỗi paper nằm ở đâu</a>
-  <div class="grp">Phần A · Cơ bản</div>
-  <a href="#libero">3. LIBERO</a>
-  <a href="#groot">4. GR00T N1</a>
-  <a href="#qwen">5. Qwen-VLA</a>
-  <div class="grp">Phần B · Chuyên sâu</div>
-  <a href="#rtc-inf">6. RTC lúc suy luận</a>
-  <a href="#rtc-train">7. RTC lúc huấn luyện</a>
-  <a href="#moe">8. LingBot-VLA 2.0 (MoE)</a>
-  <div class="grp">Tổng kết</div>
-  <a href="#so-sanh">9. Bảng so sánh</a>
-  <a href="#bai-hoc">10. Rút ra được gì</a>
-  <a href="#code">11. Mang vào codebase</a>
-  <a href="#tu-kiem-tra">12. Tự kiểm tra</a>
-  <a href="#tai-lieu">13. Tài liệu trong thư mục</a>
-</nav>
+<div class="wrap">
 
-<main>
-<div class="topbar"><button class="theme" id="themeBtn" type="button">◐ Sáng / Tối</button></div>
+<div class="topbar">
+  <nav>
+    <a href="#vla">VLA là gì</a><a href="#lo-trinh">Lộ trình</a><a href="#libero">LIBERO</a><a href="#groot">GR00T</a><a href="#qwen">Qwen-VLA</a><a href="#rtci">RTC 1</a><a href="#rtct">RTC 2</a><a href="#moe">MoE</a><a href="#ket-luan">Rút ra</a>
+  </nav>
+  <button class="theme" id="themeBtn" type="button">◐ Sáng / Tối</button>
+</div>
 
 <header class="hero">
-  <div class="kicker">Sổ tay VLA Modeling · Trang tổng hợp</div>
-  <h1>6 paper VLA, đi từ nền tảng tới chuyên sâu</h1>
-  <p>Trang này gom ý chính của cả 6 paper vào một chỗ, theo đúng thứ tự đã học: ba paper cơ bản để hiểu một VLA là gì và được chấm điểm ra sao, rồi ba paper chuyên sâu "mổ" vào bộ phận sinh hành động. Mỗi paper trả lời một câu hỏi, và paper sau bắt đầu từ chỗ paper trước để lại.</p>
-  <div class="chips">
-    <span class="chip">Đọc hết: ~40 phút</span>
-    <span class="chip">Chỉ mục ★: 5 phút</span>
-    <span class="chip">Số liệu lấy từ PDF gốc</span>
-    <span class="chip">Chi tiết: xem trang đọc hiểu từng paper</span>
-  </div>
+  <div class="k">Sổ tay VLA Modeling · Report tổng hợp</div>
+  <h1>6 paper về robot VLA, kể lại bằng lời cho người mới</h1>
+  <p>Report này kể lại ý chính của 6 paper theo đúng thứ tự học: 3 paper nền tảng trước, 3 paper chuyên sâu sau. Mỗi paper được trình bày theo cùng một khuôn: nó giải quyết vấn đề gì, làm bằng cách nào, kết quả ra sao, và mình rút ra được gì.</p>
+  <p>Report không có công thức. Đọc hết khoảng 20–25 phút. Ai muốn đi sâu thì mỗi paper đều có link tới trang đọc hiểu chi tiết.</p>
 </header>
 
-<!-- ============ ĐỌC NHANH ============ -->
-<section id="doc-nhanh">
-  <h2><span class="num">★</span>Đọc nhanh 5 phút <span class="tag t-must">Phải nắm</span></h2>
-  <p class="lead">Mỗi paper trả lời đúng một câu hỏi. Nhớ được 6 câu hỏi này và câu trả lời một dòng là bạn đã có khung của cả lộ trình.</p>
+<!-- ================= VLA LÀ GÌ ================= -->
+<h2 id="vla">Trước khi đọc: VLA là gì?</h2>
+<p><b>VLA (Vision-Language-Action)</b> là một loại mô hình AI điều khiển robot. Mô hình <b>nhìn</b> ảnh từ camera, <b>đọc</b> câu lệnh như "đặt cái bát lên đĩa", rồi <b>xuất ra</b> các lệnh cử động cho cánh tay robot. Có thể hình dung đây là ChatGPT nhưng thay vì trả lời bằng chữ thì trả lời bằng động tác.</p>
+<p>Gần như mọi VLA hiện nay có hai phần, giống một người có <b>bộ não</b> và <b>đôi tay</b>:</p>
+<ul>
+  <li><b>Phần hiểu</b> là một mô hình ngôn ngữ biết nhìn ảnh (gọi là VLM), được học trước trên rất nhiều ảnh và chữ từ Internet. Phần này biết "cái bát trông thế nào", "câu lệnh muốn gì".</li>
+  <li><b>Phần làm</b> (gọi là action expert) là một mạng nhỏ hơn, nhanh hơn, chuyên biến sự hiểu đó thành chuyển động cụ thể của tay robot.</li>
+</ul>
 
-  <div class="timeline">
-    <div class="tl"><div class="n c1">1</div><div class="nm">LIBERO<small>2023 · bộ đề</small></div><div class="q"><b>Chấm điểm robot thế nào cho công bằng?</b> 130 bài tập mô phỏng, mỗi bài 50 lần làm mẫu, chia 4 bộ để mỗi bộ chỉ đổi một yếu tố. Ngày nay là "bài kiểm tra đầu vào" của mọi VLA.</div></div>
-    <div class="tl"><div class="n c2">2</div><div class="nm">GR00T N1<small>2025 · NVIDIA</small></div><div class="q"><b>Một VLA hiện đại trông thế nào?</b> VLM hiểu ảnh + câu lệnh (System 2), một DiT sinh luôn 16 hành động bằng flow matching (System 1). Pretrain lớn giúp học nhanh với ít dữ liệu.</div></div>
-    <div class="tl"><div class="n c3">3</div><div class="nm">Qwen-VLA<small>2026 · Alibaba Qwen</small></div><div class="q"><b>Một mô hình cho nhiều loại robot, huấn luyện ra sao?</b> Mô tả robot bằng câu chữ (prompt) thay vì mạng riêng; huấn luyện 4 giai đoạn T2A → CPT → SFT → RL. Pretrain là nguồn sức mạnh chính.</div></div>
-    <div class="divider">từ đây: đọc sâu vào action expert</div>
-    <div class="tl"><div class="n c4">4</div><div class="nm">RTC suy luận<small>2025 · Physical Intelligence</small></div><div class="q"><b>Mô hình tính chậm, robot không được dừng. Nối các chunk sao cho khỏi giật?</b> Đóng băng phần chunk cũ chắc chắn sẽ chạy, rồi "tô tiếp" phần còn lại (inpainting) bằng lực kéo ở mỗi bước khử nhiễu. Không huấn luyện lại.</div></div>
-    <div class="tl"><div class="n c5">5</div><div class="nm">RTC huấn luyện<small>2025 · Physical Intelligence</small></div><div class="q"><b>Bỏ được chi phí tính thêm lúc chạy không?</b> Dạy sẵn mô hình bài "viết tiếp chunk từ d hành động cho trước", mỗi token có mức nhiễu τ riêng. Chạy nhanh như mô hình gốc.</div></div>
-    <div class="tl"><div class="n c6">6</div><div class="nm">LingBot-VLA 2.0<small>2026 · MoE</small></div><div class="q"><b>Tăng sức chứa của action expert mà không tính thêm cho mỗi token?</b> Thay lớp FFN trong mọi khối action expert bằng nhiều "chuyên gia" + router; mỗi token chỉ đi qua vài chuyên gia.</div></div>
+<div class="card">
+  <p style="margin-top:0"><b>Vài từ sẽ gặp lại nhiều lần</b></p>
+  <dl class="terms">
+    <dt>Action chunk (cụm hành động)</dt>
+    <dd>Thay vì mỗi lần chỉ quyết định một cử động, mô hình vẽ luôn một đoạn kế hoạch gồm nhiều cử động liên tiếp (ví dụ 16 hoặc 50 bước). Chuyển động mượt hơn và không phải gọi mô hình liên tục.</dd>
+    <dt>Flow matching / diffusion</dt>
+    <dd>Cách mô hình "nặn" ra chuỗi cử động: bắt đầu từ một mớ ngẫu nhiên rồi chỉnh dần qua vài bước cho tới khi thành động tác hợp lý. Cách này cần thiết vì một việc thường có nhiều cách làm đúng (cầm cốc từ bên trái hay bên phải). Nếu mô hình chỉ học "trung bình" các cách thì nó sẽ thò tay vào giữa và sai cả hai.</dd>
+    <dt>Pretrain và finetune</dt>
+    <dd>Pretrain là học rộng trên rất nhiều dữ liệu, nhiều loại robot, nhiều việc. Finetune là học kỹ thêm trên dữ liệu của đúng việc cần làm. Giống học đại cương rồi mới đi thực tập.</dd>
+    <dt>Demo (dữ liệu làm mẫu)</dt>
+    <dd>Một lần người điều khiển robot làm xong một việc, được ghi lại để robot học bắt chước.</dd>
+    <dt>Benchmark và success rate</dt>
+    <dd>Benchmark là bộ đề thi chuẩn để so các mô hình với nhau. Success rate là tỉ lệ số lần robot làm xong việc.</dd>
+  </dl>
+</div>
+
+<!-- ================= LỘ TRÌNH ================= -->
+<h2 id="lo-trinh">Lộ trình 6 paper trong một trang</h2>
+<p>Mỗi paper trả lời một câu hỏi, và paper sau bắt đầu từ chỗ paper trước để lại.</p>
+<div class="route">
+  <a href="#libero"><span class="n">1</span><div><b>LIBERO</b><span>Chấm điểm robot thế nào cho công bằng? → Một bộ đề thi gồm 130 bài trong mô phỏng.</span></div></a>
+  <a href="#groot"><span class="n">2</span><div><b>GR00T N1</b><span>Một VLA hiện đại trông thế nào? → Bộ não hiểu + đôi tay làm, học từ một "kim tự tháp" dữ liệu.</span></div></a>
+  <a href="#qwen"><span class="n">3</span><div><b>Qwen-VLA</b><span>Một mô hình cho mọi loại robot thì huấn luyện thế nào? → Mô tả robot bằng câu chữ, học qua 4 giai đoạn.</span></div></a>
+  <div class="sep">từ đây đi sâu vào phần "đôi tay"</div>
+  <a href="#rtci"><span class="n deep">4</span><div><b>RTC lúc suy luận</b><span>Mô hình tính chậm mà robot không được dừng, nối các đoạn cử động sao cho khỏi giật? → Sửa cách chạy, không cần học lại.</span></div></a>
+  <a href="#rtct"><span class="n deep">5</span><div><b>RTC lúc huấn luyện</b><span>Làm sao bỏ được chi phí tính thêm của cách trên? → Dạy sẵn kỹ năng nối ngay từ lúc học.</span></div></a>
+  <a href="#moe"><span class="n deep">6</span><div><b>LingBot-VLA 2.0 (MoE)</b><span>Phần "đôi tay" phải phục vụ hàng chục loại robot, làm sao cho nó "chứa" được nhiều hơn mà không chậm đi? → Chia thành nhiều chuyên gia nhỏ.</span></div></a>
+</div>
+
+<!-- ================= 1. LIBERO ================= -->
+<article class="paper" id="libero">
+  <div class="meta">Paper 1 · 2023 · arXiv 2306.03310</div>
+  <h2>LIBERO: bộ đề thi cho robot <span class="badge">Nền tảng</span></h2>
+  <p class="oneline">LIBERO là một bộ đề thi chuẩn cho robot trong thế giới mô phỏng, dùng để chấm và so sánh các phương pháp dạy robot.</p>
+
+  <h3>Vấn đề paper muốn giải</h3>
+  <p>Nhóm tác giả quan tâm tới việc robot <b>học suốt đời</b>: học lần lượt việc này rồi việc khác, giống một người giúp việc tuần này học rửa bát, tuần sau học nấu cơm. Ta muốn hai điều. Thứ nhất, học việc mới nhanh hơn nhờ kinh nghiệm việc cũ. Thứ hai, không quên việc cũ khi học việc mới.</p>
+  <p>Paper chỉ ra một điểm khác với AI xử lý ảnh hay chữ. Robot không chỉ cần biết <b>"cái gì"</b> (cái chai trông thế nào, tủ lạnh ở đâu) mà còn cần biết <b>"làm thế nào"</b> (cách mở tủ, cách cầm chai). Khi robot làm hỏng thì khó biết nó quên loại kiến thức nào. Trước LIBERO chưa có bộ đề nào đo riêng được hai loại này.</p>
+
+  <h3>Paper đưa ra những gì</h3>
+  <p><b>130 bài tập</b> trong mô phỏng, chia thành <b>4 bộ</b>. Mỗi bài có 50 lần làm mẫu do người điều khiển robot thực hiện. Ý tưởng giống một thí nghiệm khoa học: trong mỗi bộ chỉ thay đổi đúng một yếu tố, để biết robot có học được yếu tố đó không.</p>
+  <div class="grid4">
+    <div><b>LIBERO-Spatial</b> (10 bài): thay đổi <b>vị trí</b>. Bài nào cũng là "đặt cái bát lên đĩa", nhưng có hai cái bát giống hệt nhau ở hai chỗ khác nhau. Robot phải hiểu câu lệnh đang nói tới bát nào.</div>
+    <div><b>LIBERO-Object</b> (10 bài): thay đổi <b>đồ vật</b>. Bài nào cũng là "nhặt một thứ bỏ vào giỏ", nhưng mỗi bài một món khác. Robot phải nhận ra đúng món.</div>
+    <div><b>LIBERO-Goal</b> (10 bài): thay đổi <b>việc phải làm</b>. Cùng một bàn, cùng đồ vật, nhưng lúc thì mở ngăn kéo, lúc thì bật bếp. Robot phải học thêm kỹ năng mới.</div>
+    <div><b>LIBERO-100</b> (100 bài): <b>thay đổi tất cả</b>, nhiều căn phòng khác nhau. Chia thành LIBERO-90 (90 bài ngắn, dùng để học trước) và LIBERO-Long (10 bài dài, mỗi bài gồm nhiều việc nối tiếp).</div>
   </div>
+  <p>Bài tập được <b>sinh tự động</b>: câu lệnh lấy cảm hứng từ video sinh hoạt thật của con người, đồ vật được đặt ngẫu nhiên trong một vùng nhỏ để robot không học thuộc vị trí, và máy tự chấm xong hay chưa. Paper cũng thử các cách chống quên phổ biến (ôn lại dữ liệu cũ, khóa phần quan trọng của mạng, chia mạng cho từng bài) và vài kiểu mạng khác nhau.</p>
 
-  <div class="card" style="margin-top:16px">
-    <div class="label" style="margin-top:0">Mạch nối trong một đoạn</div>
-    <p style="margin:0">LIBERO cho ta <b>cái thước đo</b>. GR00T N1 cho ta <b>cái khuôn</b> của một VLA: VLM + action expert flow matching + action chunk. Qwen-VLA giữ khuôn đó nhưng làm cho nó <b>tổng quát hơn</b> (nhiều robot, nhiều giai đoạn huấn luyện). Khi đã có khuôn, ba paper sau tối ưu chính bộ phận sinh hành động: RTC suy luận và RTC huấn luyện giải bài toán <b>độ trễ</b> sinh ra từ chính ý tưởng action chunk, còn MoE giải bài toán <b>sức chứa</b> khi một action expert phải phục vụ rất nhiều loại robot.</p>
+  <h3>Kết quả đáng nhớ</h3>
+  <ul>
+    <li>Mạng kiểu <b>Transformer</b> xử lý chuỗi thời gian tốt hơn rõ rệt so với kiểu cũ (RNN). Đây là một lý do mọi VLA sau này đều dùng Transformer.</li>
+    <li>Cách đơn giản nhất (cứ học việc mới, không chống quên) lại học việc mới tốt nhất, nhưng quên rất nặng. Các cách chống quên thì làm hại khả năng học việc mới.</li>
+    <li>Câu lệnh đầy đủ ý nghĩa không giúp gì hơn một con số thứ tự "Bài 5". Robot lúc đó chỉ dùng câu lệnh như một cái nhãn, chưa thực sự hiểu.</li>
+    <li>Cho robot học trước trên 90 bài rồi mới học bài mới lại làm kết quả <b>tệ hơn</b>.</li>
+    <li>Loss khi huấn luyện thấp chưa chắc robot làm tốt. Phải cho robot chạy thử thật mới biết.</li>
+  </ul>
+
+  <h3>LIBERO ngày nay được dùng thế nào</h3>
+  <p>Các paper VLA không dùng LIBERO để nghiên cứu học suốt đời nữa mà dùng nó như một <b>bài thi chuẩn</b>: cho mô hình học trên dữ liệu của 4 bộ, rồi cho thi mỗi bộ 500 lượt và báo tỉ lệ thành công. Năm 2023 các mô hình chỉ đạt khoảng 70–75%. Nay các VLA mạnh đều đạt 97–99%, nên LIBERO gần như đã "bão hòa". Hai nghiên cứu năm 2025 cho thấy chỉ cần dời nhẹ vị trí đồ vật hay đổi góc camera là điểm rơi mạnh, và robot gần như không đọc câu lệnh. Điểm LIBERO cao là cần nhưng chưa đủ để nói robot thật sự hiểu.</p>
+
+  <div class="learn"><b>Rút ra:</b> LIBERO cho ta cái <b>thước đo</b>. Nhớ 4 bộ bài và mỗi bộ kiểm tra điều gì. Khi nói về LIBERO cần phân biệt hai vai trò: paper gốc viết về học suốt đời, còn các paper VLA dùng nó làm đề thi.</div>
+  <div class="links"><a href="LIBERO/LIBERO · Đọc hiểu paper.html">Trang đọc hiểu chi tiết</a><a href="LIBERO/LIBERO · Slide trình bày.html">Slide</a><a href="Docs/LIBERO.pdf">PDF gốc</a><a href="Docs/translated/LIBERO-vi.pdf">PDF tiếng Việt</a></div>
+  <div class="bridge"><b>Sang paper 2:</b> LIBERO cho thấy học trước trên dữ liệu nhỏ có thể làm hại. GR00T sẽ cho thấy điều ngược lại khi dữ liệu và mô hình đủ lớn.</div>
+</article>
+
+<!-- ================= 2. GR00T ================= -->
+<article class="paper" id="groot">
+  <div class="meta">Paper 2 · NVIDIA · 2025 · arXiv 2503.14734</div>
+  <h2>GR00T N1: bộ não chung cho robot hình người <span class="badge">Nền tảng</span></h2>
+  <p class="oneline">GR00T N1 là ví dụ rõ nhất về cách một VLA hiện đại được xây: bộ não hiểu, đôi tay làm, và học từ đủ loại dữ liệu.</p>
+
+  <h3>Vấn đề paper muốn giải</h3>
+  <p>Mô hình ngôn ngữ như ChatGPT học được từ cả Internet. Robot thì không có "Internet" như vậy. Mỗi hãng robot chỉ có vài trăm giờ dữ liệu, mỗi robot một kiểu khớp, một định dạng riêng. Paper gọi đây là những <b>"hòn đảo dữ liệu"</b> rời rạc. Câu hỏi đặt ra: làm sao gom chúng lại để dạy một bộ não chung cho nhiều loại robot?</p>
+
+  <h3>Paper làm thế nào</h3>
+  <p><b>Kiến trúc hai hệ thống</b>, lấy cảm hứng từ cách con người suy nghĩ:</p>
+  <ul>
+    <li><b>Hệ thống 2 (suy nghĩ chậm):</b> một mô hình nhìn ảnh và đọc chữ của NVIDIA, lo phần hiểu: đây là cái gì, câu lệnh muốn gì.</li>
+    <li><b>Hệ thống 1 (phản xạ nhanh):</b> một mạng nhỏ hơn chuyên sinh cử động, mỗi lần vẽ luôn một đoạn 16 cử động liên tiếp. Một lần như vậy mất khoảng 64 mili-giây.</li>
+  </ul>
+  <p>Hai phần được huấn luyện cùng nhau. Mỗi loại robot có một "phiên dịch viên" nhỏ riêng để chuyển cử động của robot đó về dạng chung, còn phần lõi thì dùng chung cho mọi robot.</p>
+  <p><b>Kim tự tháp dữ liệu</b> là đóng góp quan trọng thứ hai. Paper gom khoảng 8.400 giờ dữ liệu, xếp thành ba tầng:</p>
+  <ul>
+    <li><b>Đáy: video người làm việc nhà</b> (khoảng 30%). Rất nhiều và rẻ nhưng không có thông tin cử động robot. Paper dùng một mô hình để đoán ra "cử động ẩn" từ video.</li>
+    <li><b>Giữa: dữ liệu tổng hợp</b> (khoảng 31%). Một phần từ mô phỏng: từ vài chục lần làm mẫu của người, máy tự nhân lên thành hàng trăm nghìn lần. Một phần là video robot do AI sinh ra.</li>
+    <li><b>Đỉnh: dữ liệu robot thật</b> (khoảng 39%). Ít nhất nhưng sát với robot nhất.</li>
+  </ul>
+  <p>Mô hình được <b>học trước</b> trên cả kim tự tháp, rồi <b>học kỹ</b> trên một loại robot cụ thể với rất ít dữ liệu.</p>
+
+  <h3>Kết quả đáng nhớ</h3>
+  <ul>
+    <li>Trong mô phỏng (bếp ảo RoboCasa và hai bộ đề khác), GR00T đạt trung bình 45% so với 33% của phương pháp phổ biến Diffusion Policy học từ đầu.</li>
+    <li>Trên robot hình người thật, GR00T chỉ cần <b>10% dữ liệu</b> đã gần bằng Diffusion Policy dùng 100% dữ liệu (43% so với 46%). Khi dùng đủ dữ liệu, GR00T đạt 77%.</li>
+    <li>Video robot do AI sinh ra giúp tăng thêm khoảng 4–9 điểm.</li>
+    <li>Có một cảnh báo: học kỹ trên dữ liệu hẹp có thể làm <b>quên kỹ năng</b>. Bản học trước biết chuyền quả táo từ tay trái sang tay phải, nhưng sau khi học kỹ trên dữ liệu chỉ dùng tay phải thì lại không làm được nữa.</li>
+  </ul>
+
+  <div class="learn"><b>Rút ra:</b> GR00T cho ta cái <b>khuôn</b> của một VLA: bộ não hiểu + đôi tay sinh đoạn cử động. Thông điệp chính là <b>hiệu quả dữ liệu</b>: học trước trên nhiều nguồn giúp robot học việc mới với rất ít dữ liệu làm mẫu.</div>
+  <div class="note"><b>Nên dè dặt:</b> paper chỉ so với các phương pháp học từ đầu chứ chưa so với các VLA khác. Mỗi tác vụ trên robot thật chỉ thử 10 lần.</div>
+  <div class="links"><a href="Groot/GR00T N1 · Đọc hiểu paper.html">Trang đọc hiểu chi tiết</a><a href="Groot/GR00T N1 · Slide trình bày.html">Slide</a><a href="Docs/Groot.pdf">PDF gốc</a><a href="Docs/translated/Groot-vi.pdf">PDF tiếng Việt</a></div>
+  <div class="bridge"><b>Sang paper 3:</b> Qwen-VLA giữ cái khuôn này nhưng thay bộ não lớn hơn, bỏ các "phiên dịch viên" riêng cho từng robot, và chia việc huấn luyện thành nhiều giai đoạn rõ ràng.</div>
+</article>
+
+<!-- ================= 3. QWEN ================= -->
+<article class="paper" id="qwen">
+  <div class="meta">Paper 3 · Alibaba Qwen · 2026 · arXiv 2605.30280</div>
+  <h2>Qwen-VLA: một mô hình cho mọi loại robot <span class="badge">Nền tảng</span></h2>
+  <p class="oneline">Qwen-VLA muốn làm cho robot điều mà ChatGPT đã làm cho chữ: một mô hình duy nhất, học từ mọi loại dữ liệu, làm được nhiều việc.</p>
+
+  <h3>Vấn đề paper muốn giải</h3>
+  <p>Hiện nay mỗi loại việc thường có mô hình riêng: mô hình cầm nắm đồ vật chỉ biết cầm nắm, mô hình đi lại trong nhà chỉ biết đi lại. Mỗi loại robot cũng cần cách xử lý riêng. Vì vậy kiến thức không được "học chéo": biết nhận ra cái cốc khi đi lại cũng không giúp được việc cầm cốc.</p>
+
+  <h3>Paper làm thế nào</h3>
+  <p><b>Mô tả robot bằng câu chữ.</b> Đây là ý tưởng đơn giản mà hay nhất của paper. Thay vì mỗi robot một "phiên dịch viên" riêng như GR00T, Qwen-VLA ghi thêm một câu vào đầu câu lệnh, kiểu: "Đây là robot loại X, có hai tay, điều khiển 30 lần mỗi giây, hãy đoán 16 cử động tiếp theo để làm việc sau…". Đổi robot thì chỉ cần đổi câu mô tả. Robot nào ít khớp hơn thì phần trống được bỏ qua khi học.</p>
+  <p><b>Kiến trúc:</b> bộ não là mô hình Qwen3.5 khoảng 4 tỷ tham số, to hơn GR00T khoảng ba lần. Đôi tay là một mạng khoảng 1,15 tỷ tham số. Khác GR00T, thông tin của bộ não và đôi tay được xếp chung vào một hàng và "bàn bạc" với nhau qua lại.</p>
+  <p><b>Dữ liệu học trước</b> gồm 5 nhóm: dữ liệu robot cầm nắm (chiếm đa số, khoảng ba phần tư), dữ liệu robot đi lại, video tay người, dữ liệu mô phỏng tự sinh, và dữ liệu ảnh–chữ thông thường để bộ não không quên khả năng hiểu ảnh.</p>
+  <p><b>Bốn giai đoạn huấn luyện</b>, mỗi giai đoạn dạy một năng lực:</p>
+  <ul>
+    <li><b>Giai đoạn 1, từ chữ sang cử động:</b> giữ nguyên bộ não, chỉ dạy đôi tay đi từ câu lệnh thành cử động, cố tình <b>không cho xem ảnh</b>. Không có ảnh thì đôi tay không thể "nhìn rồi bắt chước", buộc phải học mối liên hệ giữa lời nói và động tác, giống học thuộc một cuốn từ điển động tác. Giai đoạn này dùng khoảng 7 triệu chuyển động do máy tự sinh.</li>
+    <li><b>Giai đoạn 2, học tiếp với ảnh:</b> mở cho cả hai phần cùng học trên toàn bộ dữ liệu lớn có ảnh. Kết quả là bản <b>Qwen-VLA-Base</b>: biết rộng nhưng chưa chính xác.</li>
+    <li><b>Giai đoạn 3, học kỹ:</b> học trên dữ liệu làm mẫu của đúng các việc cần làm.</li>
+    <li><b>Giai đoạn 4, tự luyện:</b> cho robot tự thử trong mô phỏng; làm xong thì được thưởng, hỏng thì không. Robot học cách tự sửa lỗi. Kết quả là bản <b>Qwen-VLA-Instruct</b>.</li>
+  </ul>
+
+  <h3>Kết quả đáng nhớ</h3>
+  <ul>
+    <li>Một mô hình duy nhất đạt 97,9% trên LIBERO, ngang các mô hình được tinh chỉnh riêng cho từng bài thi. Trên các bài thi khác nó đứng nhất hoặc nhì.</li>
+    <li>Trên robot hai tay thật, cùng một mô hình: <b>có học trước đạt 83,6%, không học trước chỉ 48,5%</b>. Với tình huống lạ (màu mới, vật mới, câu lệnh mới), con số là 76,9% so với 36,2%.</li>
+    <li>Giai đoạn 1 (chữ sang cử động) giúp tăng từ 61% lên 71%. Nếu cho xem ảnh ở giai đoạn này thì kết quả lại kém hơn, đúng như lập luận của paper.</li>
+    <li>Giai đoạn 3 (học kỹ) đóng góp nhiều nhất. Giai đoạn 4 (tự luyện) chỉ giúp rõ ở chính môi trường được luyện.</li>
+    <li>Cùng một mô hình vẫn đi lại trong nhà theo lời nói tốt ngang các mô hình chuyên đi lại.</li>
+  </ul>
+
+  <div class="learn"><b>Rút ra:</b> đây là câu trả lời cho câu hỏi "học trước và học kỹ khác nhau thế nào". <b>Học trước</b> cho mô hình biết rộng nhưng còn thô, <b>học kỹ</b> biến nó thành robot làm đúng việc. Thiếu học trước thì kết quả trên robot thật tụt gần một nửa. Ngoài ra, dùng câu chữ để mô tả robot là một cách rất gọn để một mô hình phục vụ nhiều robot.</div>
+  <div class="note"><b>Nên dè dặt:</b> dù gọi là "một mô hình chung", nó vẫn được học kỹ trên dữ liệu của chính các bài thi. Giai đoạn tự luyện giúp rất ít ở ngoài môi trường luyện.</div>
+  <div class="links"><a href="Qwen-VLA/Qwen-VLA · Đọc hiểu paper.html">Trang đọc hiểu chi tiết</a><a href="Qwen-VLA/Qwen-VLA · Slide trình bày.html">Slide</a><a href="Docs/QwenVLA.pdf">PDF gốc</a><a href="Docs/translated/QwenVLA-vi.pdf">PDF tiếng Việt</a></div>
+  <div class="bridge"><b>Hết phần nền tảng.</b> Ta đã biết một VLA trông thế nào, học ra sao và được chấm điểm thế nào. Ba paper tiếp theo giữ nguyên khuôn đó và hỏi: <b>khi đem robot ra chạy thật và mở rộng, cái gì hỏng trước?</b></div>
+</article>
+
+<div class="sep">Phần chuyên sâu</div>
+
+<!-- ================= 4. RTC INF ================= -->
+<article class="paper" id="rtci">
+  <div class="meta">Paper 4 · Physical Intelligence · 2025 · arXiv 2506.07339</div>
+  <h2>RTC lúc suy luận: nối các đoạn cử động cho mượt <span class="badge deep">Chuyên sâu</span></h2>
+  <p class="oneline">Khi mô hình tính chậm mà robot vẫn phải cử động liên tục, RTC giúp đoạn cử động mới nối liền với đoạn cũ, không bị giật.</p>
+
+  <h3>Vấn đề paper muốn giải</h3>
+  <p>Hình dung một đầu bếp nấu mỗi mẻ 50 món, còn khách cứ 20 mili-giây ăn một món. Nấu một mẻ mất khoảng 100 mili-giây, nên trong lúc nấu khách đã ăn thêm 5–6 món của mẻ cũ. Đầu bếp ở đây là mô hình, khách là robot, mỗi mẻ là một đoạn cử động.</p>
+  <p>Có ba cách làm cũ, cách nào cũng có vấn đề:</p>
+  <ul>
+    <li><b>Chờ:</b> robot dừng lại mỗi lần chờ mô hình tính. Chậm, và những khoảng dừng này không có trong dữ liệu học.</li>
+    <li><b>Nhảy thẳng sang đoạn mới:</b> đoạn mới được tính từ ảnh chụp lúc trước, không biết robot đã đi thêm mấy bước. Nó còn có thể chọn một cách khác hẳn (đoạn cũ định vòng qua vật cản phía trên, đoạn mới lại vòng phía dưới). Kết quả là robot bị <b>giật mạnh</b>.</li>
+    <li><b>Lấy trung bình hai đoạn:</b> trung bình của "vòng trên" và "vòng dưới" là đâm thẳng vào vật cản.</li>
+  </ul>
+
+  <h3>Paper làm thế nào</h3>
+  <p>Ý tưởng chính là coi đoạn cử động mới như một bức ảnh bị che mất một phần, rồi "vẽ tiếp" cho liền mạch. Đây là việc mà các mô hình sinh ảnh vốn làm rất giỏi.</p>
+  <ul>
+    <li><b>Đóng băng phần chắc chắn:</b> mấy cử động đầu của đoạn mới đằng nào cũng không được dùng, vì robot đã làm chúng theo đoạn cũ trong lúc chờ. Vậy cứ ép chúng giống hệt đoạn cũ.</li>
+    <li><b>Bám lỏng dần:</b> phần tiếp theo vẫn bám theo kế hoạch cũ nhưng càng về sau càng lỏng, để mô hình có chỗ phản ứng với tình hình mới.</li>
+    <li><b>Phần cuối tự do hoàn toàn.</b></li>
+  </ul>
+  <p>Mỗi lần mô hình "nặn" đoạn cử động, RTC kéo nhẹ kết quả về phía khớp với đoạn cũ. Điều quan trọng là <b>không cần dạy lại mô hình</b>: chỉ thay đổi cách chạy, nên cắm được vào mô hình có sẵn.</p>
+
+  <h3>Kết quả đáng nhớ</h3>
+  <ul>
+    <li>Paper thử trên robot hai tay thật với 6 việc như thắp nến bằng que diêm, cắm dây mạng, gấp quần áo, dọn giường, tổng cộng 480 lượt chạy (28 giờ robot).</li>
+    <li>Khi cố tình làm mô hình chậm thêm 0,1–0,2 giây, cách "chờ" giảm hiệu suất rõ rệt, còn RTC <b>gần như không giảm</b>. Cách "lấy trung bình" thì làm robot rung tới mức tự dừng khẩn cấp.</li>
+    <li>RTC còn giúp robot ít sai hơn, kể cả khi đã không tính thời gian chờ.</li>
+    <li>Cái giá: mỗi lần chạy mô hình chậm hơn một chút (76 lên 97 mili-giây), vì phải tính thêm hướng kéo.</li>
+  </ul>
+
+  <div class="learn"><b>Rút ra:</b> cử động theo đoạn giúp robot mượt, nhưng sinh ra một vấn đề mới là <b>độ trễ</b> và <b>chỗ nối giữa các đoạn</b>. RTC giải quyết bằng cách "giữ phần đã chắc, vẽ tiếp phần còn lại", chỉ đổi cách chạy mà không đổi mô hình.</div>
+  <div class="note"><b>Nên dè dặt:</b> lợi thế chỉ chắc chắn về mặt thống kê khi độ trễ lớn. Phần mô phỏng dùng một môi trường 2D đơn giản, khác xa một VLA thật.</div>
+  <div class="links"><a href="RTC/RTC-Inference · Đọc hiểu paper.html">Trang đọc hiểu chi tiết</a><a href="RTC/RTC · Đọc hiểu & áp dụng.html">Bản dễ hiểu + áp dụng</a><a href="RTC/RTC · Slide trình bày.html">Slide</a><a href="Docs/RTC inference time.pdf">PDF gốc</a><a href="Docs/translated/RTC inference time-vi.pdf">PDF tiếng Việt</a></div>
+  <div class="bridge"><b>Sang paper 5:</b> cách này tốn thêm thời gian tính mỗi lần chạy và kém dần khi độ trễ quá lớn. Paper tiếp theo chuyển việc này sang lúc học.</div>
+</article>
+
+<!-- ================= 5. RTC TRAIN ================= -->
+<article class="paper" id="rtct">
+  <div class="meta">Paper 5 · Physical Intelligence · 2025 · arXiv 2512.05964</div>
+  <h2>RTC lúc huấn luyện: dạy sẵn kỹ năng nối <span class="badge deep">Chuyên sâu</span></h2>
+  <p class="oneline">Thay vì kèm robot từng bước lúc chạy, ta cho nó luyện trước đúng dạng bài "viết tiếp" ngay từ lúc học.</p>
+
+  <h3>Vấn đề paper muốn giải</h3>
+  <p>RTC lúc suy luận giống một học sinh làm bài mà câu nào cũng có gia sư ngồi cạnh chỉnh. Kết quả tốt nhưng tốn thời gian của gia sư. Paper này hỏi: có thể cho học sinh luyện trước dạng bài này ở nhà, để vào phòng thi tự làm nhanh như bình thường không?</p>
+
+  <h3>Paper làm thế nào</h3>
+  <ul>
+    <li><b>Bài tập "viết tiếp câu":</b> lúc học, lấy một đoạn cử động thật trong dữ liệu, đưa nguyên vẹn mấy cử động đầu, rồi bắt mô hình tự sinh phần còn lại cho liền mạch. Giống bài tập cho sẵn vài chữ đầu và bắt viết tiếp cả câu.</li>
+    <li><b>Số cử động cho sẵn được chọn ngẫu nhiên</b> mỗi lần (có cả lúc không cho cái nào), vì độ trễ thật lúc chạy cũng lúc nhiều lúc ít.</li>
+    <li><b>Mỗi cử động đeo một "thẻ"</b> cho mô hình biết cử động đó đã chốt hay còn đang phải nặn. Cách này chỉ cần sửa vài dòng code và không thêm tham số nào.</li>
+    <li><b>Lúc chạy:</b> chỉ cần đưa phần đoạn cũ vào làm phần "cho sẵn". Không phải tính thêm gì, nên nhanh như mô hình gốc.</li>
+  </ul>
+
+  <h3>Kết quả đáng nhớ</h3>
+  <ul>
+    <li>Trong mô phỏng, khi độ trễ lớn, cách mới làm tốt hơn hẳn RTC lúc suy luận (khoảng 72% so với 61% ở mức trễ lớn nhất). Khi độ trễ rất nhỏ thì hai cách ngang nhau.</li>
+    <li>Trên robot thật với việc pha cà phê espresso và gấp hộp giấy, hai bản RTC cho kết quả <b>ngang nhau</b>. Cả hai đều nhanh hơn cách "chờ" khoảng 20%. Bản mới rẻ hơn vì không tốn thêm thời gian tính.</li>
+  </ul>
+
+  <div class="learn"><b>Rút ra:</b> cùng một vấn đề có thể giải <b>lúc chạy</b> (linh hoạt, không phải học lại, nhưng tốn tính toán) hoặc <b>lúc học</b> (chạy nhanh, nhưng phải học lại và phải đoán trước độ trễ sẽ là bao nhiêu). Bản mới mất khả năng "bám lỏng dần" của bản cũ, đổi lại được tốc độ.</div>
+  <div class="note"><b>Nên dè dặt:</b> phần mở đầu paper nói "tốt hơn", nhưng kết luận chính thức là "ngang bằng". Paper không ghi số lượt chạy trên robot thật.</div>
+  <div class="links"><a href="RTC/RTC-Training · Đọc hiểu paper.html">Trang đọc hiểu chi tiết</a><a href="RTC/RTC · Đọc hiểu & áp dụng.html">Bản dễ hiểu + áp dụng</a><a href="RTC/RTC · Slide trình bày.html">Slide</a><a href="Docs/RTC training Time.pdf">PDF gốc</a><a href="Docs/translated/RTC training Time-vi.pdf">PDF tiếng Việt</a></div>
+  <div class="bridge"><b>Sang paper 6:</b> RTC sửa cách <b>gọi</b> đôi tay. Paper MoE thì mở <b>bên trong</b> đôi tay ra để làm nó "chứa" được nhiều hơn.</div>
+</article>
+
+<!-- ================= 6. MOE ================= -->
+<article class="paper" id="moe">
+  <div class="meta">Paper 6 · LingBot-VLA 2.0 · 2026 · arXiv 2607.06403</div>
+  <h2>LingBot-VLA 2.0: chia "đôi tay" thành nhiều chuyên gia <span class="badge deep">Chuyên sâu</span></h2>
+  <p class="oneline">Khi một mô hình phải điều khiển khoảng 20 loại robot rất khác nhau, MoE chia phần sinh cử động thành nhiều chuyên gia nhỏ, mỗi lần chỉ gọi vài người phù hợp.</p>
+
+  <h3>Vấn đề paper muốn giải</h3>
+  <p>LingBot-VLA 2.0 học từ khoảng 50.000 giờ dữ liệu của 20 loại robot: từ cánh tay đơn giản 8 khớp tới robot hình người hơn 30 khớp có bàn tay khéo léo, cùng 10.000 giờ video người. Tất cả bị ép chung vào một khuôn 55 ô. Cùng một bộ phận trong mạng phải vừa điều khiển cánh tay đơn giản, vừa điều khiển 12 khớp ngón tay, vừa điều khiển bánh xe di chuyển. Một bộ phận "ôm" hết mọi thứ như vậy là quá tải.</p>
+
+  <h3>Paper làm thế nào</h3>
+  <div class="card" style="background:var(--surface2);box-shadow:none;border:none">
+    <p style="margin:0"><b>Hình dung một phòng khám.</b> Cách cũ giống một bác sĩ khám cho mọi bệnh nhân; muốn giỏi hơn thì phải thuê bác sĩ "to" hơn, và ai đến cũng tốn đúng thời gian của ông bác sĩ to đó. MoE (Mixture of Experts) giống một <b>phòng khám chuyên khoa</b>: có nhiều bác sĩ nhỏ, một <b>lễ tân</b> nhìn từng bệnh nhân rồi gửi tới vài khoa phù hợp nhất, và luôn có một <b>bác sĩ đa khoa</b> khám cho mọi người. Tổng kiến thức của phòng khám rất lớn, nhưng mỗi bệnh nhân chỉ tốn thời gian của vài bác sĩ.</p>
   </div>
-</section>
+  <ul>
+    <li><b>Chỗ thay:</b> chỉ thay một bộ phận bên trong phần "đôi tay" (lớp xử lý riêng từng mẩu thông tin), ở mọi tầng. Phần "bộ não" giữ nguyên.</li>
+    <li><b>Lễ tân chấm điểm độc lập:</b> mỗi khoa được chấm riêng xem có hợp với bệnh nhân không, các khoa không phải "giành điểm" của nhau.</li>
+    <li><b>Chống dồn khách:</b> nếu không cẩn thận, lễ tân sẽ gửi mọi người vào một khoa "giỏi" nhất, khoa đó quá tải còn các khoa khác ngồi không và không bao giờ học được gì. Cách cũ là phạt lễ tân, nhưng việc phạt lẫn vào chính việc học của mô hình. Paper dùng cách gọn hơn: khoa nào đông quá thì bị bớt chút "điểm ưu tiên xếp hàng", khoa vắng thì được cộng. Điểm ưu tiên này chỉ dùng để <b>chia khách</b>, không ảnh hưởng tới kết quả khám.</li>
+    <li><b>Lễ tân tự chọn theo từng mẩu thông tin</b>, không gán cứng "khoa này cho robot A, khoa kia cho robot B".</li>
+  </ul>
 
-<!-- ============ NỀN ============ -->
-<section id="nen">
-  <h2><span class="num">1</span>Nền tối thiểu <span class="tag t-must">Phải nắm</span></h2>
-  <p class="lead">Chỉ những từ xuất hiện ở hầu hết 6 paper. Đọc lướt, gặp lại thì tra.</p>
-  <div class="tablewrap"><table>
-    <tr><th style="width:180px">Từ</th><th>Nghĩa đơn giản</th><th style="width:150px">Gặp nhiều ở</th></tr>
-    <tr><td><b>VLA</b></td><td>Vision-Language-Action: nhìn ảnh + đọc câu lệnh → xuất lệnh điều khiển robot.</td><td>Cả 6</td></tr>
-    <tr><td><b>VLM</b></td><td>Mô hình nhìn ảnh + đọc chữ → ra chữ. VLA "mượn" VLM làm phần hiểu.</td><td>GR00T, Qwen</td></tr>
-    <tr><td><b>Action expert</b></td><td>Mạng con chuyên sinh hành động, thường là DiT (Transformer dùng để khử nhiễu). Ba paper chuyên sâu đều sửa bộ phận này.</td><td>GR00T → MoE</td></tr>
-    <tr><td><b>Action chunk (H)</b></td><td>Mỗi lần gọi mô hình sinh luôn H hành động liên tiếp (GR00T, Qwen: H = 16; π0.5 trong RTC: H = 50). Mượt hơn, gọi mô hình ít hơn.</td><td>GR00T, Qwen, RTC</td></tr>
-    <tr><td><b>Flow matching</b></td><td>Sinh hành động bằng cách bắt đầu từ nhiễu rồi "nặn" dần qua vài bước, mỗi bước đi theo vận tốc mạng dự đoán. Chọn được một trong nhiều cách đúng thay vì lấy trung bình.</td><td>GR00T → MoE</td></tr>
-    <tr><td><b>τ (mức nhiễu)</b></td><td>Cho biết chunk đang "chín" tới đâu. <b>Cẩn thận:</b> GR00T và RTC dùng τ = 1 là sạch; Qwen-VLA dùng τ = 1 là nhiễu. Cùng ý, đảo nhãn.</td><td>GR00T, Qwen, RTC</td></tr>
-    <tr><td><b>Embodiment</b></td><td>"Thân" robot: một tay, hai tay, hình người, bàn tay khéo… Mỗi loại có số chiều hành động khác nhau.</td><td>GR00T, Qwen, MoE</td></tr>
-    <tr><td><b>Pretrain / finetune</b></td><td>Pretrain: học rộng trên dữ liệu lớn, nhiều robot. Finetune (post-train, SFT): học kỹ trên dữ liệu của tác vụ đích.</td><td>LIBERO, GR00T, Qwen</td></tr>
-    <tr><td><b>Success rate (SR)</b></td><td>Tỉ lệ lượt thử làm xong việc. Thước đo chính của mọi benchmark ở đây.</td><td>Cả 6</td></tr>
-    <tr><td><b>Độ trễ suy luận</b></td><td>Thời gian từ lúc chụp ảnh tới lúc có chunk mới. Trong lúc đó robot vẫn đang chạy chunk cũ.</td><td>RTC</td></tr>
-  </table></div>
+  <h3>Kết quả đáng nhớ</h3>
+  <ul>
+    <li>So hai bản có <b>cùng lượng tính toán</b> mỗi lần: bản thường 0,6 tỷ tham số và bản MoE tổng 1,6 tỷ nhưng mỗi lần chỉ dùng 0,6 tỷ. Bản MoE <b>đoán cử động chính xác hơn</b> ở mọi mốc huấn luyện. Bản MoE học được nửa chặng đã tốt hơn bản thường học xong.</li>
+    <li>Trên robot thật, LingBot-VLA 2.0 hơn các đối thủ như π0.5, GR00T và bản 1.0 của chính nó ở đa số việc. Ví dụ với việc xếp đồ vào tủ lạnh, tỉ lệ thành công là 60% so với 47%.</li>
+    <li>Paper cũng thấy một số lựa chọn thiết kế nhỏ có ích: cho robot học cử động "dịch thêm bao nhiêu từ chỗ hiện tại" tốt hơn hẳn học "đi tới vị trí nào".</li>
+  </ul>
 
-  <div class="analogy">Vì sao không đoán thẳng hành động bằng hồi quy (MSE)? Có hai cách đúng để cầm cốc: từ trái hoặc từ phải. Học bằng MSE thì mô hình lấy trung bình và thò tay thẳng vào giữa, sai cả hai. Flow matching "nặn" từ nhiễu nên rơi vào một trong hai cách đúng. Ý này xuất hiện lại ở RTC: lấy trung bình hai chunk cũng có thể đâm thẳng vào vật cản.</div>
-</section>
+  <div class="learn"><b>Rút ra:</b> MoE tách hai thứ hay bị gộp làm một: <b>mô hình biết bao nhiêu</b> (tổng số tham số) và <b>mỗi lần chạy tốn bao nhiêu</b> (số tham số thực sự dùng). Nhờ vậy có thể làm mô hình "chứa" được nhiều loại robot hơn mà không tốn thêm tính toán cho mỗi lần chạy.</div>
+  <div class="note"><b>Nên dè dặt:</b> bằng chứng riêng cho MoE chỉ là độ chính xác khi chấm trên dữ liệu, chưa phải tỉ lệ thành công trên robot. Kết quả robot thật là của cả hệ thống 2.0, gồm cả dữ liệu mới và bộ não mạnh hơn. "Cùng lượng tính toán" cũng chưa chắc là cùng tốc độ thật, vì mỗi lần chạy robot có thể phải gọi gần hết các chuyên gia. Paper không công bố số chuyên gia.</div>
+  <div class="links"><a href="LingBot/LingBot · Đọc hiểu paper.html">Trang đọc hiểu chi tiết</a><a href="LingBot/LingBot · Đọc hiểu & áp dụng.html">Bản dễ hiểu + áp dụng</a><a href="LingBot/LingBot · Slide trình bày.html">Slide</a><a href="Docs/Moe.pdf">PDF gốc</a><a href="Docs/translated/Moe-vi.pdf">PDF tiếng Việt</a></div>
+</article>
 
-<!-- ============ SƠ ĐỒ ============ -->
-<section id="so-do">
-  <h2><span class="num">2</span>Sơ đồ chung: mỗi paper nằm ở đâu <span class="tag t-must">Phải nắm</span></h2>
-  <p class="lead">Kiến trúc VLA kiểu GR00T / Qwen-VLA. Các số tròn chỉ chỗ mỗi paper đóng góp. Paper càng về sau càng đi sâu vào bên trong action expert.</p>
-  <div class="diagram">
-  <svg viewBox="0 0 960 400" role="img" aria-label="Sơ đồ kiến trúc VLA chung và vị trí của 6 paper">
-    <defs>
-      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
-    </defs>
-    <style>
-      .bx{fill:var(--surface2);stroke:var(--line);stroke-width:1.5}
-      .bxt{fill:var(--teal-soft);stroke:var(--teal);stroke-width:1.5}
-      .tt{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;fill:var(--text);font-weight:700}
-      .ts{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;fill:var(--muted)}
-      .tm{font-family:'JetBrains Mono',monospace;font-size:11px;fill:var(--muted)}
-      .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
-      .pin text{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;fill:#fff}
-    </style>
-    <!-- input -->
-    <rect class="bx" x="20" y="60" width="150" height="110" rx="12"/>
-    <text class="tt" x="95" y="92" text-anchor="middle">Đầu vào</text>
-    <text class="ts" x="95" y="114" text-anchor="middle">ảnh camera</text>
-    <text class="ts" x="95" y="132" text-anchor="middle">câu lệnh</text>
-    <text class="ts" x="95" y="150" text-anchor="middle">(+ mô tả robot)</text>
-    <!-- VLM -->
-    <rect class="bx" x="215" y="60" width="160" height="110" rx="12"/>
-    <text class="tt" x="295" y="92" text-anchor="middle">VLM</text>
-    <text class="ts" x="295" y="114" text-anchor="middle">"System 2": hiểu</text>
-    <text class="tm" x="295" y="134" text-anchor="middle">Eagle-2 / Qwen3.5-4B</text>
-    <text class="ts" x="295" y="154" text-anchor="middle">chạy chậm</text>
-    <path class="ln" d="M170 115 H210" marker-end="url(#ar)"/>
-    <path class="ln" d="M375 115 H418" marker-end="url(#ar)"/>
-    <text class="tm" x="396" y="104" text-anchor="middle">hidden</text>
-    <text class="tm" x="396" y="134" text-anchor="middle">states</text>
-    <!-- action expert -->
-    <rect class="bxt" x="422" y="30" width="300" height="250" rx="14"/>
-    <text class="tt" x="572" y="56" text-anchor="middle">Action expert (DiT) · "System 1"</text>
-    <rect class="bx" x="446" y="72" width="252" height="34" rx="8"/>
-    <text class="ts" x="572" y="94" text-anchor="middle">Attention (nhìn sang VLM)</text>
-    <rect class="bx" x="446" y="114" width="252" height="34" rx="8"/>
-    <text class="ts" x="572" y="136" text-anchor="middle">AdaLN: đưa mức nhiễu τ vào</text>
-    <rect class="bx" x="446" y="156" width="252" height="34" rx="8"/>
-    <text class="ts" x="572" y="178" text-anchor="middle">FFN (lớp MLP)</text>
-    <text class="tm" x="572" y="206" text-anchor="middle">× N khối (Qwen-VLA: 16)</text>
-    <path class="ln" d="M446 240 C470 262 674 262 698 240" marker-end="url(#ar)" style="stroke:var(--teal)"/>
-    <text class="ts" x="572" y="234" text-anchor="middle">lặp n bước khử nhiễu: nhiễu → chunk</text>
-    <!-- chunk -->
-    <path class="ln" d="M722 155 H762" marker-end="url(#ar)"/>
-    <rect class="bx" x="766" y="100" width="174" height="110" rx="12"/>
-    <text class="tt" x="853" y="132" text-anchor="middle">Action chunk</text>
-    <text class="ts" x="853" y="154" text-anchor="middle">H hành động liên tiếp</text>
-    <g>
-      <rect x="784" y="168" width="14" height="22" rx="3" fill="var(--teal)"/><rect x="802" y="168" width="14" height="22" rx="3" fill="var(--teal)"/><rect x="820" y="168" width="14" height="22" rx="3" fill="var(--teal)"/><rect x="838" y="168" width="14" height="22" rx="3" fill="var(--teal)" opacity=".7"/><rect x="856" y="168" width="14" height="22" rx="3" fill="var(--teal)" opacity=".55"/><rect x="874" y="168" width="14" height="22" rx="3" fill="var(--teal)" opacity=".4"/><rect x="892" y="168" width="14" height="22" rx="3" fill="var(--teal)" opacity=".3"/><rect x="910" y="168" width="14" height="22" rx="3" fill="var(--teal)" opacity=".2"/>
-    </g>
-    <!-- robot + eval -->
-    <path class="ln" d="M853 210 V300" marker-end="url(#ar)"/>
-    <rect class="bx" x="700" y="304" width="240" height="72" rx="12"/>
-    <text class="tt" x="820" y="334" text-anchor="middle">Robot chạy (vd 50 Hz)</text>
-    <text class="ts" x="820" y="356" text-anchor="middle">mô phỏng hoặc robot thật → chấm SR</text>
-    <path class="ln" d="M700 340 H95 V174" marker-end="url(#ar)" stroke-dasharray="5 5"/>
-    <text class="ts" x="390" y="332" text-anchor="middle">quan sát mới → gọi mô hình lần tiếp (trong lúc đó robot vẫn chạy chunk cũ)</text>
-    <!-- pins -->
-    <g class="pin"><circle cx="935" cy="300" r="14" fill="#ef8f00"/><text x="935" y="305" text-anchor="middle">1</text></g>
-    <g class="pin"><circle cx="422" cy="30" r="14" fill="#e65100"/><text x="422" y="35" text-anchor="middle">2</text></g>
-    <g class="pin"><circle cx="160" cy="150" r="14" fill="#00897B"/><text x="160" y="155" text-anchor="middle">3</text></g>
-    <g class="pin"><circle cx="712" cy="236" r="14" fill="#5e35b1"/><text x="712" y="241" text-anchor="middle">4</text></g>
-    <g class="pin"><circle cx="712" cy="131" r="14" fill="#7e57c2"/><text x="712" y="136" text-anchor="middle">5</text></g>
-    <g class="pin"><circle cx="712" cy="173" r="14" fill="#c2185b"/><text x="712" y="178" text-anchor="middle">6</text></g>
-  </svg>
-  </div>
-  <div class="legend">
-    <div><span class="dot c1">1</span><span><b>LIBERO</b>: bước cuối, chấm điểm success rate trong mô phỏng.</span></div>
-    <div><span class="dot c2">2</span><span><b>GR00T N1</b>: định hình cả khuôn VLM + DiT + chunk.</span></div>
-    <div><span class="dot c3">3</span><span><b>Qwen-VLA</b>: mô tả robot bằng chữ ở đầu vào; 4 giai đoạn huấn luyện.</span></div>
-    <div><span class="dot c4">4</span><span><b>RTC suy luận</b>: sửa vòng lặp khử nhiễu, thêm lực kéo.</span></div>
-    <div><span class="dot c5">5</span><span><b>RTC huấn luyện</b>: τ riêng từng token qua AdaLN, sửa loss.</span></div>
-    <div><span class="dot c6">6</span><span><b>MoE</b>: thay lớp FFN trong mọi khối.</span></div>
-  </div>
-</section>
+<!-- ================= KẾT LUẬN ================= -->
+<h2 id="ket-luan">Rút ra được gì từ cả 6 paper</h2>
+<div class="card">
+<ol class="lessons">
+  <li><b>Một VLA gồm bộ não và đôi tay.</b> Bộ não mượn sẵn khả năng nhìn và đọc từ dữ liệu Internet; đôi tay nhỏ và nhanh, chuyên sinh cử động. Các mô hình khác nhau chủ yếu ở cách nối hai phần và cách cho mô hình biết đang điều khiển robot nào (GR00T dùng "phiên dịch viên" riêng, Qwen-VLA dùng câu chữ).</li>
+  <li><b>Học trước giúp hay hại tùy quy mô.</b> Ở LIBERO, học trước trên ít dữ liệu làm robot kém đi. Ở GR00T và Qwen-VLA, học trước trên dữ liệu rất lớn và đa dạng là nguồn sức mạnh chính. Nhưng học kỹ trên dữ liệu quá hẹp lại có thể làm robot quên kỹ năng cũ.</li>
+  <li><b>Điểm thi cao chưa chắc là hiểu.</b> LIBERO đã gần như bị "học thuộc". Muốn biết robot giỏi thật thì phải thử với tình huống lạ và trên robot thật.</li>
+  <li><b>Mỗi giải pháp sinh ra vấn đề mới, và paper sau giải quyết nó.</b> Cử động theo đoạn làm robot mượt, nhưng sinh ra chuyện nối các đoạn bị giật, nên mới có RTC. Một mô hình cho nhiều robot thì tiện, nhưng đôi tay bị quá tải, nên mới có MoE.</li>
+  <li><b>Giải lúc chạy hay giải lúc học là một sự đánh đổi.</b> Giải lúc chạy linh hoạt nhưng tốn thời gian; giải lúc học thì chạy nhanh nhưng phải học lại và phải đoán trước điều kiện.</li>
+  <li><b>Với robot, tốc độ thật rất quan trọng.</b> Mô hình "tính ít hơn trên giấy" chưa chắc chạy nhanh hơn trên máy thật, và độ trễ ảnh hưởng trực tiếp tới việc robot có cử động mượt hay không.</li>
+  <li><b>Đọc kết quả cần tỉnh táo.</b> Thí nghiệm trên robot thật thường chỉ thử 10–30 lần mỗi việc, nhiều con số phải đọc từ hình, và mô hình gọi là "chung" vẫn có thể đã được học kỹ trên chính bài thi. Trước khi trích một con số, hãy mở PDF kiểm lại.</li>
+</ol>
+</div>
 
-<!-- ============ PHẦN A ============ -->
-<section id="libero">
-  <h2><span class="num">A</span>Phần A · Ba paper cơ bản <span class="tag t-basic">Đọc rộng</span></h2>
-  <p class="lead">Mục tiêu của phần này: hiểu VLA là gì, được huấn luyện và chấm điểm thế nào, và trả lời được câu hỏi mentor đặt ra: <i>pretrain và finetune khác nhau ra sao, cái nào mang lại sức mạnh?</i></p>
-
-  <article class="paper">
-    <div class="ph"><div class="n c1">1</div><div><h3>LIBERO: bộ đề kiểm tra cho robot học suốt đời</h3><div class="meta">NeurIPS 2023 · arXiv 2306.03310 · benchmark mô phỏng (robosuite / MuJoCo)</div></div></div>
-    <div class="pb">
-      <p class="question">Robot học lần lượt nhiều việc thì có dùng kinh nghiệm cũ để học việc mới nhanh hơn không, và có quên việc cũ không? Cần một bộ đề để đo điều đó.</p>
-      <div class="analogy">Thuê người giúp việc: tuần này dạy rửa bát, tuần sau dạy nấu cơm. Ta muốn họ học việc mới nhanh hơn nhờ việc cũ (forward transfer) và không quên việc cũ (tránh catastrophic forgetting).</div>
-
-      <div class="label">Ý chính</div>
-      <ul>
-        <li><b>130 bài tập, 4 bộ, mỗi bộ chỉ đổi một yếu tố:</b> LIBERO-Spatial (đổi vị trí, 10 bài), Object (đổi đồ vật, 10 bài), Goal (đổi việc phải làm, 10 bài), LIBERO-100 (trộn tất cả: LIBERO-90 để pretrain + LIBERO-Long/LIBERO-10 gồm 10 bài dài).</li>
-        <li><b>Mỗi bài 50 lần làm mẫu</b> do người điều khiển bằng chuột 3D. Robot một tay, 2 camera (toàn cảnh + cổ tay), hành động 7 số (3 dịch chuyển + 3 xoay + kẹp).</li>
-        <li><b>Phân biệt hai loại kiến thức:</b> "biết cái gì" (declarative: Spatial, Object) và "biết làm thế nào" (procedural: Goal).</li>
-        <li><b>So 3 trường phái chống quên</b> (ER ôn bài cũ, EWC phạt khi đổi tham số quan trọng, PackNet chia mạng) với hai mốc: học tuần tự ngây thơ (SeqL) và học tất cả cùng lúc (MTL).</li>
-      </ul>
-
-      <div class="label">Phát hiện đáng nhớ</div>
-      <div class="stats">
-        <div class="stat"><div class="v">Transformer &gt; RNN</div><div class="k">ResNet-RNN thấp nhất ở mọi ô (Bảng 1). Một lý do mọi VLA sau này dùng Transformer.</div></div>
-        <div class="stat"><div class="v">SeqL học mới tốt nhất</div><div class="k">FWT cao nhất ở cả 4 bộ, nhưng quên rất nặng. Chống quên làm hại khả năng học mới.</div></div>
-        <div class="stat"><div class="v">BERT ≈ "Task 5"</div><div class="k">Câu lệnh đầy nghĩa không hơn một nhãn số thứ tự (Bảng 3). Robot dùng câu lệnh như cái nhãn.</div></div>
-        <div class="stat"><div class="v">Pretrain → tệ hơn</div><div class="k">Pretrain đơn giản trên LIBERO-90 làm kết quả LIBERO-Long kém đi (Hình 5).</div></div>
-      </div>
-
-      <div class="takeaway"><b>Rút ra được gì.</b> Ngày nay bạn gặp LIBERO trong paper VLA không phải vì học suốt đời, mà vì nó là <b>bộ đề chuẩn</b>: finetune trên dữ liệu 4 bộ, mỗi bộ 10 bài × 50 lượt thử = 500 lượt, báo success rate. Điểm đã gần bão hòa: các mô hình mạnh đạt 97–99%, chênh 1 điểm chỉ ~5 lượt thử. LIBERO-PRO và LIBERO-Plus (2025) cho thấy chỉ cần dời vị trí đồ vật hay đổi góc camera là điểm rơi mạnh, và robot gần như không đọc câu lệnh. Nên điểm LIBERO cao là <b>điều kiện cần</b>, chưa phải bằng chứng robot hiểu.</div>
-      <div class="caution"><div class="label">Hai vai trò dễ nhầm</div>Paper viết về học suốt đời (đo FWT, NBT, AUC); paper VLA dùng LIBERO như một bài thi đa nhiệm (chỉ đo SR, gần với cách MTL). Khi present, nói rõ cả hai.</div>
-      <div class="links">
-        <a href="LIBERO/LIBERO · Đọc hiểu paper.html">Trang đọc hiểu</a>
-        <a href="LIBERO/LIBERO · Slide trình bày.html">Slide</a>
-        <a href="Docs/LIBERO.pdf">PDF gốc</a>
-        <a href="Docs/translated/LIBERO-vi.pdf">PDF tiếng Việt</a>
-      </div>
-    </div>
-  </article>
-
-  <div class="bridge"><div class="label">LIBERO → GR00T N1</div>Cả hai đều học bằng bắt chước (behavior cloning). Nhưng đầu ra GMM (trộn vài "quả chuông") của LIBERO được thay bằng <b>flow matching</b>, và câu lệnh được đọc bởi một VLM thật sự. Kết luận về pretrain thì <b>ngược nhau</b>: LIBERO thấy pretrain nhỏ làm hại, GR00T thấy pretrain lớn giúp học nhanh với ít dữ liệu. Điểm khác là quy mô dữ liệu và mô hình.</div>
-</section>
-
-<section id="groot">
-  <article class="paper">
-    <div class="ph"><div class="n c2">2</div><div><h3>GR00T N1: mô hình nền cho robot hình người</h3><div class="meta">NVIDIA · 03/2025 · arXiv 2503.14734 · VLA 2,2 tỷ tham số</div></div></div>
-    <div class="pb">
-      <p class="question">Làm sao xây một "bộ não" chung cho robot hình người (và nhiều loại robot khác), học được tác vụ mới với rất ít dữ liệu làm mẫu?</p>
-
-      <div class="label">Ý chính</div>
-      <ul>
-        <li><b>Hai hệ thống.</b> System 2 là VLM Eagle-2: nhìn ảnh, đọc câu lệnh, chạy chậm (~10 Hz); GR00T lấy đặc trưng ở lớp giữa (lớp 12). System 1 là một DiT nhìn sang đặc trưng VLM bằng <b>cross-attention</b> và sinh hành động. Hai khối huấn luyện chung.</li>
-        <li><b>Flow matching + action chunk.</b> Mỗi lần chạy sinh H = 16 hành động qua K = 4 bước khử nhiễu, mất 63,9 ms trên GPU L40.</li>
-        <li><b>Nhiều loại robot:</b> mỗi robot có bộ mã hóa/giải mã trạng thái và hành động riêng (MLP), lõi DiT dùng chung.</li>
-        <li><b>Kim tự tháp dữ liệu:</b> video người ở đáy (gán "latent action" vì không có nhãn hành động) → dữ liệu tổng hợp từ mô phỏng và mô hình sinh video ở giữa → dữ liệu robot thật ở đỉnh.</li>
-      </ul>
-
-      <div class="formula">
-        \[ A^{\tau} = \tau A + (1-\tau)\,\epsilon, \qquad \text{mạng học vận tốc } v_\theta \approx A - \epsilon \]
-        <p>Quy ước GR00T: τ = 1 là hành động sạch \(A\), τ = 0 là nhiễu \(\epsilon\). Paper in mục tiêu là \(\epsilon - A\), nhưng theo đúng định nghĩa trên thì phải là \(A - \epsilon\): một lỗi dấu nên kiểm trong code.</p>
-      </div>
-
-      <div class="label">Con số nên nhớ</div>
-      <div class="stats">
-        <div class="stat"><div class="v">45,0% vs 33,4%</div><div class="k">TB 3 benchmark mô phỏng (100 demo/tác vụ): GR00T vs Diffusion Policy (Bảng 2)</div></div>
-        <div class="stat"><div class="v">42,6% vs 46,4%</div><div class="k">Robot GR-1 thật: GR00T chỉ với 10% dữ liệu gần bằng DP dùng đủ dữ liệu (Bảng 3)</div></div>
-        <div class="stat"><div class="v">76,8%</div><div class="k">GR00T đủ dữ liệu trên robot thật, hơn DP 30,4 điểm</div></div>
-        <div class="stat"><div class="v">RoboCasa</div><div class="k">24 tác vụ bếp, tay Franka, 3 camera, chỉ dùng 30 / 100 / 300 demo mỗi tác vụ</div></div>
-      </div>
-
-      <div class="takeaway"><b>Rút ra được gì.</b> Đây là cái khuôn của VLA hiện đại: <b>VLM để hiểu + action expert DiT flow matching để làm + action chunk</b>. Thông điệp chính là <b>hiệu quả dữ liệu</b>: pretrain lớn giúp đạt mức gần như Diffusion-Policy-đủ-dữ-liệu chỉ với 1/10 công thu demo. Đồng thời có cảnh báo: post-train hẹp làm mất kỹ năng (mô hình pretrain biết chuyền táo từ tay trái sang tay phải, bản post-train chỉ thấy tay phải thì quên).</div>
-      <div class="caution"><div class="label">Cần dè dặt</div>Baseline chỉ là Diffusion Policy và BC-Transformer học từ đầu, chưa so với VLA khác (π0, OpenVLA). Robot thật chỉ 10 lượt thử mỗi tác vụ. Bảng 2 và Bảng 4 lệch nhau ở DexMG (66,5 vs 58,5). Chấm "điểm cao nhất của 5 checkpoint cuối" hơi lạc quan.</div>
-      <div class="links">
-        <a href="Groot/GR00T N1 · Đọc hiểu paper.html">Trang đọc hiểu</a>
-        <a href="Groot/GR00T N1 · Slide trình bày.html">Slide</a>
-        <a href="Docs/Groot.pdf">PDF gốc</a>
-        <a href="Docs/translated/Groot-vi.pdf">PDF tiếng Việt</a>
-      </div>
-    </div>
-  </article>
-
-  <div class="bridge"><div class="label">GR00T N1 → Qwen-VLA</div>
-    <b>Giữ nguyên:</b> VLM + DiT flow matching, action chunk H = 16, AdaLN đưa τ vào.<br>
-    <b>Thay đổi:</b> VLM lớn hơn (Qwen3.5-4B); nối bằng <b>joint self-attention</b> (token VLM và token hành động chung một chuỗi) thay cho cross-attention; robot được mô tả bằng <b>câu chữ</b> thay vì MLP riêng; quy ước τ <b>đảo ngược</b>; thêm giai đoạn T2A và RL.</div>
-</section>
-
-<section id="qwen">
-  <article class="paper">
-    <div class="ph"><div class="n c3">3</div><div><h3>Qwen-VLA: một mô hình cho thao tác, điều hướng và nhiều loại robot</h3><div class="meta">Qwen Team (Alibaba) · 06/2026 · arXiv 2605.30280 · Qwen3.5-4B + DiT ~1,15B</div></div></div>
-    <div class="pb">
-      <p class="question">Dữ liệu robot bị phân mảnh: mỗi robot một kiểu hành động, mỗi bộ dữ liệu một chuẩn. Làm sao gộp tất cả vào một mô hình duy nhất, và huấn luyện theo trình tự nào?</p>
-
-      <div class="label">Ý chính</div>
-      <ul>
-        <li><b>Mọi tác vụ là "đoán H bước số tiếp theo".</b> Hành động của mọi robot đặt vào cùng một bảng \(Y \in \mathbb{R}^{H\times K}\); robot ít chiều hơn thì <b>đệm 0</b>, và một <b>mask</b> che các ô đệm khỏi loss.</li>
-        <li><b>Embodiment prompt.</b> Câu chữ mô tả robot (loại robot, số tay, kiểu điều khiển…) được gắn trước câu lệnh. Đổi robot = đổi câu chữ, không thêm mạng riêng.</li>
-        <li><b>Bốn giai đoạn huấn luyện:</b>
-          <ul>
-            <li><b>T2A</b> (Text-to-Action): đóng băng VLM, <b>bỏ ảnh</b>, dạy DiT đi từ chữ sang quỹ đạo. Không có ảnh thì mô hình không "đi tắt" bằng cách nhìn rồi bắt chước.</li>
-            <li><b>CPT</b>: mở băng cả hai, học tiếp trên hỗn hợp dữ liệu lớn (robot, tay người, mô phỏng, điều hướng, VQA) → <i>Qwen-VLA-Base</i>.</li>
-            <li><b>SFT</b>: tinh chỉnh trên dữ liệu tác vụ đích; loss chữ trọng số 0,1, loss hành động 1,0.</li>
-            <li><b>RL</b>: PPO với thưởng 0/1, chỉ trong SimplerEnv → <i>Qwen-VLA-Instruct</i>.</li>
-          </ul>
-        </li>
-        <li><b>RL cho flow matching:</b> PPO cần xác suất của hành động, mà flow matching (ODE) không có sẵn. Paper thêm nhiễu ở mỗi bước Euler (ODE → SDE) để mỗi bước thành một Gaussian tính được xác suất.</li>
-      </ul>
-
-      <div class="formula">
-        \[ Y_\tau = (1-\tau)\,Y_0 + \tau\,Y_1,\quad Y_1\sim\mathcal N(0,I),\qquad \mathcal L = \big\| v_\theta(Y_\tau,\tau \mid \text{ảnh, lệnh, robot}) - (Y_1 - Y_0)\big\|^2 \]
-        <p>Quy ước Qwen-VLA: τ = 0 sạch, τ = 1 nhiễu (ngược GR00T). Lúc chạy đi từ τ = 1 về 0 bằng vài bước Euler. Loss lấy trung bình hai tầng (theo bước, rồi theo kênh) và chỉ tính ở ô mask = 1.</p>
-      </div>
-
-      <div class="label">Con số nên nhớ</div>
-      <div class="stats">
-        <div class="stat"><div class="v">48,5 → 83,6%</div><div class="k">Robot ALOHA thật: không pretrain → có pretrain, cùng kiến trúc (OOD: 36,2 → 76,9)</div></div>
-        <div class="stat"><div class="v">60,9 → 71,1%</div><div class="k">Thêm T2A trước SFT, trên Simpler-WidowX (Hình 6). Thêm ảnh vào T2A: −2,9 điểm</div></div>
-        <div class="stat"><div class="v">90,8 → 97,9%</div><div class="k">LIBERO: Base → Instruct. RoboCasa-GR1: 40,4 → 56,7</div></div>
-        <div class="stat"><div class="v">1 mô hình</div><div class="k">Instruct: LIBERO 97,9 · Simpler 73,7 · RoboTwin 86,1/87,2. Đối thủ gần nhất GR00T N1.6: 97,2 LIBERO</div></div>
-      </div>
-
-      <div class="takeaway"><b>Rút ra được gì.</b> Câu trả lời cho mentor về pretrain vs finetune: <b>pretrain (T2A + CPT) tạo ra mô hình biết rộng nhưng chưa chính xác; finetune (SFT + RL) biến nó thành policy dùng được</b>. Bằng chứng mạnh nhất là ALOHA 83,6% so với 48,5%. Một bài học thiết kế: dùng <b>câu chữ</b> làm giao diện cho biết robot nào, thay vì thêm mạng riêng. Và RL sau SFT là để sửa lỗi tích lũy (compounding error), nhưng ở đây mức tăng ngoài SimplerEnv rất nhỏ.</div>
-      <div class="caution"><div class="label">Cần dè dặt</div>Gọi là "generalist" nhưng vẫn SFT trên dữ liệu mô phỏng của chính các benchmark. RL chỉ chạy ở SimplerEnv, các benchmark khác chỉ tăng 0,1–0,9 điểm. Ablation T2A chỉ đo trên một benchmark. Không công bố K (số kênh) và chi phí tính toán.</div>
-      <div class="links">
-        <a href="Qwen-VLA/Qwen-VLA · Đọc hiểu paper.html">Trang đọc hiểu</a>
-        <a href="Qwen-VLA/Qwen-VLA · Slide trình bày.html">Slide</a>
-        <a href="Docs/QwenVLA.pdf">PDF gốc</a>
-        <a href="Docs/translated/QwenVLA-vi.pdf">PDF tiếng Việt</a>
-      </div>
-    </div>
-  </article>
-
-  <div class="bridge"><div class="label">Hết phần cơ bản: bạn đã có gì?</div>Một khuôn kiến trúc (VLM + DiT flow matching + chunk), một cách chấm điểm (LIBERO, RoboCasa, robot thật) và câu trả lời về pretrain/finetune. Ba paper tiếp theo không đổi khuôn này. Chúng hỏi: <b>khi đem khuôn này ra chạy thật và mở rộng, cái gì hỏng trước?</b> Thứ nhất là độ trễ (RTC). Thứ hai là sức chứa của action expert (MoE).</div>
-</section>
-
-<!-- ============ PHẦN B ============ -->
-<section id="rtc-inf">
-  <h2><span class="num">B</span>Phần B · Ba paper chuyên sâu <span class="tag t-deep">Đọc sâu</span></h2>
-  <p class="lead">Đây là phương pháp chính mentor muốn bạn nắm chắc trước khi vào codebase. Cả ba đều sửa action expert, nhưng ở ba chỗ khác nhau: vòng suy luận, cách huấn luyện, và lớp FFN.</p>
-
-  <article class="paper">
-    <div class="ph"><div class="n c4">4</div><div><h3>RTC lúc suy luận (Real-Time Chunking)</h3><div class="meta">Physical Intelligence · 2025 · arXiv 2506.07339 · thử trên π0.5 và Kinetix</div></div></div>
-    <div class="pb">
-      <p class="question">Mô hình mất cả trăm mili-giây để sinh một chunk, trong khi robot phải chạy đều đặn mỗi 20 ms. Nếu vừa chạy vừa tính, chỗ nối giữa chunk cũ và chunk mới bị giật. Sửa thế nào mà không huấn luyện lại?</p>
-      <div class="analogy">Đầu bếp (mô hình) nấu mỗi mẻ 50 món, khách (robot) ăn đều mỗi 20 ms một món. Nấu một mẻ mất ~100 ms, nên trong lúc nấu khách đã ăn thêm 5–6 món từ mẻ cũ. Đợi khách ăn hết rồi mới nấu thì khách phải ngồi chờ (đồng bộ). Nấu sớm thì mẻ mới không biết khách đã ăn tới đâu (bất đồng bộ, dễ giật).</div>
-
-      <div class="label">Vấn đề: ba cách cũ đều hỏng</div>
-      <ul>
-        <li><b>Đồng bộ:</b> robot dừng chờ mỗi lần gọi mô hình. Chậm, và những khoảng dừng không có trong dữ liệu huấn luyện.</li>
-        <li><b>Nhảy thẳng sang chunk mới:</b> chunk mới tính từ ảnh cũ, không biết robot đã đi thêm d bước, lại có thể chọn "kiểu" khác (vòng trên thay vì vòng dưới vật cản) → gia tốc rất lớn.</li>
-        <li><b>Lấy trung bình hai chunk (temporal ensembling):</b> trung bình của hai cách đúng có thể đâm thẳng vào vật cản.</li>
-      </ul>
-
-      <div class="label">Cách của RTC</div>
-      <ul>
-        <li><b>Đóng băng:</b> d hành động đầu của chunk mới chắc chắn không được dùng (đã chạy từ chunk cũ), nên ép chúng bằng đúng chunk cũ.</li>
-        <li><b>Tô tiếp (inpainting):</b> sinh phần còn lại sao cho liền mạch. Vùng giữa vẫn bám chunk cũ nhưng <b>lỏng dần</b> (soft mask), cuối chunk tự do để phản ứng với quan sát mới.</li>
-        <li><b>Lực kéo ở mỗi bước khử nhiễu:</b> hỏi "nếu nặn thẳng tới cuối thì ra chunk gì?", so với chunk cũ ở vùng cần khớp, rồi đẩy theo hướng giảm sai lệch. Hướng đẩy tính bằng một lần backward qua action expert (theo đầu vào, không theo trọng số). Lực được kẹp trần β = 5.</li>
-      </ul>
-
-      <div class="formula">
-        \[ d \approx \Big\lceil \frac{\text{độ trễ}}{\text{chu kỳ điều khiển}} \Big\rceil,\qquad \text{π0.5 ở 50 Hz: } \tfrac{108{,}8\text{ ms}}{20\text{ ms}} \to d \approx 6 \]
-        <p>d là số bước robot chạy trong lúc chờ chunk mới. Thêm 100 ms trễ thì d ≈ 11, thêm 200 ms thì d ≈ 16 (H = 50). Mỗi bước Euler: vận tốc mô hình + lực kéo về chunk cũ có trọng số theo vị trí.</p>
-      </div>
-
-      <div class="label">Con số nên nhớ</div>
-      <div class="stats">
-        <div class="stat"><div class="v">≈ 0,84 → 0,88</div><div class="k">Throughput RTC (task/phút) ở +0 và +200 ms: không giảm. Đồng bộ: 0,72 → 0,51 (Hình 6, đọc từ hình)</div></div>
-        <div class="stat"><div class="v">76 → 97 ms</div><div class="k">Thời gian một lần gọi π0.5 khi thêm RTC; mỗi bước khử nhiễu 14 → 35 ms (2,5×)</div></div>
-        <div class="stat"><div class="v">TE = 0</div><div class="k">Temporal ensembling ở +100/+200 ms: robot rung tới mức tự dừng bảo vệ</div></div>
-        <div class="stat"><div class="v">480 episode</div><div class="k">Robot thật: 6 tác vụ, 28 giờ chạy. Tham số: H = 50, n = 5 bước, β = 5</div></div>
-      </div>
-
-      <div class="takeaway"><b>Rút ra được gì.</b> Action chunk giúp mượt nhưng sinh ra bài toán <b>độ trễ</b>, và chỗ nối chunk là chỗ hỏng. RTC biến việc nối chunk thành <b>inpainting</b>, việc mà mô hình flow vốn làm giỏi, và làm hoàn toàn <b>lúc suy luận</b>: cắm được vào mô hình có sẵn, không huấn luyện lại. Cái giá là mỗi bước khử nhiễu cần thêm một lần backward.</div>
-      <div class="caution"><div class="label">Cần dè dặt</div>Chỉ có ý nghĩa thống kê ở mức +100/+200 ms. Robot thật không so với naive hay BID. Kinetix (mô phỏng 2D) khác xa một VLA. Paper định nghĩa d bằng làm tròn xuống nhưng số khớp với làm tròn lên. Chưa thử trường hợp ước lượng d sai.</div>
-      <div class="links">
-        <a href="RTC/RTC-Inference · Đọc hiểu paper.html">Trang đọc hiểu</a>
-        <a href="RTC/RTC · Đọc hiểu & áp dụng.html">Bản dễ hiểu + áp dụng</a>
-        <a href="RTC/RTC · Slide trình bày.html">Slide (gộp 2 paper)</a>
-        <a href="Docs/RTC inference time.pdf">PDF gốc</a>
-        <a href="Docs/translated/RTC inference time-vi.pdf">PDF tiếng Việt</a>
-      </div>
-    </div>
-  </article>
-</section>
-
-<section id="rtc-train">
-  <article class="paper">
-    <div class="ph"><div class="n c5">5</div><div><h3>RTC lúc huấn luyện (Training-time RTC)</h3><div class="meta">Physical Intelligence · 12/2025 · arXiv 2512.05964 · thử trên Kinetix và π0.6</div></div></div>
-    <div class="pb">
-      <p class="question">RTC suy luận tốn thêm một lần backward ở mỗi bước, và kém dần khi độ trễ lớn. Có thể dạy mô hình tự làm việc nối chunk ngay từ lúc huấn luyện không?</p>
-      <div class="analogy">RTC suy luận giống học sinh làm bài mà mỗi câu có gia sư ngồi cạnh chỉnh từng bước. RTC huấn luyện là cho học sinh luyện trước đúng dạng bài này ở nhà, vào phòng thi tự làm, nhanh như bình thường.</div>
-
-      <div class="label">Ý chính</div>
-      <ul>
-        <li><b>Bài tập "viết tiếp câu":</b> lấy một chunk thật, bốc ngẫu nhiên d. Đưa d hành động đầu <b>nguyên vẹn</b>, phần còn lại làm nhiễu như thường, bắt mô hình khử nhiễu phần còn lại. Loss chỉ tính trên phần sau.</li>
-        <li><b>Mỗi token một "thẻ độ chín" τ:</b> prefix đeo τ = 1 (đã sạch, cứ dựa vào), phần sau đeo τ hiện tại. Với DiT, τ vào qua adaLN-zero, nên chỉ cần tính bộ scale/shift/gate cho từng token. <b>Không thêm tham số.</b></li>
-        <li><b>d được bốc ngẫu nhiên mỗi mẫu</b>, có cả d = 0, nên mô hình vẫn sinh chunk bình thường khi không có prefix.</li>
-        <li>Lúc chạy: điền d hành động của chunk cũ vào prefix, không cần backward. Runtime robot giữ nguyên.</li>
-      </ul>
-
-      <div class="formula">
-        \[ \text{mô hình học } \; p\big(\mathbf A_{t+d:H} \,\big|\, \mathbf o_t,\ \mathbf A_{t:t+d}\big) \]
-        <p>Đọc: "biết quan sát và d hành động đầu, sinh phần còn lại của chunk". Đây là phân phối có điều kiện mà RTC suy luận chỉ xấp xỉ bằng lực kéo gradient.</p>
-      </div>
-
-      <div class="label">Con số nên nhớ</div>
-      <div class="stats">
-        <div class="stat"><div class="v">≈ 0,72 vs 0,61</div><div class="k">Kinetix ở d = 4: RTC huấn luyện vs RTC suy luận; nối ngây thơ ≈ 0,49 (Hình 3, đọc từ hình)</div></div>
-        <div class="stat"><div class="v">108 vs 135 ms</div><div class="k">Độ trễ đầu-cuối trên π0.6 (server H100 từ xa, 5 bước): d ≈ 5 vs d ≈ 7</div></div>
-        <div class="stat"><div class="v">Ngang nhau</div><div class="k">Robot thật (pha espresso, gấp hộp): hai bản RTC gần bằng nhau, cả hai nhanh hơn đồng bộ rõ (Hình 5)</div></div>
-      </div>
-
-      <div class="tablewrap" style="margin-top:12px"><table>
-        <tr><th></th><th>RTC suy luận</th><th>RTC huấn luyện</th></tr>
-        <tr><td>Huấn luyện lại?</td><td>Không</td><td>Có (fine-tune, vài dòng code)</td></tr>
-        <tr><td>Chi phí lúc chạy</td><td>+1 backward mỗi bước (π0.5: 76 → 97 ms)</td><td>Như mô hình gốc</td></tr>
-        <tr><td>Khớp với chunk cũ</td><td>Cứng ở d bước + mềm dần ở vùng giữa</td><td>Chỉ prefix cứng d bước</td></tr>
-        <tr><td>Khi d lớn</td><td>Kém dần</td><td>Bền hơn</td></tr>
-        <tr><td>Phải đoán trước</td><td>Không</td><td>Phân phối d lúc triển khai</td></tr>
-      </table></div>
-
-      <div class="takeaway"><b>Rút ra được gì.</b> Một vấn đề có thể giải ở <b>lúc chạy</b> (linh hoạt, tốn tính toán) hoặc <b>lúc học</b> (rẻ khi chạy, nhưng phải chọn trước điều kiện). Mẹo "τ riêng từng token qua AdaLN" là ví dụ hay về cách thêm khả năng mới cho DiT mà không đổi số tham số. Kết quả robot thật cho thấy hai bản <b>ngang nhau</b>, lợi thế chính là tốc độ.</div>
-      <div class="caution"><div class="label">Cần dè dặt</div>Phần mở đầu nói "cải thiện hiệu năng" nhưng kết quả robot thật là "ngang bằng". Nói "không đổi kiến trúc" nhưng bước đầu là cho τ theo từng token. Eq. 2 ghi mục tiêu (ε − A) trong khi code dùng (action − noise): cùng kiểu lỗi dấu như GR00T. Số lượt chạy robot thật không được ghi.</div>
-      <div class="links">
-        <a href="RTC/RTC-Training · Đọc hiểu paper.html">Trang đọc hiểu</a>
-        <a href="RTC/RTC · Đọc hiểu & áp dụng.html">Bản dễ hiểu + áp dụng</a>
-        <a href="RTC/RTC · Slide trình bày.html">Slide (gộp 2 paper)</a>
-        <a href="Docs/RTC training Time.pdf">PDF gốc</a>
-        <a href="Docs/translated/RTC training Time-vi.pdf">PDF tiếng Việt</a>
-      </div>
-    </div>
-  </article>
-
-  <div class="bridge"><div class="label">RTC → MoE</div>RTC giữ nguyên "ruột" của action expert và sửa cách gọi nó (vòng khử nhiễu, đầu vào τ). MoE thì mở ruột ra: khi một action expert phải phục vụ hàng chục loại robot, lớp FFN dùng chung có thể không đủ chỗ chứa. Hai hướng ghép được với nhau, nhưng paper LingBot 2.0 không nhắc tới RTC.</div>
-</section>
-
-<section id="moe">
-  <article class="paper">
-    <div class="ph"><div class="n c6">6</div><div><h3>LingBot-VLA 2.0: Mixture-of-Experts trong action expert</h3><div class="meta">2026 · arXiv 2607.06403 · trọng tâm: Section 4.1, Eq. 2–8</div></div></div>
-    <div class="pb">
-      <p class="question">Một action expert điều khiển rất nhiều loại robot (~20 cấu hình bậc tự do). Muốn tăng sức chứa mà không làm mỗi token tốn thêm tính toán, làm thế nào?</p>
-      <div class="analogy">FFN thường giống một bác sĩ to khám cho mọi bệnh nhân. MoE là phòng khám chuyên khoa: nhiều bác sĩ nhỏ, lễ tân (router) gửi mỗi bệnh nhân (token) tới K khoa phù hợp nhất, và luôn có một bác sĩ đa khoa (chuyên gia chung) khám cho mọi người.</div>
-
-      <div class="label">Ý chính</div>
-      <ul>
-        <li><b>Thay FFN ở mọi khối của action expert</b> bằng: 1 chuyên gia chung + N<sub>r</sub> chuyên gia định tuyến, chọn top-K. Giữ nguyên attention, AdaLN và nhánh residual. VLM không có MoE.</li>
-        <li><b>Router dùng sigmoid</b> (theo DeepSeek-V3): mỗi chuyên gia được chấm điểm độc lập từ 0 tới 1, không phải "giành điểm" như softmax. Trọng số chuẩn hóa trong nhóm top-K.</li>
-        <li><b>Cân bằng tải không cần loss phụ:</b> mỗi chuyên gia có một "điểm cộng xếp hàng" b<sub>j</sub>. Đông quá thì bị trừ γ, vắng thì được cộng. b chỉ dùng để <b>chọn ai</b>, không dùng để <b>trộn kết quả</b>, và không học bằng gradient.</li>
-        <li><b>Tổng tham số lớn, tham số active nhỏ:</b> MoE 1,6B tổng nhưng mỗi token chỉ chạy 0,6B, bằng bản dense 0,6B.</li>
-      </ul>
-
-      <div class="formula">
-        \[ y = E_{\text{chung}}(u) + \sum_{j \in \text{TopK}(s + b)} g_j\, E_j(u),\qquad s = \sigma(W_r u),\quad g_j = \frac{s_j}{\sum_{k\in\text{TopK}} s_k} \]
-        \[ b_j \leftarrow b_j - \gamma\cdot \operatorname{sign}\big(n_j - \bar n\big) \]
-        <p>\(u\): vector của token sau AdaLN. \(n_j\): số token chuyên gia j nhận. Ví dụ: s = (0,881; 0,731; 0,622; 0,269), top-2 chọn E1, E2 → g₁ = 0,881 / 1,612 ≈ 0,546, g₂ ≈ 0,454.</p>
-      </div>
-
-      <div class="label">Con số nên nhớ</div>
-      <div class="stats">
-        <div class="stat"><div class="v">0,090 vs 0,076</div><div class="k">Lỗi hành động validation ở 50k bước: dense 0,6B vs MoE 1,6B-A-0,6B (Hình 7, đọc từ hình). MoE thấp hơn ở cả 5 mốc</div></div>
-        <div class="stat"><div class="v">66,2 / 34,4</div><div class="k">Agilex, tiến độ / thành công TB: LingBot 2.0 vs π0.5 59,1 / 32,2 (Bảng 5)</div></div>
-        <div class="stat"><div class="v">77,1 / 60,0</div><div class="k">Tác vụ tủ lạnh in-domain: LingBot 2.0 vs π0.5 65,3 / 46,7 (Bảng 6, 15 lượt)</div></div>
-      </div>
-
-      <div class="takeaway"><b>Rút ra được gì.</b> MoE là cách tách "kiến thức" (tổng tham số) khỏi "chi phí mỗi token" (tham số active). Cân bằng tải bằng bias thay cho loss phụ giữ loss học hành động sạch. Nhưng bằng chứng <b>riêng</b> cho MoE chỉ là lỗi hành động offline (Hình 7); Bảng 5–6 so cả hệ thống 2.0 (dữ liệu mới, VLM mạnh hơn, MoE…) nên không tách được công của MoE.</div>
-      <div class="caution"><div class="label">Cần dè dặt</div>Không có ablation MoE trên tỉ lệ thành công; Hình 7 chỉ một lần chạy. Không công bố N<sub>r</sub>, K, γ, chiều ẩn, số khối. "Cùng tính toán" chưa chắc cùng độ trễ: với batch 1, các token của một chunk có thể chạm gần hết chuyên gia, nên phải đọc trọng số của tất cả (thí nghiệm đồ chơi CPU: dense 0,09 ms vs MoE 0,79 ms). Paper cũng không ghi hàm mục tiêu hành động, quy ước τ, số bước khử nhiễu hay chunk size.</div>
-      <div class="links">
-        <a href="LingBot/LingBot · Đọc hiểu paper.html">Trang đọc hiểu</a>
-        <a href="LingBot/LingBot · Đọc hiểu & áp dụng.html">Bản dễ hiểu + áp dụng</a>
-        <a href="LingBot/LingBot · Slide trình bày.html">Slide</a>
-        <a href="Docs/Moe.pdf">PDF gốc</a>
-        <a href="Docs/translated/Moe-vi.pdf">PDF tiếng Việt</a>
-      </div>
-    </div>
-  </article>
-</section>
-
-<!-- ============ SO SÁNH ============ -->
-<section id="so-sanh">
-  <h2><span class="num">9</span>Bảng so sánh <span class="tag t-should">Nên biết</span></h2>
-  <p class="lead">Ba mô hình VLA trong lộ trình. Ô "—" là paper không nói (không phải không có).</p>
-  <div class="tablewrap"><table>
-    <tr><th></th><th>GR00T N1</th><th>Qwen-VLA</th><th>LingBot-VLA 2.0</th></tr>
-    <tr><td><b>VLM</b></td><td>Eagle-2, lấy lớp 12, phần ngôn ngữ đóng băng</td><td>Qwen3.5-4B</td><td>"understanding expert", paper không nêu tên</td></tr>
-    <tr><td><b>Action expert</b></td><td>DiT, cross-attention sang VLM</td><td>DiT 16 khối ~1,15B, joint self-attention</td><td>Kiểu π0, FFN → MoE (dense 0,6B vs MoE 1,6B-A-0,6B)</td></tr>
-    <tr><td><b>Mô tả robot</b></td><td>MLP mã hóa/giải mã riêng từng robot</td><td>Embodiment prompt + đệm 0 + mask</td><td>—</td></tr>
-    <tr><td><b>Chunk H</b></td><td>16</td><td>16 (điều hướng: 8 waypoint)</td><td>—</td></tr>
-    <tr><td><b>Bước khử nhiễu</b></td><td>K = 4</td><td>"vài" bước Euler (không ghi số)</td><td>—</td></tr>
-    <tr><td><b>Quy ước τ</b></td><td>τ = 1 sạch</td><td>τ = 1 nhiễu</td><td>—</td></tr>
-    <tr><td><b>Huấn luyện</b></td><td>Pretrain (kim tự tháp dữ liệu) → post-train</td><td>T2A → CPT → SFT → RL</td><td>—</td></tr>
-    <tr><td><b>Đóng góp chính</b></td><td>Khuôn System 1/2, hiệu quả dữ liệu</td><td>Một mô hình cho mọi robot, T2A</td><td>MoE trong action expert</td></tr>
-  </table></div>
-</section>
-
-<!-- ============ BÀI HỌC ============ -->
-<section id="bai-hoc">
-  <h2><span class="num">10</span>Rút ra được gì từ cả 6 paper <span class="tag t-must">Phải nắm</span></h2>
-  <p class="lead">Những bài học xuyên suốt, không thuộc riêng paper nào. Đây là phần nên nói khi mentor hỏi "em học được gì?".</p>
-  <div class="card">
-    <div class="lesson"><div class="i">1</div><div><h4>VLA = phần hiểu + phần làm, nói chuyện qua hidden states</h4><p>VLM mượn sẵn khả năng nhìn và đọc từ Internet; action expert nhỏ, nhanh, sinh hành động liên tục. Khác biệt giữa các mô hình chủ yếu nằm ở cách nối hai phần (cross-attention hay joint self-attention) và cách báo loại robot (MLP riêng hay câu chữ).</p><div class="from">GR00T · Qwen-VLA · LingBot</div></div></div>
-    <div class="lesson"><div class="i">2</div><div><h4>Flow matching vì hành động có nhiều cách đúng</h4><p>Hồi quy MSE lấy trung bình các cách đúng và thường sai. Mô hình sinh "chọn" một cách. Cũng vì vậy mà trung bình hai chunk (temporal ensembling) nguy hiểm.</p><div class="from">GR00T · Qwen-VLA · RTC</div></div></div>
-    <div class="lesson"><div class="i">3</div><div><h4>Pretrain giúp hay hại tùy quy mô</h4><p>LIBERO: pretrain nhỏ trên 90 bài làm kém đi. GR00T và Qwen-VLA: pretrain trên dữ liệu rất lớn, đa dạng (cả video người, mô phỏng, dữ liệu chữ) là nguồn sức mạnh chính (ALOHA 48,5 → 83,6%). Nhưng finetune hẹp có thể làm quên kỹ năng (ví dụ chuyền táo của GR00T).</p><div class="from">LIBERO · GR00T · Qwen-VLA</div></div></div>
-    <div class="lesson"><div class="i">4</div><div><h4>Điểm benchmark cao chưa phải là hiểu</h4><p>LIBERO đã bão hòa (97–99%) và các bản kiểm tra khó hơn cho thấy robot học thuộc cảnh. Nên đọc thêm: kết quả OOD, robot thật, và benchmark khó hơn (RoboCasa, RoboTwin, SimplerEnv).</p><div class="from">LIBERO · Qwen-VLA</div></div></div>
-    <div class="lesson"><div class="i">5</div><div><h4>Mỗi giải pháp sinh ra vấn đề mới</h4><p>Action chunk làm chuyển động mượt và gọi mô hình ít hơn, nhưng sinh ra độ trễ và chỗ nối giật → RTC. Một action expert cho nhiều robot tiết kiệm, nhưng có thể thiếu sức chứa → MoE. Hiểu chuỗi "giải pháp → vấn đề mới" giúp đoán được paper tiếp theo sẽ làm gì.</p><div class="from">GR00T → RTC · Qwen-VLA → MoE</div></div></div>
-    <div class="lesson"><div class="i">6</div><div><h4>Giải lúc chạy hay giải lúc học là một đánh đổi</h4><p>RTC suy luận: không huấn luyện lại, nhưng tốn tính toán mỗi lần chạy. RTC huấn luyện: rẻ khi chạy, nhưng phải fine-tune và chọn trước phân phối độ trễ. Câu hỏi này lặp lại ở rất nhiều bài toán khác.</p><div class="from">RTC suy luận · RTC huấn luyện</div></div></div>
-    <div class="lesson"><div class="i">7</div><div><h4>"Cùng tính toán" chưa chắc cùng tốc độ</h4><p>Tham số active bằng nhau không có nghĩa là bộ nhớ hay độ trễ bằng nhau. Trên robot, độ trễ mới là con số quyết định (nó quyết định d trong RTC). Muốn kết luận phải đo trên phần cứng thật.</p><div class="from">MoE · RTC</div></div></div>
-    <div class="lesson"><div class="i">8</div><div><h4>Đọc số có phán đoán</h4><p>Cỡ mẫu robot thật thường rất nhỏ (10–26 lượt), nhiều số chỉ đọc được từ hình, "generalist" vẫn finetune trên dữ liệu benchmark, ablation thường chỉ một benchmark hoặc một lần chạy. So mức chênh với độ nhiễu trước khi tin.</p><div class="from">Cả 6</div></div></div>
-    <div class="lesson"><div class="i">9</div><div><h4>Quy ước τ và dấu: luôn kiểm trong code</h4><p>GR00T và RTC dùng τ = 1 là sạch, Qwen-VLA ngược lại. Cả GR00T lẫn RTC huấn luyện đều in mục tiêu flow có dấu ngược với code. Trước khi sửa vòng khử nhiễu, xác định quy ước của codebase đầu tiên.</p><div class="from">GR00T · Qwen-VLA · RTC</div></div></div>
-  </div>
-</section>
-
-<!-- ============ CODE ============ -->
-<section id="code">
-  <h2><span class="num">11</span>Mang vào codebase <span class="tag t-should">Nên biết</span></h2>
-  <p class="lead">Codebase của nhóm chưa rõ là mô hình nào (nhớ hỏi mentor). Danh sách dưới viết cho kiến trúc chung VLM + action expert DiT flow matching. Khi mở code, tìm theo thứ tự này:</p>
-  <div class="grid2">
-    <div class="card">
-      <div class="label" style="margin-top:0">Hiểu khung (từ 3 paper cơ bản)</div>
-      <ul class="checklist">
-        <li><label><input type="checkbox">VLM nào, lấy hidden states ở lớp nào, có đóng băng không</label></li>
-        <li><label><input type="checkbox">Action expert nối với VLM bằng cross-attention hay joint self-attention</label></li>
-        <li><label><input type="checkbox">Hàm loss flow matching: quy ước τ, mục tiêu vận tốc, phân phối lấy mẫu τ</label></li>
-        <li><label><input type="checkbox">Chunk H, số bước khử nhiễu n, tần số điều khiển</label></li>
-        <li><label><input type="checkbox">Cách báo loại robot: MLP riêng, prompt hay đệm 0 + mask</label></li>
-        <li><label><input type="checkbox">Script đánh giá LIBERO / RoboCasa: số lượt thử, cách chọn checkpoint</label></li>
-      </ul>
-    </div>
-    <div class="card">
-      <div class="label" style="margin-top:0">Chỗ cắm phương pháp (từ 3 paper chuyên sâu)</div>
-      <ul class="checklist">
-        <li><label><input type="checkbox"><b>RTC suy luận:</b> vòng lặp Euler trong hàm sample; runtime gọi mô hình bất đồng bộ</label></li>
-        <li><label><input type="checkbox">Đo độ trễ thật (ms) để tính d</label></li>
-        <li><label><input type="checkbox"><b>RTC huấn luyện:</b> AdaLN có nhận τ theo từng token được không; loss có mask theo token</label></li>
-        <li><label><input type="checkbox"><b>MoE:</b> lớp FFN/MLP trong mỗi khối action expert</label></li>
-        <li><label><input type="checkbox">Bias cân bằng tải: nằm ngoài optimizer nhưng trong state_dict</label></li>
-        <li><label><input type="checkbox">Đo cả latency batch 1, không chỉ loss</label></li>
-      </ul>
-    </div>
-  </div>
-  <p style="font-size:14px;color:var(--muted)">Hướng dẫn từng bước kèm code mẫu PyTorch nằm trong hai trang "Đọc hiểu &amp; áp dụng" của RTC và LingBot.</p>
-</section>
-
-<!-- ============ TỰ KIỂM TRA ============ -->
-<section id="tu-kiem-tra">
-  <h2><span class="num">12</span>Tự kiểm tra <span class="tag t-must">Phải nắm</span></h2>
-  <p class="lead">Tự trả lời bằng lời của mình trước, rồi mới mở gợi ý. Câu nào vấp thì quay lại thẻ paper tương ứng.</p>
-  <details><summary>1. Vì sao paper VLA dùng LIBERO, trong khi LIBERO được viết cho học suốt đời?</summary><div class="ans">Vì 4 bộ bài của nó là bộ đề mô phỏng chuẩn, có sẵn dữ liệu làm mẫu và cách chấm. Paper VLA finetune trên cả 4 bộ cùng lúc rồi đo success rate (500 lượt mỗi bộ), không đo FWT/NBT/AUC.</div></details>
-  <details><summary>2. System 1 và System 2 trong GR00T N1 là gì? Vì sao tách hai?</summary><div class="ans">System 2 = VLM (Eagle-2), hiểu ảnh + câu lệnh, chậm. System 1 = DiT flow matching, sinh chunk hành động nhanh. Tách để phần hiểu dùng được VLM pretrained lớn, phần làm nhỏ và chạy được nhiều bước khử nhiễu mỗi chunk.</div></details>
-  <details><summary>3. Qwen-VLA điều khiển nhiều loại robot bằng một đầu ra như thế nào?</summary><div class="ans">Mọi hành động đặt vào bảng H × K; robot ít chiều hơn thì đệm 0 và dùng mask để loss bỏ qua ô đệm. Loại robot được báo bằng embodiment prompt (câu chữ) trước câu lệnh.</div></details>
-  <details><summary>4. Vì sao T2A cố tình bỏ ảnh?</summary><div class="ans">Để action expert buộc phải nối chữ với hành động (như "giải nén" vài token chữ thành quỹ đạo), không đi tắt bằng cách nhìn ảnh rồi bắt chước. Bằng chứng: thêm ảnh vào T2A giảm 2,9 điểm; T2A đầy đủ tăng từ 60,9% lên 71,1% trên Simpler-WidowX.</div></details>
-  <details><summary>5. Pretrain hay finetune mang lại nhiều sức mạnh hơn? Dẫn số.</summary><div class="ans">Ở quy mô lớn, pretrain là nguồn chính: Qwen-VLA trên ALOHA thật 83,6% có pretrain vs 48,5% không. Finetune biến mô hình rộng thành policy chính xác (LIBERO Base 90,8 → Instruct 97,9). Ở quy mô nhỏ như LIBERO-90, pretrain đơn giản còn làm hại.</div></details>
-  <details><summary>6. Vì sao nhảy thẳng sang chunk mới lại làm robot giật?</summary><div class="ans">Chunk mới tính từ quan sát lúc bắt đầu tính, không biết robot đã đi thêm d bước, và có thể chọn một kiểu hành động khác chunk cũ. Chỗ nối lệch tạo gia tốc rất lớn.</div></details>
-  <details><summary>7. RTC suy luận "đóng băng" và "tô tiếp" là gì? Tốn gì?</summary><div class="ans">Đóng băng: ép d hành động đầu của chunk mới bằng chunk cũ. Tô tiếp: sinh phần còn lại liền mạch, bám chunk cũ lỏng dần. Làm bằng lực kéo ở mỗi bước khử nhiễu, cần một backward mỗi bước (π0.5: 76 → 97 ms).</div></details>
-  <details><summary>8. RTC huấn luyện khác RTC suy luận ở đâu? Mất gì?</summary><div class="ans">Dạy sẵn mô hình sinh tiếp từ prefix d bước (τ = 1 cho prefix, loss chỉ trên phần sau), nên chạy không cần backward. Mất: soft mask vùng giữa, phải fine-tune, phải chọn trước phân phối d.</div></details>
-  <details><summary>9. Bias b<sub>j</sub> trong router MoE ảnh hưởng tới phần nào?</summary><div class="ans">Chỉ việc chọn top-K (theo s + b). Trọng số trộn g vẫn tính từ s gốc. Bias đổi "ai được khám", không đổi "trộn theo tỉ lệ nào", và không học bằng gradient.</div></details>
-  <details><summary>10. Kết quả nào chứng minh riêng MoE giúp robot thành công hơn?</summary><div class="ans">Không có. Bằng chứng riêng cho MoE chỉ là Hình 7 (loss và lỗi hành động offline, một lần chạy). Bảng 5–6 so cả hệ thống LingBot 2.0 với mô hình khác.</div></details>
-</section>
-
-<!-- ============ TÀI LIỆU ============ -->
-<section id="tai-lieu">
-  <h2><span class="num">13</span>Tài liệu trong thư mục <span class="tag t-skim">Tra cứu</span></h2>
-  <div class="tablewrap"><table>
-    <tr><th>Paper</th><th>Đọc hiểu</th><th>Slide</th><th>PDF</th></tr>
-    <tr><td>1. LIBERO</td><td><a href="LIBERO/LIBERO · Đọc hiểu paper.html">Mở</a></td><td><a href="LIBERO/LIBERO · Slide trình bày.html">Mở</a></td><td><a href="Docs/LIBERO.pdf">Gốc</a> · <a href="Docs/translated/LIBERO-vi.pdf">Việt</a></td></tr>
-    <tr><td>2. GR00T N1</td><td><a href="Groot/GR00T N1 · Đọc hiểu paper.html">Mở</a></td><td><a href="Groot/GR00T N1 · Slide trình bày.html">Mở</a></td><td><a href="Docs/Groot.pdf">Gốc</a> · <a href="Docs/translated/Groot-vi.pdf">Việt</a></td></tr>
-    <tr><td>3. Qwen-VLA</td><td><a href="Qwen-VLA/Qwen-VLA · Đọc hiểu paper.html">Mở</a></td><td><a href="Qwen-VLA/Qwen-VLA · Slide trình bày.html">Mở</a></td><td><a href="Docs/QwenVLA.pdf">Gốc</a> · <a href="Docs/translated/QwenVLA-vi.pdf">Việt</a></td></tr>
-    <tr><td>4. RTC suy luận</td><td><a href="RTC/RTC-Inference · Đọc hiểu paper.html">Mở</a> · <a href="RTC/RTC · Đọc hiểu & áp dụng.html">Áp dụng</a></td><td><a href="RTC/RTC · Slide trình bày.html">Mở</a></td><td><a href="Docs/RTC inference time.pdf">Gốc</a> · <a href="Docs/translated/RTC inference time-vi.pdf">Việt</a></td></tr>
-    <tr><td>5. RTC huấn luyện</td><td><a href="RTC/RTC-Training · Đọc hiểu paper.html">Mở</a></td><td><a href="RTC/RTC · Slide trình bày.html">Mở</a></td><td><a href="Docs/RTC training Time.pdf">Gốc</a> · <a href="Docs/translated/RTC training Time-vi.pdf">Việt</a></td></tr>
-    <tr><td>6. LingBot-VLA 2.0</td><td><a href="LingBot/LingBot · Đọc hiểu paper.html">Mở</a> · <a href="LingBot/LingBot · Đọc hiểu & áp dụng.html">Áp dụng</a></td><td><a href="LingBot/LingBot · Slide trình bày.html">Mở</a></td><td><a href="Docs/Moe.pdf">Gốc</a> · <a href="Docs/translated/Moe-vi.pdf">Việt</a></td></tr>
-  </table></div>
-  <p style="font-size:14px;color:var(--muted)">Số "≈" là đọc từ hình trong PDF, không phải số in trong bảng. Trước khi nói một điểm phản biện với mentor, mở PDF kiểm lại đúng chỗ đó.</p>
-</section>
-
-<footer>Sổ tay VLA Modeling · Trang tổng hợp 6 paper · cập nhật 08/10/2026. Số liệu tổng hợp từ các trang đọc hiểu đã đối chiếu với PDF gốc.</footer>
-</main>
+<footer>Sổ tay VLA Modeling · Report tổng hợp 6 paper · cập nhật 08/10/2026. Bản chi tiết (công thức, bảng số đầy đủ) nằm trong trang đọc hiểu của từng paper.</footer>
 </div>
 
 <script>
@@ -691,29 +375,10 @@ footer{margin-top:60px;color:var(--muted);font-size:13px;border-top:1px solid va
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('vla-theme', next); } catch(e){}
   });
-  // encode local links with spaces/dấu
   document.querySelectorAll('a[href]').forEach(function(a){
     var h = a.getAttribute('href');
     if (h && h.charAt(0) !== '#' && !/^https?:/.test(h)) a.setAttribute('href', encodeURI(h).replace(/&/g,'%26'));
   });
-  // checklist memory
-  var boxes = document.querySelectorAll('.checklist input');
-  var saved = [];
-  try { saved = JSON.parse(localStorage.getItem('vla-tonghop-check') || '[]'); } catch(e){}
-  boxes.forEach(function(b,i){
-    if (saved[i]) b.checked = true;
-    b.addEventListener('change', function(){
-      var s = Array.prototype.map.call(boxes, function(x){ return x.checked; });
-      try { localStorage.setItem('vla-tonghop-check', JSON.stringify(s)); } catch(e){}
-    });
-  });
-  // TOC highlight
-  var links = document.querySelectorAll('nav.toc a');
-  var map = {}; links.forEach(function(l){ map[l.getAttribute('href').slice(1)] = l; });
-  var obs = new IntersectionObserver(function(es){
-    es.forEach(function(e){ if (e.isIntersecting && map[e.target.id]) { links.forEach(function(l){ l.classList.remove('on'); }); map[e.target.id].classList.add('on'); } });
-  }, { rootMargin: '-20% 0px -70% 0px' });
-  document.querySelectorAll('section[id]').forEach(function(s){ obs.observe(s); });
 })();
 </script>
 </body>

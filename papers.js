@@ -1,12 +1,12 @@
 /**
  * papers.js - Danh sách paper VLA Modeling
  * Đây là nơi duy nhất bạn cần sửa khi cập nhật trạng thái hoặc thêm paper mới.
- * 
+ *
  * Các trường dữ liệu:
  * - id: định danh duy nhất (dùng trong url ?id=...)
  * - ten: tên hiển thị của paper
  * - arxiv: mã arXiv (ví dụ '2306.03310')
- * - nhom: 'Đọc rộng' | 'Đọc sâu'
+ * - nhom: 'Đọc rộng' | 'Đọc sâu' | 'Mở rộng'
  * - bia: định danh loại bìa SVG trong assets/covers.js ('libero' | 'groot' | 'qwen' | 'rtc-infer' | 'rtc-train' | 'moe')
  * - moTa: tóm tắt 1 câu ngắn
  * - trangThai: 'chua-doc' | 'dang-doc' | 'da-present'
@@ -113,6 +113,23 @@ const PAPERS = [
       slide: "LingBot/LingBot · Slide trình bày.html",
       pdfGoc: "Docs/Moe.pdf",
       pdfViet: "Docs/translated/Moe-vi.pdf"
+    }
+  },
+
+  // --- NHÓM 3: MỞ RỘNG (SmolVLA: mentor gợi ý, kèm thử LeRobot) ---
+  {
+    id: "smolvla",
+    ten: "SmolVLA",
+    arxiv: "2506.01844",
+    nhom: "Mở rộng",
+    bia: "smolvla",
+    moTa: "VLA nhỏ 0,45B, dữ liệu cộng đồng, chạy bất đồng bộ",
+    trangThai: "dang-doc",
+    files: {
+      docHieu: "SmolVLA/SmolVLA · Đọc hiểu paper.html",
+      slide: null,
+      pdfGoc: "Docs/smolVLA.pdf",
+      pdfViet: null
     }
   }
 ];

@@ -1,0 +1,1661 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmolVLA · Đọc hiểu paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+  --gold:#b8860b; --gold-soft:#fbf3dc;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+    --gold:#e3b64a; --gold-soft:#2e2712;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+  --gold:#e3b64a; --gold-soft:#2e2712;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0;overflow-wrap:normal}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px;min-width:0}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+table.t td.keep{color:var(--pri-strong);font-weight:600}
+table.t td.chg{color:var(--accent);font-weight:600}
+table.t td.unk{color:var(--muted);font-weight:600}
+table.t td.sm{background:var(--gold-soft)}
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+.ctrl select{font:inherit;font-size:.9rem;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+details.more{border:1px dashed var(--line);border-radius:12px;padding:8px 14px;margin:12px 0;background:var(--card)}
+details.more>summary{cursor:pointer;font-weight:600;color:var(--pri);font-size:.93rem}
+details.more[open]>summary{margin-bottom:8px}
+.key{border:2px solid var(--pri);border-radius:14px;padding:12px 18px;margin:14px 0;background:var(--pri-soft)}
+.key b.t{display:block;color:var(--pri-strong);margin-bottom:2px}
+.idea{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:center;border-top:1px solid var(--line);padding:16px 0}
+.idea h3{margin:0 0 6px}
+.idea .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;font-size:.95rem}
+.idea .go{font-size:.85rem;color:var(--muted)}
+.idea svg text{font-size:13px}
+@media (max-width:760px){.idea{grid-template-columns:1fr}}
+.lv{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;vertical-align:middle;margin-left:8px;letter-spacing:.02em;line-height:1.6}
+.lv.m{background:var(--accent);color:#fff}
+.lv.s{background:var(--blue-soft);color:var(--blue)}
+.lv.k{background:var(--code-bg);color:var(--muted);border:1px solid var(--line)}
+nav.toc a i.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+i.d.m{background:var(--accent)} i.d.s{background:var(--blue)} i.d.k{background:var(--grey);opacity:.6}
+.legend-lv{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.9rem;margin:10px 0}
+.basics{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.basics>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.basics>div b.h{display:block;color:var(--pri-strong);margin-bottom:4px}
+.basics>div .why{display:block;margin-top:6px;font-size:.86rem;color:var(--muted)}
+.say{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:14px 0}
+.say b.t{display:block;color:var(--accent);margin-bottom:4px}
+.bars .row{display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{position:relative;height:16px}
+.bars .bar{height:12px;border-radius:4px;position:absolute;left:0;top:2px;min-width:2px;background:var(--grey)}
+.bars .bar.me{background:var(--pri)}
+.bars .bar.ref{background:var(--gold)}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-3px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .band{position:absolute;top:0;height:16px;background:var(--pri);opacity:.14;border-left:1px dashed var(--pri);border-right:1px dashed var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:118px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+.n{cursor:pointer}
+.n rect.b0{transition:stroke-width .15s}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.ar{stroke:var(--grey);stroke-width:1.6;fill:none}
+.mask{display:grid;gap:2px;margin:10px 0;font-size:.7rem}
+.mask span{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;background:var(--code-bg);color:var(--muted)}
+.mask span.y{background:var(--pri);color:#fff}
+.mask span.h{background:transparent;font-weight:700;color:var(--text)}
+.lesson{border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:10px;padding:10px 14px;margin:10px 0}
+.lesson b.h{color:var(--pri-strong)}
+.lesson .cav{display:block;margin-top:4px;font-size:.88rem;color:var(--muted)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tabs button{font:inherit;font-size:.84rem;padding:4px 10px;border-radius:8px;border:1.5px solid var(--pri);background:transparent;color:var(--pri);cursor:pointer}
+.tabs button.on{background:var(--pri);color:#fff}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.kpi div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.82rem;color:var(--muted)}
+.kpi b{display:block;font-size:1.15rem;color:var(--text)}
+.kpi div.bad b{color:var(--red)} .kpi div.good b{color:var(--pri-strong)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>SmolVLA · Đọc hiểu paper</h1>
+  <p><b>SmolVLA: A vision-language-action model for affordable and efficient robotics</b>: Shukor, Aubakirova, Capuano và cộng sự (Hugging Face, Sorbonne, valeo.ai, ENS Paris-Saclay), 06/2025 · arXiv 2506.01844 (v1)</p>
+  <p>Paper mentor gợi ý cho bước tiếp theo (thử codebase LeRobot). Nằm giữa hai mạch đã học: cùng khuôn VLM + flow matching với GR00T và Qwen-VLA, và có phần chạy bất đồng bộ để đặt cạnh RTC.</p>
+  <div class="meta">
+    <span class="pill">0,45B tham số (~100M action expert)</span><span class="pill">SmolVLM-2, đóng băng, cắt còn 16/32 lớp</span><span class="pill">64 token/ảnh</span><span class="pill">CA xen SA causal</span><span class="pill">chunk n = 50 · 10 bước Euler</span><span class="pill">481 dataset cộng đồng</span><span class="pill">Async: hàng đợi + ngưỡng g</span><span class="pill">LIBERO 87,3 · SO100 78,3</span>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#tldr"><i class="d m"></i>0. Tóm tắt 1 phút</a>
+  <a href="#quick" style="font-weight:700;color:var(--pri-strong)"><i class="d m"></i>★ Đọc nhanh 15 phút</a>
+  <a href="#roadmap"><i class="d m"></i>1. Lộ trình &amp; checklist</a>
+  <a href="#glossary"><i class="d s"></i>2. Bảng thuật ngữ</a>
+  <a href="#basics"><i class="d m"></i>3. Nền tối thiểu</a>
+  <a href="#bridge"><i class="d m"></i>4. Từ paper trước sang paper này</a>
+  <a class="sub" href="#compare">4.1 Bảng GR00T · Qwen · SmolVLA</a>
+  <a class="sub" href="#whysmall">4.2 Vì sao nhỏ mà vẫn tốt</a>
+  <a href="#motiv"><i class="d k"></i>5. Động lực</a>
+  <a href="#arch"><i class="d m"></i>6. Kiến trúc</a>
+  <a class="sub" href="#vlm">6.1 VLM: cắt lớp, bớt token</a>
+  <a class="sub" href="#expert">6.2 Action expert: CA xen SA</a>
+  <a class="sub" href="#mask">6.3 Mặt nạ attention</a>
+  <a class="sub" href="#flow">6.4 Flow matching &amp; quy ước τ</a>
+  <a class="sub" href="#pseudo">6.5 Code giả</a>
+  <a href="#data"><i class="d s"></i>7. Dữ liệu cộng đồng</a>
+  <a href="#async"><i class="d m"></i>8. Suy luận bất đồng bộ</a>
+  <a class="sub" href="#async-why">8.1 Vấn đề của chạy đồng bộ</a>
+  <a class="sub" href="#async-queue">8.2 Hàng đợi &amp; Algorithm 1</a>
+  <a class="sub" href="#async-g">8.3 Ngưỡng g: dẫn công thức</a>
+  <a class="sub" href="#async-sim">8.4 Mô phỏng</a>
+  <a class="sub" href="#async-res">8.5 Kết quả Hình 5</a>
+  <a class="sub" href="#async-rtc">8.6 So với RTC</a>
+  <a href="#setup"><i class="d s"></i>9. Thiết lập thí nghiệm</a>
+  <a href="#results"><i class="d m"></i>10. Kết quả chính</a>
+  <a href="#ablation"><i class="d m"></i>11. Ablation Bảng 6–13</a>
+  <a href="#torch"><i class="d s"></i>12. Code PyTorch nhỏ</a>
+  <a href="#code"><i class="d m"></i>13. Nằm ở đâu trong LeRobot</a>
+  <a href="#critique"><i class="d s"></i>14. Hạn chế &amp; phản biện</a>
+  <a href="#mentorq"><i class="d s"></i>15. Câu hỏi mentor có thể vặn</a>
+  <a href="#quiz"><i class="d s"></i>16. Tự kiểm tra</a>
+  <a href="#sources"><i class="d k"></i>17. Nguồn</a>
+</nav>
+
+<main>
+
+<!-- ============ 0 ============ -->
+<section class="sec" id="tldr">
+<h2>0. Tóm tắt 1 phút <span class="lv m">Phải nắm</span></h2>
+<p>SmolVLA là một VLA <b>nhỏ</b> (0,45 tỷ tham số) của Hugging Face. Câu hỏi của paper: <i>có làm được một VLA đủ tốt mà huấn luyện trên một GPU, chạy được trên GPU phổ thông hay cả CPU, và chỉ học từ dữ liệu cộng đồng tự thu không?</i> Năm ý cần nhớ:</p>
+<div class="tldr">
+  <div><b>① Cùng khuôn GR00T, nhưng cắt gọt</b>VLM SmolVLM-2 (SigLIP + SmolLM2) <strong>đóng băng</strong>, chỉ giữ <strong>16/32 lớp đầu</strong>, mỗi ảnh chỉ <strong>64 token</strong>. Chỉ huấn luyện action expert ~100M tham số, rộng bằng 0,75 VLM.</div>
+  <div><b>② Nối VLM với expert: xen kẽ</b>Một lớp <strong>cross-attention</strong> (hành động hỏi VLM), một lớp <strong>self-attention causal</strong> (hành động nhìn hành động trước nó). GR00T chỉ có cross-attention xen self-attention hai chiều; Qwen-VLA và π0 gộp chung một chuỗi.</div>
+  <div><b>③ Dữ liệu cộng đồng</b>481 dataset trên Hugging Face, 22,9K episode, 10,6M khung, gần như toàn tay SO-100 giá rẻ. Câu lệnh được viết lại bằng Qwen2.5-VL-3B, tên camera được chuẩn hóa.</div>
+  <div><b>④ Chạy bất đồng bộ</b>Robot vừa chạy hành động trong <strong>hàng đợi</strong>, vừa gửi quan sát mới cho máy chủ khi hàng đợi còn ít hơn <strong>g·n</strong> hành động. Chunk mới về thì trộn vào chỗ chồng nhau. Nhanh hơn ~30% trên robot thật.</div>
+  <div><b>⑤ Kết quả</b>LIBERO 87,3% <i>không</i> pretrain robot (π0 3,3B trong cùng bảng: 86,0). Robot thật SO-100: 78,3% so với π0 61,7% và ACT 48,3%. Pretrain cộng đồng: 51,7 → 78,3.</div>
+</div>
+
+<div class="say"><b class="t">Nếu chỉ có 30 giây để nói với mentor</b>
+SmolVLA giữ khuôn "VLM + action expert flow matching + chunk" như GR00T, nhưng làm mọi thứ nhỏ đi: VLM 500M đóng băng và cắt nửa trên, 64 token mỗi ảnh, expert 100M xen cross-attention với self-attention causal. Học từ 481 dataset cộng đồng trên robot SO-100. Với 0,45B tham số, nó ngang π0 3,3B trên LIBERO và hơn π0 trên robot thật SO-100 của chính nhóm. Phần thứ hai là ngăn xếp suy luận bất đồng bộ: hàng đợi hành động + ngưỡng g, gửi quan sát trước khi hết hàng, trộn chunk chồng nhau. Khác RTC: SmolVLA chỉ <i>trộn</i> hai chunk sau khi sinh, còn RTC <i>sinh</i> chunk mới cho khớp với phần đang chạy.</div>
+
+<div class="co link"><b class="t">Vì sao paper này đáng đọc sau 6 paper trước?</b>
+(1) Kiến trúc là "anh em" của GR00T: cùng họ SmolLM2, cùng ý lấy đặc trưng lớp giữa VLM, cùng cross-attention. (2) Phần bất đồng bộ giải cùng bài toán độ trễ với RTC, nhưng bằng cách đơn giản hơn nhiều; đặt hai cách cạnh nhau giúp bạn hiểu RTC đáng giá ở đâu. (3) Code nằm sẵn trong LeRobot, chạy được trên máy yếu, nên là chỗ tốt để tập đọc codebase VLA thật.</div>
+</section>
+
+<!-- ============ QUICK ============ -->
+<section class="sec" id="quick">
+<h2>★ Đọc nhanh 15 phút <span class="lv m">Phải nắm</span></h2>
+<p>Bạn đã hiểu GR00T. Hãy đọc SmolVLA là: <b>"GR00T thu nhỏ, đổi cách nối, thêm cách chạy bất đồng bộ"</b>. Bốn ý dưới đây kể bằng lời thường. Trả lời được 4 câu cuối mục là đủ để trình bày.</p>
+
+<div class="idea">
+<div>
+<h3><span class="num">1</span>Nhỏ nhờ "cắt ba nhát"</h3>
+<p>Thay vì làm mô hình to, paper cắt bớt ở ba chỗ:</p>
+<ul style="margin:0 0 0 18px;padding:0">
+<li><b>Cắt nửa trên VLM</b>: SmolLM2 có 32 lớp, chỉ dùng 16 lớp đầu. Giống đọc nửa đầu cuốn sách đã đủ ý.</li>
+<li><b>Cắt token ảnh</b>: mỗi ảnh chỉ 64 token (không chia ảnh thành nhiều mảnh nhỏ như SmolVLM-2 gốc).</li>
+<li><b>Thu hẹp expert</b>: độ rộng 0,75 lần VLM, chỉ ~100M tham số, và chỉ phần này được học.</li>
+</ul>
+<p class="go">Đi sâu: mục 6.1 và 4.2.</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 200" role="img" aria-label="VLM 32 lớp bị cắt còn 16 lớp, ảnh còn 64 token, expert hẹp hơn">
+<g style="fill:var(--card);stroke:var(--grey);stroke-dasharray:3 3">
+<rect x="20" y="20" width="110" height="9" rx="2"/><rect x="20" y="31" width="110" height="9" rx="2"/><rect x="20" y="42" width="110" height="9" rx="2"/><rect x="20" y="53" width="110" height="9" rx="2"/>
+</g>
+<text x="75" y="14" text-anchor="middle" style="fill:var(--muted);font-size:11px">16 lớp trên: bỏ ✂</text>
+<line x1="12" y1="66" x2="140" y2="66" style="stroke:var(--red);stroke-width:2;stroke-dasharray:5 3"/>
+<g style="fill:var(--accent-soft);stroke:var(--accent)">
+<rect x="20" y="72" width="110" height="9" rx="2"/><rect x="20" y="83" width="110" height="9" rx="2"/><rect x="20" y="94" width="110" height="9" rx="2"/><rect x="20" y="105" width="110" height="9" rx="2"/>
+</g>
+<text x="75" y="130" text-anchor="middle" style="fill:var(--text);font-size:12px">giữ 16 lớp dưới</text>
+<rect x="180" y="40" width="110" height="80" rx="6" style="fill:var(--blue-soft);stroke:var(--blue)"/>
+<g style="stroke:var(--blue);opacity:.5">
+<line x1="207" y1="40" x2="207" y2="120"/><line x1="235" y1="40" x2="235" y2="120"/><line x1="262" y1="40" x2="262" y2="120"/>
+<line x1="180" y1="60" x2="290" y2="60"/><line x1="180" y1="80" x2="290" y2="80"/><line x1="180" y1="100" x2="290" y2="100"/></g>
+<text x="235" y="140" text-anchor="middle" style="fill:var(--text);font-size:12px">1 ảnh → 64 token</text>
+<text x="235" y="156" text-anchor="middle" style="fill:var(--muted);font-size:11px">(không tiling)</text>
+<rect x="335" y="40" width="40" height="80" rx="6" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+<rect x="390" y="50" width="30" height="60" rx="6" style="fill:var(--pri-soft);stroke:var(--pri)"/>
+<text x="355" y="140" text-anchor="middle" style="fill:var(--muted);font-size:11px">VLM d</text>
+<text x="405" y="140" text-anchor="middle" style="fill:var(--pri-strong);font-size:11px">0,75·d</text>
+<text x="380" y="160" text-anchor="middle" style="fill:var(--text);font-size:12px">expert ~100M, chỉ phần này học</text>
+<text x="235" y="192" text-anchor="middle" style="fill:var(--muted);font-size:11px">Tổng 0,45B; con số 16/32 lớp và 64 token lấy từ paper (Sec 3.1, 4.3)</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">2</span>Nối VLM với expert: "hỏi thầy" xen "nhìn bạn ngồi trước"</h3>
+<p>Expert có 16 lớp, xen kẽ hai loại:</p>
+<ul style="margin:0 0 0 18px;padding:0">
+<li><b>Lớp CA (cross-attention)</b>: các token hành động <b>hỏi</b> token ảnh-chữ-trạng thái của VLM, như học sinh hỏi thầy.</li>
+<li><b>Lớp SA (self-attention causal)</b>: token hành động thứ i chỉ được nhìn các hành động <b>trước nó</b>, như chép bài chỉ được nhìn bạn ngồi bàn trên.</li>
+</ul>
+<p>Bảng 6: CA+SA 85,5 &gt; chỉ CA 79,0 &gt; chỉ SA 74,5. Bảng 7: causal 74,5 &gt; hai chiều 67,5.</p>
+<p class="go">Đi sâu: mục 6.2, 6.3 (có widget mặt nạ).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 200" role="img" aria-label="Lớp CA: token hành động nhìn token VLM. Lớp SA: token hành động nhìn token trước nó">
+<defs><marker id="qa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<text x="110" y="18" text-anchor="middle" style="font-weight:700;fill:var(--text)">Lớp CA</text>
+<rect x="30" y="30" width="160" height="40" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+<text x="110" y="55" text-anchor="middle" style="fill:var(--text)">token VLM (K, V)</text>
+<g style="fill:var(--gold-soft);stroke:var(--gold)"><rect x="40" y="130" width="28" height="28" rx="5"/><rect x="80" y="130" width="28" height="28" rx="5"/><rect x="120" y="130" width="28" height="28" rx="5"/><rect x="160" y="130" width="28" height="28" rx="5"/></g>
+<path class="ar" d="M54,128 V74" marker-end="url(#qa)"/><path class="ar" d="M94,128 V74" marker-end="url(#qa)"/><path class="ar" d="M134,128 V74" marker-end="url(#qa)"/><path class="ar" d="M174,128 V74" marker-end="url(#qa)"/>
+<text x="110" y="182" text-anchor="middle" style="fill:var(--muted);font-size:12px">mỗi hành động hỏi VLM, không nhìn nhau</text>
+<line x1="235" y1="20" x2="235" y2="190" style="stroke:var(--line)"/>
+<text x="355" y="18" text-anchor="middle" style="font-weight:700;fill:var(--text)">Lớp SA causal</text>
+<g style="fill:var(--gold-soft);stroke:var(--gold)"><rect x="270" y="110" width="28" height="28" rx="5"/><rect x="320" y="110" width="28" height="28" rx="5"/><rect x="370" y="110" width="28" height="28" rx="5"/><rect x="420" y="110" width="28" height="28" rx="5"/></g>
+<text x="284" y="129" text-anchor="middle" style="font-size:11px;fill:var(--text)">a1</text><text x="334" y="129" text-anchor="middle" style="font-size:11px;fill:var(--text)">a2</text><text x="384" y="129" text-anchor="middle" style="font-size:11px;fill:var(--text)">a3</text><text x="434" y="129" text-anchor="middle" style="font-size:11px;fill:var(--text)">a4</text>
+<path class="ar" d="M430,108 Q357,55 288,108" marker-end="url(#qa)"/>
+<path class="ar" d="M428,108 Q380,75 336,108" marker-end="url(#qa)"/>
+<path class="ar" d="M426,108 Q405,88 386,108" marker-end="url(#qa)"/>
+<text x="355" y="166" text-anchor="middle" style="fill:var(--muted);font-size:12px">a4 nhìn a1, a2, a3 (và token VLM);</text>
+<text x="355" y="182" text-anchor="middle" style="fill:var(--muted);font-size:12px">a1 không nhìn được a4</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">3</span>Dữ liệu cộng đồng: "góp gạo thổi cơm chung"</h3>
+<p>Không dùng bộ dữ liệu lớn của phòng thí nghiệm. Paper gom <b>481 dataset</b> do nhiều người tự thu bằng tay SO-100 giá rẻ, đăng trên Hugging Face: 22,9K episode, 10,6M khung, ít hơn các mô hình khác ít nhất 10 lần.</p>
+<p>Dữ liệu này bẩn, nên phải dọn: câu lệnh mơ hồ ("Hold", "task desc") được một VLM viết lại; camera tên lung tung được đổi thành OBS_IMAGE_1/2/3 theo thứ tự trên-cổ tay-cạnh.</p>
+<p>Bằng chứng giá trị: Bảng 5, cùng mô hình trên robot thật, không pretrain 51,7% → có pretrain 78,3%.</p>
+<p class="go">Đi sâu: mục 7.</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 200" role="img" aria-label="Nhiều dataset nhỏ gom lại thành bộ pretrain">
+<g style="fill:var(--pri-soft);stroke:var(--pri)">
+<rect x="20" y="20" width="60" height="26" rx="5"/><rect x="90" y="30" width="50" height="26" rx="5"/><rect x="25" y="60" width="44" height="26" rx="5"/><rect x="80" y="70" width="64" height="26" rx="5"/><rect x="20" y="100" width="58" height="26" rx="5"/><rect x="88" y="110" width="50" height="26" rx="5"/><rect x="30" y="140" width="70" height="26" rx="5"/></g>
+<text x="80" y="188" text-anchor="middle" style="fill:var(--muted);font-size:12px">481 dataset nhỏ</text>
+<defs><marker id="qb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<path class="ar" d="M155,95 H205" marker-end="url(#qb)"/>
+<rect x="210" y="40" width="120" height="110" rx="10" style="fill:var(--warn-bg);stroke:var(--warn)"/>
+<text x="270" y="68" text-anchor="middle" style="fill:var(--text);font-size:12px">dọn dữ liệu</text>
+<text x="270" y="92" text-anchor="middle" style="fill:var(--muted);font-size:11px">viết lại câu lệnh</text>
+<text x="270" y="110" text-anchor="middle" style="fill:var(--muted);font-size:11px">(Qwen2.5-VL-3B)</text>
+<text x="270" y="130" text-anchor="middle" style="fill:var(--muted);font-size:11px">đổi tên camera</text>
+<path class="ar" d="M335,95 H370" marker-end="url(#qb)"/>
+<rect x="375" y="55" width="80" height="80" rx="10" style="fill:var(--pri);stroke:var(--pri)"/>
+<text x="415" y="88" text-anchor="middle" style="fill:#fff;font-size:12px">22,9K ep</text>
+<text x="415" y="106" text-anchor="middle" style="fill:#fff;font-size:12px">10,6M khung</text>
+<text x="415" y="160" text-anchor="middle" style="fill:var(--muted);font-size:11px">gần như toàn SO-100</text>
+</svg>
+</div>
+
+<div class="idea">
+<div>
+<h3><span class="num">4</span>Chạy bất đồng bộ: "đầu bếp nấu mẻ mới trước khi hết món"</h3>
+<p>Chạy <b>đồng bộ</b>: robot làm hết 50 hành động rồi mới chụp ảnh gửi đi, đứng im chờ mô hình tính xong. Giống quán ăn bán hết sạch mới bắt đầu nấu mẻ mới: khách phải chờ.</p>
+<p>Chạy <b>bất đồng bộ</b>: khi trong <b>hàng đợi</b> chỉ còn dưới g·n hành động, robot gửi ảnh mới đi ngay, nhưng vẫn làm tiếp phần còn lại. Chunk mới về thì <b>trộn</b> vào phần chồng nhau. Robot không bao giờ đứng chờ nếu g đủ lớn so với độ trễ.</p>
+<p>Robot thật: mỗi lần làm xong việc 13,75 s → 9,7 s; trong cùng thời gian xếp được 19 khối thay vì 9; tỉ lệ thành công 78,3 → 73,3.</p>
+<p class="go">Đi sâu: mục 8 (có mô phỏng và so sánh RTC).</p>
+</div>
+<svg class="svgbox" viewBox="0 0 470 200" role="img" aria-label="Kích thước hàng đợi theo thời gian: đồng bộ có quãng rỗng, bất đồng bộ không">
+<text x="20" y="18" style="fill:var(--text);font-weight:700;font-size:12px">Đồng bộ (g = 0): có quãng hàng đợi rỗng</text>
+<polyline points="20,80 30,30 110,80 135,80 145,30 225,80 250,80 260,30 340,80 365,80 375,30 455,80" style="fill:none;stroke:var(--grey);stroke-width:2"/>
+<g style="fill:var(--red);opacity:.25"><rect x="110" y="30" width="25" height="50"/><rect x="225" y="30" width="25" height="50"/><rect x="340" y="30" width="25" height="50"/></g>
+<text x="122" y="96" text-anchor="middle" style="fill:var(--red);font-size:10px">chờ</text><text x="237" y="96" text-anchor="middle" style="fill:var(--red);font-size:10px">chờ</text><text x="352" y="96" text-anchor="middle" style="fill:var(--red);font-size:10px">chờ</text>
+<text x="20" y="122" style="fill:var(--text);font-weight:700;font-size:12px">Bất đồng bộ (g = 0,7): luôn còn hàng</text>
+<polyline points="20,190 30,140 55,160 62,147 87,160 94,147 119,160 126,147 151,160 158,147 183,160 190,147 215,160 222,147 247,160 254,147 279,160 286,147 311,160 318,147 343,160 350,147 375,160 382,147 407,160 414,147 439,160 446,147 455,152" style="fill:none;stroke:var(--pri);stroke-width:2"/>
+<line x1="20" y1="160" x2="455" y2="160" style="stroke:var(--accent);stroke-dasharray:4 3"/>
+<text x="455" y="174" text-anchor="end" style="fill:var(--accent);font-size:10px">ngưỡng g·n: gửi ảnh mới</text>
+</svg>
+</div>
+
+<h3>Ba con số nên thuộc</h3>
+<div class="stat">
+  <div><div class="v">87,3 vs 86,0</div><div class="k">LIBERO: SmolVLA 0,45B (không pretrain robot) vs π0 3,3B (có pretrain), Bảng 2</div></div>
+  <div><div class="v">51,7 → 78,3</div><div class="k">SO-100 thật: không pretrain → có pretrain cộng đồng, Bảng 5</div></div>
+  <div><div class="v">13,75 → 9,7 s</div><div class="k">Thời gian xong một lượt gắp-đặt: đồng bộ → bất đồng bộ, Hình 5b</div></div>
+</div>
+
+<h3>Tự kiểm tra 4 câu</h3>
+<details class="q"><summary>1. SmolVLA nhỏ nhờ những lựa chọn nào?</summary>VLM nhỏ (SmolVLM-2, ~500M) và đóng băng; chỉ dùng 16/32 lớp đầu của LLM; 64 token/ảnh, không tiling; action expert rộng 0,75 VLM, ~100M tham số. Tổng 0,45B.</details>
+<details class="q"><summary>2. Lớp CA và lớp SA trong expert khác nhau thế nào? Vì sao SA lại causal?</summary>CA: token hành động hỏi token của VLM (K, V lấy từ VLM). SA: token hành động nhìn nhau, nhưng hành động thứ i chỉ thấy các hành động trước nó. Bảng 7: causal 74,5 &gt; hai chiều 67,5; paper giải thích là tránh "rò rỉ" từ hành động tương lai.</details>
+<details class="q"><summary>3. Ngưỡng g quyết định điều gì? g = 0 và g = 1 nghĩa là gì?</summary>g quyết định lúc nào gửi quan sát mới: khi hàng đợi còn ít hơn g·n hành động. g = 0: làm hết chunk mới hỏi (đồng bộ, có quãng chờ). g = 1: gửi ở gần như mọi bước (phản ứng nhanh nhất, tốn tính toán nhất).</details>
+<details class="q"><summary>4. Ghép chunk của SmolVLA khác RTC ở đâu?</summary>SmolVLA sinh chunk mới độc lập rồi <i>trộn</i> với chunk cũ ở chỗ chồng nhau bằng hàm f (trong LeRobot mặc định 0,3·cũ + 0,7·mới). RTC <i>sinh</i> chunk mới có điều kiện theo phần chunk cũ đang chạy (inpainting trong vòng khử nhiễu), nên chunk mới tự khớp, không cần trộn.</details>
+</section>
+
+<!-- ============ 1 ============ -->
+<section class="sec" id="roadmap">
+<h2>1. Lộ trình đọc &amp; checklist <span class="lv m">Phải nắm</span></h2>
+<div class="key"><b class="t">Lần đọc đầu: chỉ cần 4 chặng</b>★ Đọc nhanh → 4. Từ paper trước sang paper này → 8. Suy luận bất đồng bộ → 11. Ablation. Chi tiết phụ được gập vào nút <b>"Xem chi tiết"</b>.</div>
+<div class="legend-lv">
+  <span><span class="lv m" style="margin:0">Phải nắm</span> trọng tâm, cần nói lại được</span>
+  <span><span class="lv s" style="margin:0">Nên biết</span> giúp hiểu sâu và phản biện</span>
+  <span><span class="lv k" style="margin:0">Đọc lướt</span> tra khi cần</span>
+</div>
+<div class="tw"><table class="t">
+<tr><th>Bước</th><th>Đọc phần nào trên trang</th><th>Mở song song trong PDF</th><th class="num">Thời gian</th></tr>
+<tr><td>1</td><td>0, ★, 3. Nền tối thiểu</td><td>Abstract, Hình 1 (trang 1)</td><td class="num">25 phút</td></tr>
+<tr><td>2</td><td>4. Từ paper trước sang paper này</td><td>Sec 3.1 (trang 3–5)</td><td class="num">35 phút</td></tr>
+<tr><td>3</td><td>6. Kiến trúc + widget mặt nạ</td><td>Sec 3.1, công thức flow matching (trang 4)</td><td class="num">40 phút</td></tr>
+<tr><td>4</td><td>8. Bất đồng bộ + mô phỏng + so RTC</td><td>Sec 3.3, Hình 2, 3, Algorithm 1 (trang 5–8); Sec 4.6, Hình 5 (trang 12)</td><td class="num">60 phút</td></tr>
+<tr><td>5</td><td>10. Kết quả, 11. Ablation</td><td>Bảng 2–5 (trang 11–12), Bảng 6–13 (trang 13–14)</td><td class="num">45 phút</td></tr>
+<tr><td>6</td><td>12. Code, 13. LeRobot</td><td>Sec 4.3 (trang 10)</td><td class="num">40 phút</td></tr>
+<tr><td>7</td><td>14, 15, 16</td><td>Sec 5.1 Limitations (trang 14–15)</td><td class="num">30 phút</td></tr>
+</table></div>
+<h3>Checklist "mình đã hiểu SmolVLA"</h3>
+<div class="prog"><i id="progBar"></i></div>
+<div class="chk" id="chk">
+  <label><input type="checkbox" data-k="c1"><span>Kể được 4 lựa chọn làm SmolVLA nhỏ (VLM nhỏ đóng băng, N = L/2, 64 token, expert 0,75·d) kèm con số.</span></label>
+  <label><input type="checkbox" data-k="c2"><span>Vẽ được bảng so sánh cách nối VLM ↔ expert của GR00T, Qwen-VLA, SmolVLA.</span></label>
+  <label><input type="checkbox" data-k="c3"><span>Giải thích được mặt nạ causal và vì sao trạng thái robot nằm trong prefix (VLM) chứ không ở expert.</span></label>
+  <label><input type="checkbox" data-k="c4"><span>Viết được công thức flow matching của paper, chỉ ra chỗ lệch dấu và quy ước thật trong code LeRobot.</span></label>
+  <label><input type="checkbox" data-k="c5"><span>Giải thích hàng đợi, ngưỡng g, và tự dẫn được \(g \ge \frac{E[\ell_S]/\Delta t}{n}\) bằng một ví dụ số.</span></label>
+  <label><input type="checkbox" data-k="c6"><span>So sánh được SmolVLA async với RTC: giống ở đâu, khác ở đâu, khi nào trộn chunk thì hỏng.</span></label>
+  <label><input type="checkbox" data-k="c7"><span>Rút ra một bài học cho mỗi Bảng 6–13, kèm lời cảnh báo về nhiễu thống kê.</span></label>
+  <label><input type="checkbox" data-k="c8"><span>Đọc Bảng 2: biết số π0 ở đây (86,0) thấp hơn số π0 ở paper khác (94,2 / 94,4) và vì sao không so trực tiếp được.</span></label>
+  <label><input type="checkbox" data-k="c9"><span>Chỉ được trong LeRobot: file cấu hình, file mô hình, file VLM + expert, file async.</span></label>
+  <label><input type="checkbox" data-k="c10"><span>Nêu 3 điểm phản biện mạnh nhất (sau khi tự mở PDF kiểm lại).</span></label>
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="sec" id="glossary">
+<h2>2. Bảng thuật ngữ <span class="lv s">Nên biết</span></h2>
+<p>Chỉ các từ mới so với 6 trang trước. Không cần thuộc, dùng để tra.</p>
+<details class="more"><summary>Mở bảng thuật ngữ</summary>
+<div class="tw"><table class="t">
+<tr><th>Thuật ngữ</th><th>Nghĩa ngắn gọn</th><th>Gặp ở</th></tr>
+<tr><td>SmolVLM-2</td><td>VLM nhỏ của Hugging Face, tối ưu cho nhiều ảnh và video. Bản dùng ở đây là 500M (theo code LeRobot: <code>SmolVLM2-500M-Video-Instruct</code>)</td><td>3.1</td></tr>
+<tr><td>SigLIP / SmolLM2</td><td>Bộ mã hóa ảnh / mô hình ngôn ngữ nhỏ bên trong SmolVLM-2. GR00T N1 cũng dùng SmolLM2 (trong Eagle-2)</td><td>3.1</td></tr>
+<tr><td>Tiling</td><td>Cắt ảnh to thành nhiều mảnh, mỗi mảnh mã hóa riêng, cộng thêm ảnh toàn cục. Tốt cho đọc chữ nhỏ, nhưng nhiều token. SmolVLA <b>bỏ</b></td><td>3.1</td></tr>
+<tr><td>Pixel shuffle (token shuffling)</td><td>Gộp các ô vuông lân cận của bản đồ đặc trưng thành một token "dày" hơn, để giảm số token</td><td>3.1</td></tr>
+<tr><td>Layer skipping</td><td>Bỏ bớt lớp của mô hình đã huấn luyện. Ở đây: giữ N = L/2 lớp đầu</td><td>3.1, Bảng 8</td></tr>
+<tr><td>Cross-attention (CA)</td><td>Query từ nhóm A, key/value từ nhóm B. Ở đây A = hành động, B = VLM</td><td>3.1</td></tr>
+<tr><td>Causal mask</td><td>Mặt nạ chỉ cho token i nhìn token 1…i, không nhìn token sau</td><td>3.1, Bảng 7</td></tr>
+<tr><td>Prefix / suffix</td><td>Phần đầu chuỗi (ảnh, chữ, trạng thái, đi qua VLM) / phần sau (token hành động, đi qua expert)</td><td>Bảng 11</td></tr>
+<tr><td>KV cache</td><td>Lưu sẵn key/value của prefix để 10 bước khử nhiễu không phải chạy lại VLM</td><td>code</td></tr>
+<tr><td>Community datasets</td><td>Dataset do cá nhân, phòng lab nhỏ tự thu và đăng công khai (định dạng LeRobotDataset)</td><td>3.2</td></tr>
+<tr><td>SO-100 / SO-101</td><td>Tay robot 6 bậc tự do in 3D, servo giá rẻ, điều khiển bằng vị trí. SO-101 là bản sau, chuyển động mượt hơn</td><td>4.2</td></tr>
+<tr><td>Meta-World</td><td>Benchmark mô phỏng 50 tác vụ với tay Sawyer 4 bậc (paper viết "Swayer")</td><td>4.1</td></tr>
+<tr><td>ACT</td><td>Action Chunking Transformer: policy CVAE ~80M, ResNet, hồi quy chunk. Không có VLM</td><td>4.4</td></tr>
+<tr><td>Sync / async inference</td><td>Đồng bộ: chạy hết chunk rồi mới hỏi mô hình. Bất đồng bộ: vừa chạy vừa hỏi</td><td>3.3</td></tr>
+<tr><td>RobotClient / PolicyServer</td><td>Chương trình trên robot (chụp ảnh, chạy hành động) / chương trình chạy mô hình, có thể ở máy GPU khác</td><td>3.3</td></tr>
+<tr><td>Action queue, PopFront</td><td>Hàng đợi hành động; lấy hành động ở đầu hàng ra để chạy</td><td>Algorithm 1</td></tr>
+<tr><td>g (threshold)</td><td>Ngưỡng: gửi quan sát mới khi |hàng đợi| / n &lt; g</td><td>3.3</td></tr>
+<tr><td>f (aggregate)</td><td>Hàm ghép hai chunk ở các bước chồng nhau. Paper không định nghĩa cụ thể</td><td>Algorithm 1</td></tr>
+<tr><td>Similarity filter</td><td>Bỏ quan sát gần trùng quan sát trước (khoảng cách trong không gian khớp nhỏ hơn ε)</td><td>3.3</td></tr>
+<tr><td>\(\ell_S\), \(\Delta t\)</td><td>Thời gian suy luận trên máy chủ; chu kỳ điều khiển (30 fps → 33 ms)</td><td>3.3</td></tr>
+</table></div>
+</details>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="sec" id="basics">
+<h2>3. Nền tối thiểu <span class="lv m">Phải nắm</span></h2>
+<p>Chỉ những khái niệm mới mà 6 trang trước chưa giải thích. Attention, flow matching, action chunk, độ trễ suy luận đã có ở trang GR00T và RTC.</p>
+<div class="basics">
+  <div><b class="h">Mặt nạ causal = chép bài theo thứ tự</b>Khi viết hành động thứ 5, bạn được nhìn hành động 1–4 đã viết, nhưng không được nhìn hành động 6 (chưa có). Mặt nạ là một bảng 0/1: ô (i, j) = 1 nghĩa là token i được nhìn token j.<span class="why">Cần vì: lớp SA của SmolVLA dùng mặt nạ causal (mục 6.3, Bảng 7).</span></div>
+  <div><b class="h">KV cache = chép sẵn ghi chú</b>Ảnh và câu lệnh không đổi trong 10 bước khử nhiễu. Nên chỉ chạy VLM <b>một lần</b>, lưu lại key/value của từng lớp, rồi 10 bước sau chỉ chạy expert.<span class="why">Cần vì: lý do expert nhỏ làm suy luận nhanh; VLM chỉ chạy 1 lần mỗi chunk.</span></div>
+  <div><b class="h">Pixel shuffle = gộp 16 ô thành 1</b>Ảnh 512 × 512 chia ô 16 px → 32 × 32 = 1.024 ô. Gộp mỗi khối 4 × 4 ô thành một token "dày" → 8 × 8 = 64 token. Thông tin không mất hẳn, chỉ dồn vào ít token hơn.<span class="why">Cần vì: con số 64 token/ảnh (tự tính từ cấu hình SmolVLM2-500M: ảnh 512, patch 16, scale_factor 4).</span></div>
+  <div><b class="h">Lớp giữa thường đủ tốt</b>Lớp cuối của LLM được dạy để "đoán từ tiếp theo", nên đặc trưng ở đó rất chuyên cho chữ. Đặc trưng lớp giữa thường tổng quát hơn cho việc khác. GR00T lấy lớp 12; SmolVLA giữ 16 lớp đầu.<span class="why">Cần vì: lý do "cắt nửa trên" không làm hỏng mô hình (Bảng 8).</span></div>
+  <div><b class="h">Client – server = quầy gọi món và bếp</b>Robot (client) chỉ chụp ảnh và làm theo hành động. Máy chủ (server) có GPU chạy mô hình. Hai bên nói chuyện qua mạng. Robot rẻ không cần GPU.<span class="why">Cần vì: kiến trúc của ngăn xếp bất đồng bộ (mục 8).</span></div>
+  <div><b class="h">Hàng đợi + ngưỡng = canh lúc nấu mẻ mới</b>Hàng đợi chứa các hành động sắp làm. Ngưỡng g nói "còn bao nhiêu thì đặt mẻ mới". Đặt sớm quá: tốn bếp (gọi mô hình nhiều). Đặt muộn quá: khách chờ (robot đứng im).<span class="why">Cần vì: đây là toàn bộ ý tưởng của Sec 3.3.</span></div>
+  <div><b class="h">Hồi quy L1 vs flow matching khi có hai cách làm đúng</b>Demo có lúc vòng trái, lúc vòng phải. Hồi quy L1 đoán <b>một</b> giá trị (trung vị), dễ ra đường giữa, đâm vào vật cản. Flow matching lấy mẫu, nên ra một trong hai đường. (Ví dụ vòng trái/phải đã có ở trang GR00T.)<span class="why">Cần vì: Bảng 10 (flow 80,25 &gt; L1 75,25), và paper OpenVLA-OFT sắp đọc lại kết luận ngược.</span></div>
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="sec" id="bridge">
+<h2>4. Từ paper trước sang paper này <span class="lv m">Phải nắm</span></h2>
+<p>Ba mô hình cùng một <b>khuôn</b>: VLM hiểu tình huống, action expert sinh chunk bằng flow matching. Khác nhau chủ yếu ở <b>cách nối</b> hai khối và ở <b>kích thước</b>. Số của GR00T lấy từ PDF GR00T N1, của Qwen-VLA từ PDF Qwen-VLA (đã ghi ở hai trang trước), của SmolVLA từ PDF SmolVLA; dòng nào lấy từ code LeRobot thì ghi rõ.</p>
+
+<h3 id="compare">4.1 Bảng so sánh cách nối VLM với action expert</h3>
+<div class="tw"><table class="t">
+<tr><th>Điểm so sánh</th><th>GR00T N1</th><th>Qwen-VLA</th><th>SmolVLA</th></tr>
+<tr><td><b>Tổng tham số</b></td><td>2,2B</td><td>~5B (4B VLM + ~1,15B expert, tự cộng)</td><td class="sm"><b>0,45B</b> (~100M expert)</td></tr>
+<tr><td><b>VLM</b></td><td>Eagle-2: SigLIP-2 + SmolLM2, 1,34B</td><td>Qwen3.5-4B, đa phương thức từ gốc</td><td class="sm">SmolVLM-2: SigLIP + SmolLM2 (~500M)</td></tr>
+<tr><td>VLM có được học?</td><td>LLM đóng băng; vision encoder được học</td><td>Đóng băng ở T2A, mở băng từ CPT</td><td class="sm"><b>Đóng băng toàn bộ</b>, chỉ học expert (+ lớp chiếu trạng thái)</td></tr>
+<tr><td>Token ảnh</td><td>224 × 224 → 64 token/ảnh</td><td>Không nêu số</td><td class="sm">512 × 512, không tiling, pixel shuffle → 64 token/khung</td></tr>
+<tr><td><b>Lấy đặc trưng VLM ở đâu</b></td><td>Đầu ra <b>một</b> lớp: lớp 12</td><td>"VLM hidden states", không nói lớp nào</td><td class="sm">Bỏ L − N lớp trên, N = L/2 = 16. Theo code: lớp expert thứ i dùng K/V của <b>lớp VLM thứ i</b> (kiểu π0)</td></tr>
+<tr><td><b>Cách nối VLM ↔ expert</b></td><td>Khối cross-attention xen self-attention; token VLM cố định</td><td>Nối hidden states VLM + chunk nhiễu thành <b>một chuỗi</b>, joint self-attention, token VLM cũng được cập nhật</td><td class="sm"><b>Xen kẽ</b>: một lớp CA (hành động hỏi K/V của VLM), một lớp SA <b>causal</b> giữa hành động</td></tr>
+<tr><td>Hành động nhìn nhau thế nào</td><td>Hai chiều (trong khối self-attention)</td><td>Hai chiều (chung chuỗi)</td><td class="sm">Một chiều (causal); Bảng 7: causal 74,5 &gt; hai chiều 67,5</td></tr>
+<tr><td>Đưa τ vào mạng</td><td>AdaLN</td><td>AdaLN</td><td class="sm">Theo code: sin-cos(τ) <b>ghép</b> với token hành động rồi qua MLP (cách của π0), không AdaLN. Paper không nói</td></tr>
+<tr><td><b>Trạng thái robot</b></td><td>Qua state encoder vào phía action expert</td><td>Mặc định không dùng</td><td class="sm">Chiếu thành <b>1 token</b>, đặt trong prefix của VLM (Bảng 11: prefix tốt hơn)</td></tr>
+<tr><td>Nhiều loại robot</td><td>MLP riêng mỗi embodiment</td><td>Embodiment prompt + đệm 0 + mask</td><td class="sm">Không xử lý riêng: theo code, trạng thái và hành động đệm 0 tới 32 chiều. Pretrain gần như chỉ SO-100</td></tr>
+<tr><td>Độ rộng expert</td><td>Không so được trực tiếp</td><td>DiT 16 khối × 70,8M</td><td class="sm">0,75 × d (d = 960 → 720, theo cấu hình VLM)</td></tr>
+<tr><td><b>Quy ước τ trong paper</b></td><td>\(A^\tau = \tau A + (1-\tau)\epsilon\), mục tiêu ghi \(\epsilon - A\) (lệch dấu)</td><td>\(Y_\tau = (1-\tau)Y_0 + \tau Y_1\), mục tiêu \(Y_1 - Y_0\), đúng dấu</td><td class="sm">Giống hệt cách viết GR00T, cùng lệch dấu. Code LeRobot dùng τ = 1 là nhiễu (như Qwen-VLA), nên \(\epsilon - A\) đúng với code</td></tr>
+<tr><td>p(τ)</td><td>Beta, s = 0,999</td><td>Beta (CPT/SFT), Sigmoid-Normal (T2A)</td><td class="sm">Beta "theo π0". Code: Beta(1,5; 1) × 0,999 + 0,001</td></tr>
+<tr><td><b>Chunk</b></td><td>H = 16</td><td>H = 16</td><td class="sm"><b>n = 50</b></td></tr>
+<tr><td><b>Số bước Euler</b></td><td>4</td><td>"a few", không ghi số</td><td class="sm"><b>10</b></td></tr>
+<tr><td>Dữ liệu pretrain</td><td>Kim tự tháp: video người, dữ liệu sinh, robot thật</td><td>Hỗn hợp lớn: robot 74%, người, điều hướng, VL</td><td class="sm">481 dataset cộng đồng, 22,9K episode, chủ yếu SO-100</td></tr>
+<tr><td>Cách chạy khi triển khai</td><td>Đồng bộ (paper không bàn)</td><td>Không bàn</td><td class="sm"><b>Async stack</b> riêng (Sec 3.3), robot thật vẫn đánh giá bằng sync</td></tr>
+</table></div>
+
+<details class="more"><summary>Xem chi tiết: π0 nằm ở đâu trong bảng này?</summary>
+<p>SmolVLA tự so mình với π0 ("prior works relying exclusively on self-attention") và GR00T ("cross-attention"). π0 dùng cách gần với Qwen-VLA: token VLM và token hành động cùng đi qua attention chung ở mọi lớp, nhưng mỗi loại token có bộ trọng số riêng (VLM dùng trọng số PaliGemma, hành động dùng trọng số expert). Code SmolVLA trong LeRobot thừa hưởng đúng khung của π0 (nhiều hàm ghi "copied from openpi"), rồi thay một nửa số lớp bằng cross-attention và đổi mặt nạ hành động thành causal.</p>
+</details>
+
+<div class="co warn"><b class="t">Lưu ý quan trọng về "lớp SA" (đọc từ code, paper không nói)</b>
+Paper viết: lớp SA "cho token hành động nhìn nhau". Trong code LeRobot (<code>smolvlm_with_expert.py</code>, hàm <code>forward_attn_layer</code>), ở lớp SA, query của token hành động được đặt cạnh key/value của <b>cả prefix lẫn hành động</b>, với mặt nạ causal giữa các hành động. Nghĩa là ở lớp SA, hành động <b>cũng nhìn token VLM</b>, chỉ khác lớp CA ở chỗ nhìn thêm các hành động trước nó. Ablation "SA" ở Bảng 6 vì thế có lẽ là "mọi lớp đều là attention chung kiểu π0, mặt nạ causal", chứ không phải "không nhìn VLM". Đây là cách mình đọc code (commit b9cb121, 08/10/2026); nên tự mở hàm này kiểm lại.</div>
+
+<h3 id="whysmall">4.2 Vì sao nhỏ mà vẫn tốt?</h3>
+<p>Paper đưa ra lý do thiết kế; mình tách thành hai nhóm: <b>lý do kỹ thuật</b> (có bằng chứng trong paper) và <b>lý do nằm ở cách đánh giá</b> (cần dè dặt).</p>
+<div class="two">
+<div class="co note" style="margin:0"><b class="t">Lý do kỹ thuật</b>
+<ol style="margin:4px 0 0 18px;padding:0">
+<li><b>Giữ nguyên kiến thức VLM.</b> Đóng băng VLM nên không "quên" khi học từ ít dữ liệu; chỉ ~100M tham số phải học.</li>
+<li><b>Lớp giữa là đủ.</b> Bảng 8: dùng 16 lớp đầu được 78,5; cả 32 lớp 80,3; còn VLM nhỏ hơn (256M) chỉ 75,8. Cắt lớp của VLM to tốt hơn dùng VLM bé.</li>
+<li><b>Ít token, nối rẻ.</b> 64 token/ảnh, prefix ngắn. Lớp CA chỉ có 50 query hỏi vào K/V đã cache; VLM chạy 1 lần cho 10 bước Euler.</li>
+<li><b>Xen CA và SA.</b> Bảng 6: CA+SA 85,5 so với 79,0 (CA) và 74,5 (SA). Một lớp cho "nhìn tình huống", một lớp cho "nối các hành động liền mạch".</li>
+<li><b>Flow matching, không hồi quy.</b> Bảng 10: 80,25 so với 75,25.</li>
+</ol></div>
+<div class="co warn" style="margin:0"><b class="t">Lý do nằm ở cách đánh giá (dè dặt)</b>
+<ol style="margin:4px 0 0 18px;padding:0">
+<li><b>Sân nhà.</b> Robot thật đánh giá trên SO-100, đúng loại robot của dữ liệu pretrain. π0 được fine-tune, không được pretrain trên SO-100.</li>
+<li><b>Tác vụ đơn giản, ngắn.</b> Gắp-đặt, xếp khối, phân loại 2 khối; paper tự nhận ở Limitations.</li>
+<li><b>Số π0 thấp hơn nơi khác.</b> π0 LIBERO ở đây 86,0; paper OpenVLA-OFT ghi 94,2, Qwen-VLA ghi 94,4. Nếu dùng 94,2, SmolVLA (87,3) thua rõ.</li>
+<li><b>Ít lượt thử.</b> LIBERO 10 lượt/tác vụ; nhiễu khoảng ±4 điểm (mục 11).</li>
+</ol></div>
+</div>
+<div class="say"><b class="t">Câu trả lời gọn để nói</b>
+"SmolVLA nhỏ mà tốt vì nó không bắt mô hình học lại thứ VLM đã biết: VLM đóng băng, chỉ lấy nửa dưới vì đặc trưng ở đó đủ dùng, ảnh nén còn 64 token. Phần học được dồn vào expert 100M, nối với VLM bằng cross-attention xen self-attention causal, học bằng flow matching. Nhưng cần nói thêm: kết quả robot thật là trên đúng loại robot của dữ liệu pretrain, tác vụ còn đơn giản, và số π0 trong bảng thấp hơn số π0 ở các paper khác."</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="sec" id="motiv">
+<h2>5. Động lực (Section 1, 2) <span class="lv k">Đọc lướt</span></h2>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>VLA hiện nay thường có hàng tỷ tham số, tốn kém khi huấn luyện, khó triển khai thật; lại dựa vào dataset của học viện và công ty, bỏ qua dữ liệu cộng đồng từ robot giá rẻ. Nhiều VLA chỉ công bố trọng số, giữ kín công thức huấn luyện.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Paper đặt mục tiêu "dân chủ hóa": mô hình nhỏ, code mở, dữ liệu mở, robot rẻ. Ba đóng góp tự nêu: (1) kiến trúc nhẹ; (2) pretrain trên dữ liệu cộng đồng, dưới 30K episode; (3) ngăn xếp suy luận bất đồng bộ. Mục tiêu thiết kế cụ thể: huấn luyện trên <b>một GPU</b>, triển khai trên GPU phổ thông hoặc CPU.</div></div>
+<div class="co warn"><b class="t">Điểm cần biết khi trình bày</b>Paper nói "chạy được trên CPU" và "nhanh hơn ~40% khi huấn luyện, ít hơn 6 lần bộ nhớ so với π0", nhưng <b>không có bảng nào</b> đo độ trễ suy luận, bộ nhớ hay tốc độ huấn luyện. Tổng chi phí cả dự án: khoảng 30K giờ GPU (Sec 4.3).</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="sec" id="arch">
+<h2>6. Kiến trúc (Section 3.1) <span class="lv m">Phải nắm</span></h2>
+<div class="stat">
+  <div><div class="v">0,45B</div><div class="k">tổng tham số (Sec 4.3)</div></div>
+  <div><div class="v">~100M</div><div class="k">action expert; tự tính từ cấu hình: ≈ 99,9M</div></div>
+  <div><div class="v">16 / 32</div><div class="k">lớp LLM được giữ (N = L/2)</div></div>
+  <div><div class="v">64</div><div class="k">token ảnh mỗi khung</div></div>
+  <div><div class="v">n = 50</div><div class="k">hành động mỗi chunk</div></div>
+  <div><div class="v">10</div><div class="k">bước Euler khi suy luận</div></div>
+</div>
+
+<div class="widget">
+<h4>Sơ đồ kiến trúc (Hình 1 vẽ lại, chi tiết lớp theo code)</h4>
+<p style="margin:0 0 6px;font-size:.92rem;color:var(--muted)">Bấm vào từng khối. Cột trái: 16 lớp VLM được giữ (16 lớp trên đã bỏ). Cột phải: 16 lớp expert, đếm từ 1: lớp 1, 3, 5… là SA (vàng nhạt), lớp 2, 4, 6… là CA (vàng đậm). Đường nối: lớp expert i đọc K/V của lớp VLM i.</p>
+<svg class="svgbox" viewBox="0 0 920 520" id="archSvg" role="img" aria-label="Sơ đồ kiến trúc SmolVLA"></svg>
+<div class="out" id="archInfo" style="min-height:88px">Bấm vào một khối bất kỳ trong sơ đồ.</div>
+</div>
+
+<h3 id="vlm">6.1 VLM: cắt lớp, bớt token <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Dùng SmolVLM-2: SigLIP mã hóa ảnh cho bộ giải mã SmolLM2. Bỏ tiling, chỉ dùng ảnh toàn cục + pixel shuffle, <i>limiting the visual tokens to 64 per frame</i>. Câu lệnh thành token chữ. Trạng thái cảm biến <i>projected into a single token via a linear layer</i>. Ba loại token được nối rồi đưa vào bộ giải mã.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Thứ tự trong prefix: [64 token mỗi camera] [token câu lệnh] [1 token trạng thái]. Nếu robot có 3 camera và câu lệnh 20 token: 3 × 64 + 20 + 1 = 213 token. (Ví dụ tự đặt; code giới hạn câu lệnh 48 token.) So với ảnh có tiling, số token ảnh có thể gấp nhiều lần.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span><i>Rather than using the last layer features, our action expert has access to all features up to a specified layer N.</i> N = L/2 <i>offers a good tradeoff between speed and performance, effectively halving the LLM and action expert's computational cost.</i></div>
+<div class="n"><span class="lab">Nghĩa là</span>"All features up to layer N" nghĩa là expert được nhìn đặc trưng của <b>từng lớp</b> 1…N, không chỉ đầu ra lớp N (code xác nhận: lớp expert i ↔ lớp VLM i). Vì expert có số lớp bằng số lớp VLM giữ lại, cắt VLM còn 16 lớp cũng làm expert còn 16 lớp: đó là lý do paper nói "giảm một nửa chi phí của cả LLM <i>và</i> expert". Với SmolVLM2-500M, L = 32 (cấu hình trên Hugging Face), nên N = 16 khớp Sec 4.3.</div></div>
+
+<div class="co link"><b class="t">So với GR00T</b>GR00T cũng thấy lớp giữa tốt hơn lớp cuối, và lấy <b>một</b> lớp (lớp 12) làm "sách tham khảo" cho mọi khối cross-attention. SmolVLA giữ <b>nhiều</b> lớp, mỗi lớp expert ghép với một lớp VLM. Hai cách cùng dựa trên một quan sát: đặc trưng tốt nhất cho việc khác không nằm ở lớp cuối.</div>
+
+<h3 id="expert">6.2 Action expert: CA xen SA <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span><i>Unlike prior works relying exclusively on self-attention (SA) or cross-attention (CA), we employ an interleaved approach, where each block contains either a CA or a SA layer.</i> CA <i>cross-attend the VLM's keys and values</i>; SA cho token hành động nhìn nhau với <i>causal attention mask</i>. Xen kẽ cho tỉ lệ thành công cao hơn và suy luận nhanh hơn; SA giúp chunk <i>smoother</i>, nhất là trên robot thật.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Mỗi khối có <b>một</b> loại attention (khác VLM kiểu Flamingo, mỗi khối có cả hai). Trong code: <code>self_attn_every_n_layers = 2</code>, các lớp có <code>layer_idx</code> 0, 2, 4… là SA, 1, 3, 5… là CA (đếm từ 1 thì lớp 1, 3, 5… là SA). Lớp CA rẻ: chỉ 50 query hành động, K/V của VLM đã nằm sẵn trong cache. "Mượt hơn" là quan sát định tính, paper không có số đo độ mượt.</div></div>
+
+<details class="more"><summary>Xem chi tiết: lớp CA dùng K/V của VLM như thế nào (theo code)</summary>
+<p>VLM có 15 đầu query và 5 đầu key/value, mỗi đầu 64 chiều (GQA). K/V của một lớp VLM có kích thước 5 × 64 = 320 cho mỗi token. Ở lớp CA, expert dùng <code>k_proj</code>, <code>v_proj</code> riêng, nhận vào vector 320 chiều đó (không phải đặc trưng 960 chiều) và chiếu tiếp sang không gian đầu của expert. Nghĩa là expert "đọc" bản K/V đã tính của VLM rồi biến đổi thêm một lần. Ở lớp SA, <code>k_proj</code>, <code>v_proj</code> của expert nhận đặc trưng 720 chiều của chính token hành động. Mình tính lại số tham số theo cách này được ≈ 99,9M cho expert và các lớp chiếu, khớp "~100M" của paper (code ở mục 12, dòng (d)).</p>
+</details>
+
+<h3 id="mask">6.3 Mặt nạ attention: ai được nhìn ai <span class="lv m">Phải nắm</span></h3>
+<p>Một bảng nhỏ nói hết: hàng là token đang "hỏi", cột là token được "nhìn". Code LeRobot dựng mặt nạ bằng một mẹo của π0: mỗi token có một số 0/1; lấy tổng dồn; token i nhìn được token j khi tổng dồn của j ≤ của i. Ảnh và chữ mang số 0 (nhìn nhau thoải mái), trạng thái mang 1 (ảnh, chữ không nhìn được nó), mỗi token hành động mang 1 (thành causal).</p>
+<div class="widget">
+<h4>Xem mặt nạ của từng loại lớp</h4>
+<div class="ctrl"><span>Loại lớp:</span>
+<select id="mkMode"><option value="sa">SA causal (lớp 1, 3, 5…)</option><option value="ca">CA (lớp 2, 4, 6…)</option><option value="bi">SA hai chiều (Bảng 7, "Bidir")</option></select>
+<label><input type="checkbox" id="mkSuffix"> trạng thái đưa vào expert (suffix, Bảng 11)</label></div>
+<div id="mkGrid" class="mask"></div>
+<div class="leg"><span><i style="background:var(--pri)"></i>được nhìn</span><span><i style="background:var(--code-bg);border:1px solid var(--line)"></i>bị che</span><span>I = token ảnh, L = chữ, S = trạng thái, a1–a5 = hành động (rút gọn từ 50)</span></div>
+<div class="out" id="mkOut"></div>
+</div>
+
+<h3 id="flow">6.4 Flow matching &amp; quy ước τ <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>
+\[ \mathcal{L}^\tau(\theta) = \mathbb{E}_{p(A_t\mid o_t),\,q(A^\tau_t\mid A_t)}\Big[\big\|\,v_\theta(A^\tau_t, o_t) - u(A^\tau_t\mid A_t)\,\big\|^2\Big] \]
+với \(A^\tau_t = \tau A_t + (1-\tau)\epsilon\), \(\epsilon\sim\mathcal N(0, I)\), và \(u(A^\tau_t\mid A_t) = \epsilon - A_t\). τ lấy theo phân phối Beta như π0. Expert rộng 0,75 × d.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Trộn hành động thật \(A_t\) (chunk 50 × số chiều) với nhiễu, đưa cho expert, bắt expert đoán "hướng đi". \(o_t\) ở đây là <b>đặc trưng VLM</b> (không phải ảnh thô). Mất mát là sai số bình phương trung bình. Không có loss phụ nào khác.</div></div>
+
+<div class="co crit"><b class="t">Lệch dấu: cùng lỗi như GR00T, và lần này đã kiểm với code</b>
+Theo cách viết của paper, τ = 1 là sạch (\(A^1 = A\)), τ = 0 là nhiễu. Đạo hàm theo τ: \(\frac{d A^\tau}{d\tau} = A - \epsilon\). Nhưng paper ghi mục tiêu \(u = \epsilon - A\): ngược dấu.<br>
+Code LeRobot (<code>make_flow_matching_inputs</code>, <code>FlowConvention.NOISE_AT_ONE</code>): \(x_\tau = \tau\,\epsilon + (1-\tau)A\), mục tiêu \(\epsilon - A\), suy luận đi τ: 1 → 0 với bước \(d\tau = -0{,}1\). Với quy ước này, \(\frac{dx_\tau}{d\tau} = \epsilon - A\): <b>đúng dấu</b>. Vậy: <b>code đúng</b>, paper viết công thức nội suy theo quy ước π0-paper (τ = 1 sạch) nhưng ghi mục tiêu theo quy ước của code (τ = 1 nhiễu). Code dùng đúng quy ước Qwen-VLA.</div>
+
+<div class="widget">
+<h4>Một con số, hai cách viết</h4>
+<p style="margin:0 0 6px;font-size:.92rem">Hành động thật a = 0,6, nhiễu ε = −1,2 (cùng ví dụ trang GR00T, Qwen-VLA). Kéo τ để thấy cách viết của paper và của code gọi cùng một điểm bằng hai τ khác nhau.</p>
+<div class="ctrl"><span>τ (theo code) = <b id="tV">0,75</b></span><input type="range" id="tS" min="0" max="1" step="0.05" value="0.75"></div>
+<div class="two"><div class="out" id="tCode"></div><div class="out" id="tPaper"></div></div>
+</div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Suy luận: <i>the flow matching is fixed to 10 steps</i> (Sec 4.3).</div>
+<div class="n"><span class="lab">Nghĩa là</span>Bắt đầu từ nhiễu, gọi expert 10 lần. Theo code: VLM chạy <b>một lần</b> tạo KV cache, rồi 10 lần chỉ chạy expert. So với GR00T (4 bước) và RTC/π0.5 (5 bước trong paper RTC), SmolVLA đi nhiều bước hơn, nhưng mỗi bước rẻ vì expert nhỏ. Paper không đo thời gian một chunk.</div></div>
+
+<h3 id="pseudo">6.5 Code giả: một bước huấn luyện, một lần suy luận <span class="lv k">Đọc lướt</span></h3>
+<details class="more"><summary>Xem chi tiết: code giả kiểu PyTorch (theo PDF + code LeRobot, đã giản lược)</summary>
+<pre><code># ===== Một bước huấn luyện =====
+prefix = cat([embed_image(img_i) for cam],      # 64 token / camera (pixel shuffle)
+             embed_lang(instruction),           # tối đa 48 token
+             state_proj(pad32(state)))          # 1 token trạng thái, att_mask = 1
+A    = pad32(actions)                           # [B, 50, 32]   đệm 0 tới 32 chiều
+eps  = randn_like(A)
+tau  = Beta(1.5, 1.0).sample(B) * 0.999 + 0.001 # code: τ gần 1 (nhiều nhiễu) hay gặp hơn
+x_t  = tau * eps + (1 - tau) * A                # code: τ = 1 nhiễu
+u    = eps - A                                  # mục tiêu
+a    = action_time_mlp(cat(action_in_proj(x_t), sincos(tau)))   # τ ghép vào token, không AdaLN
+for i in range(16):                             # VLM ĐÓNG BĂNG, chỉ 16 lớp đầu
+    if i % 2 == 0:  prefix, a = joint_attn(vlm_layer[i], expert_layer[i], prefix, a, causal_actions=True)
+    else:           prefix, a = vlm_layer[i](prefix), cross_attn(expert_layer[i], a, kv=vlm_kv[i])
+v    = action_out_proj(a)                       # [B, 50, 32]
+loss = mse(v, u)                                # paper: chỉ một loss
+
+# ===== Suy luận một chunk =====
+kv  = run_vlm_once(prefix)                      # KV cache, 1 lần
+x   = randn(B, 50, 32)                          # τ = 1
+for k in range(10):                             # dt = -0.1
+    tau = 1 - k / 10
+    x = x + (-0.1) * expert(x, tau, kv)
+actions = x[:, :, :action_dim]                  # bỏ phần đệm</code></pre>
+<div class="co note"><b class="t">So nhanh với code giả GR00T và Qwen-VLA</b>GR00T: <code>context=phi</code> (một lớp VLM), AdaLN, MLP riêng từng robot, cộng v (τ: 0 → 1). Qwen-VLA: <code>torch.cat([c_vl, a_tok])</code> một chuỗi, AdaLN, trừ v (τ: 1 → 0). SmolVLA: lớp i ↔ VLM lớp i, CA/SA xen kẽ, τ ghép vào token, cộng <code>dt·v</code> với <code>dt = −0,1</code> (tức là trừ, τ: 1 → 0).</div>
+</details>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="sec" id="data">
+<h2>7. Dữ liệu cộng đồng (Section 3.2, Bảng 1) <span class="lv s">Nên biết</span></h2>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Dữ liệu robot bị chia thành "đảo dữ liệu" (khác robot, cảm biến, tần số, định dạng). Robot giá rẻ và thư viện chuẩn hóa (LeRobot) giúp giảm sự khác biệt đó. Chọn <b>481</b> dataset cộng đồng trên Hugging Face, lọc theo loại robot, số episode, chất lượng, độ phủ khung hình.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Dữ liệu cộng đồng "bẩn" nhưng đa dạng: nhà riêng, lab nhỏ, đèn khác, nền khác, demo vụng. Paper coi sự bẩn này là lợi thế cho pretrain. Danh sách đủ 481 tên dataset nằm ở Phụ lục A.1 (trang 20–24).</div></div>
+<div class="stat">
+  <div><div class="v">481</div><div class="k">dataset</div></div>
+  <div><div class="v">22,9K</div><div class="k">episode</div></div>
+  <div><div class="v">10,6M</div><div class="k">khung hình</div></div>
+</div>
+<div class="co warn"><b class="t">Lỗi đơn vị trong chú thích Bảng 1</b>Chú thích ghi <i>"At ∼10M episodes"</i>, nhưng chính bảng ghi 22,9K <b>episode</b> và 10,6M <b>khung</b>. Phần Limitations cũng nói "approximately 23k trajectories", phần giới thiệu nói "fewer than 30k episodes". Vậy ~10M là số khung, không phải số episode.</div>
+
+<h4>Hai bước dọn dữ liệu</h4>
+<div class="tw"><table class="t">
+<tr><th>Vấn đề</th><th>Cách làm</th><th>Ví dụ</th></tr>
+<tr><td><b>Câu lệnh bẩn</b>: giữ chỗ "task desc", quá mơ hồ "Hold", "Up", hoặc trống</td><td>Lấy vài khung đại diện + câu lệnh gốc, đưa cho <b>Qwen2.5-VL-3B-Instruct</b>, yêu cầu một câu ngắn bắt đầu bằng động từ (tối đa 30 ký tự). Prompt đầy đủ ở Phụ lục A.1</td><td>"Up" → kiểu "Pick up the cube and place it in the box" (ví dụ lấy từ prompt)</td></tr>
+<tr><td><b>Tên camera lộn xộn</b>: <code>images.laptop</code> có thể là camera trên, cạnh hoặc cổ tay</td><td>Gán <b>tay</b> từng camera về một kiểu chuẩn, ưu tiên trên, cổ tay, cạnh, đổi tên thành OBS_IMAGE_1, 2, 3. Camera thừa giữ thứ tự nhưng bỏ khi huấn luyện</td><td>Thứ tự camera nhất quán giúp huấn luyện tốt hơn (paper nói vậy, không có bảng số)</td></tr>
+</table></div>
+<div class="co link"><b class="t">So với Qwen-VLA</b>Qwen-VLA giải "camera nào" bằng thẻ tên trong chuỗi (<code>&lt;|ego_start|&gt;</code>…) và giải "robot nào" bằng embodiment prompt. SmolVLA chỉ dựa vào <b>thứ tự cố định</b> của camera, và pretrain gần như một loại robot, nên không cần mô tả robot. Đây cũng là lý do SmolVLA khó mở rộng sang nhiều robot (paper tự nhận).</div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="sec" id="async">
+<h2>8. Suy luận bất đồng bộ (Section 3.3, 4.6) <span class="lv m">Phải nắm</span></h2>
+<p>Đây là phần đáng đọc kỹ nhất nếu bạn vừa học RTC. Mục này đi theo thứ tự: vấn đề → cơ chế → công thức g → tự chạy mô phỏng → kết quả thật → so với RTC.</p>
+
+<h3 id="async-why">8.1 Vấn đề của chạy đồng bộ <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Có hai cách quen thuộc. (1) Chạy hết chunk n hành động rồi mới đưa quan sát mới cho policy: <i>open-loop</i> giữa hai lần quan sát. (2) Như ACT, Diffusion Policy: tính chunk mới ở <b>mọi</b> bước rồi gộp các chunk chồng nhau; thích nghi tốt nhưng phải chạy suy luận liên tục, quá tốn cho thiết bị yếu. Cách (1) gọi là <b>sync</b>: tốn ít tính toán nhưng có <i>blind lags</i>, robot đứng im trong lúc tính A.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Sync có <b>hai</b> nhược điểm khác nhau: (a) <b>đứng im</b> trong lúc chờ mô hình (mất thời gian); (b) <b>mù</b> suốt n bước (không thấy thay đổi của môi trường). Async giải (a) hoàn toàn và giải (b) một phần (quan sát mới được gửi thường hơn). Lưu ý: paper RTC cũng nêu đúng hai vấn đề này, nhưng tập trung vào một vấn đề thứ ba: <b>chỗ nối</b> giữa hai chunk bị giật.</div></div>
+
+<h3 id="async-queue">8.2 Hàng đợi &amp; Algorithm 1 <span class="lv m">Phải nắm</span></h3>
+<ol class="steps">
+<li><b>Khởi động.</b> Robot chụp \(o_0\), gửi cho PolicyServer, nhận chunk \(A_0\) (đứng chờ một lần duy nhất).</li>
+<li><b>Mỗi chu kỳ Δt:</b> lấy hành động đầu hàng đợi (PopFront) và thực thi.</li>
+<li><b>Kiểm ngưỡng:</b> nếu \(|A_t|/n &lt; g\) (hàng đợi còn ít), chụp quan sát mới.</li>
+<li><b>Lọc trùng:</b> nếu quan sát mới gần trùng quan sát trước (khoảng cách trong không gian khớp &lt; ε) thì bỏ, <i>trừ khi</i> hàng đợi đã rỗng.</li>
+<li><b>Gửi không chặn:</b> gửi cho server, robot vẫn tiếp tục chạy hàng đợi cũ.</li>
+<li><b>Chunk mới về:</b> ghép với hàng đợi bằng \(f(A_t, \tilde A_{t+1})\) ở các bước chồng nhau.</li>
+</ol>
+
+<div class="widget" style="border-style:dashed">
+<h4>Hình 2 vẽ lại: dòng thời gian client – server</h4>
+<svg class="svgbox" viewBox="0 0 900 230" role="img" aria-label="Dòng thời gian bất đồng bộ">
+<defs><marker id="tl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>
+<text x="20" y="54" style="fill:var(--text);font-weight:700">PolicyServer</text>
+<text x="20" y="164" style="fill:var(--text);font-weight:700">RobotClient</text>
+<line x1="140" y1="50" x2="880" y2="50" class="ar" marker-end="url(#tl)"/>
+<line x1="140" y1="160" x2="880" y2="160" class="ar" marker-end="url(#tl)"/>
+<rect x="160" y="34" width="90" height="32" rx="6" style="fill:var(--pri-soft);stroke:var(--pri)"/><text x="205" y="55" text-anchor="middle" style="fill:var(--text);font-size:12px">π(o₀)</text>
+<path d="M160,158 L160,70" class="ar" marker-end="url(#tl)" style="stroke:var(--red)"/><text x="150" y="185" text-anchor="middle" style="fill:var(--muted);font-size:11px">gửi o₀</text>
+<path d="M250,68 L250,156" class="ar" marker-end="url(#tl)"/>
+<rect x="160" y="146" width="90" height="28" rx="4" style="fill:var(--red-soft);stroke:var(--red)"/><text x="205" y="164" text-anchor="middle" style="fill:var(--red);font-size:11px">chờ (1 lần)</text>
+<g style="fill:var(--gold-soft);stroke:var(--gold)">
+<rect x="252" y="148" width="38" height="24"/><rect x="290" y="148" width="38" height="24"/><rect x="328" y="148" width="38" height="24"/><rect x="366" y="148" width="38" height="24"/><rect x="404" y="148" width="38" height="24"/><rect x="442" y="148" width="38" height="24"/><rect x="480" y="148" width="38" height="24"/><rect x="518" y="148" width="38" height="24"/><rect x="556" y="148" width="38" height="24"/><rect x="594" y="148" width="38" height="24"/><rect x="632" y="148" width="38" height="24"/><rect x="670" y="148" width="38" height="24"/><rect x="708" y="148" width="38" height="24"/><rect x="746" y="148" width="38" height="24"/></g>
+<text x="350" y="195" text-anchor="middle" style="fill:var(--muted);font-size:11px">chạy k hành động của π(o₀)…</text>
+<path d="M442,158 L442,70" class="ar" marker-end="url(#tl)" style="stroke:var(--red)"/><text x="442" y="214" text-anchor="middle" style="fill:var(--red);font-size:11px">hàng đợi &lt; g·n: gửi o_k</text>
+<rect x="442" y="34" width="152" height="32" rx="6" style="fill:var(--pri-soft);stroke:var(--pri)"/><text x="518" y="55" text-anchor="middle" style="fill:var(--text);font-size:12px">π(o_k) · ℓ_S</text>
+<path d="M594,68 L594,144" class="ar" marker-end="url(#tl)"/>
+<text x="518" y="110" text-anchor="middle" style="fill:var(--pri-strong);font-size:11px">robot vẫn chạy, không chờ</text>
+<rect x="594" y="144" width="190" height="32" rx="4" style="fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:5 3"/>
+<text x="690" y="134" text-anchor="middle" style="fill:var(--accent);font-size:11px">ghép f(π(o₀), π(o_k)) ở chỗ chồng</text>
+</svg>
+</div>
+
+<div class="co warn"><b class="t">Algorithm 1 viết chưa chặt (đọc kỹ dòng 6, 9–11, 14–15)</b>
+<ul style="margin:4px 0 0 18px;padding:0">
+<li>Dòng 9 gọi suy luận <b>không chặn</b>, nhưng dòng 10–11 lại gán ngay \(\tilde A_{t+1} \leftarrow \pi(o_{t+1})\) và ghép luôn, như thể kết quả đã có. Dòng 14–15 mới nói "chưa xong thì giữ hàng đợi cũ". Thứ tự đúng (như trong code) là: gửi, chạy tiếp, <b>khi nào chunk về</b> mới ghép.</li>
+<li>Dòng 6 dùng dấu "&lt;". Với g = 0, \(|A_t|/n &lt; 0\) không bao giờ đúng; trường hợp "g = 0 là chạy tuần tự" chỉ xảy ra nhờ quy tắc "hàng đợi rỗng thì vẫn xử lý". Code LeRobot dùng "≤" (<code>_ready_to_send_observation</code>).</li>
+<li>Hàm <b>f</b> không được định nghĩa trong paper. Code LeRobot có 4 lựa chọn: <code>weighted_average</code> = 0,3·cũ + 0,7·mới (mặc định), <code>latest_only</code>, <code>average</code>, <code>conservative</code> = 0,7·cũ + 0,3·mới.</li>
+</ul></div>
+
+<details class="more"><summary>Xem chi tiết: code LeRobot ghép hàng đợi thế nào</summary>
+<p>Mỗi hành động mang một <b>số thứ tự thời điểm</b> (timestep). Chunk trả về cho quan sát chụp ở thời điểm \(i_0\) được đánh số \(i_0, i_0+1, \dots\). Khi chunk về (<code>_aggregate_action_queues</code>):</p>
+<ul>
+<li>Hành động có số ≤ hành động vừa thực thi: <b>bỏ</b> (đã quá hạn, robot đã đi qua thời điểm đó trong lúc chờ).</li>
+<li>Số chưa có trong hàng đợi: <b>thêm vào</b>.</li>
+<li>Số đã có: thay bằng <code>aggregate_fn(cũ, mới)</code>.</li>
+</ul>
+<p>Bước "bỏ hành động quá hạn" chính là việc mà paper RTC gọi là "d hành động đã cam kết". SmolVLA không đóng băng chúng trong chunk mới; nó đơn giản là vứt phần đầu của chunk mới đi.</p>
+</details>
+
+<h3 id="async-g">8.3 Ngưỡng g: dẫn công thức từng bước <span class="lv m">Phải nắm</span></h3>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Gọi ℓ là thời gian từ lúc gửi quan sát tới lúc nhận chunk:
+\[ \mathbb{E}[\ell] = \mathbb{E}[t_{C\to S}] + \mathbb{E}[\ell_S] + \mathbb{E}[t_{S\to C}] \simeq \mathbb{E}[\ell_S] \]
+(giả sử truyền mạng nhỏ so với suy luận). Với Δt = 33 ms (30 fps), hàng đợi không bao giờ rỗng nếu
+\[ g \;\ge\; \frac{\mathbb{E}[\ell_S]/\Delta t}{n}. \]</div>
+<div class="n"><span class="lab">Nghĩa là</span>Dẫn ra trong 3 bước:
+<ol style="margin:4px 0 0 18px;padding:0">
+<li>Lúc gửi quan sát, hàng đợi còn khoảng \(g\cdot n\) hành động.</li>
+<li>Robot chạy hết số đó trong \(g\cdot n\cdot\Delta t\) giây.</li>
+<li>Muốn không đứng chờ: chunk mới phải về trước khi hết hàng, tức \(g\,n\,\Delta t \ge \mathbb{E}[\ell_S]\). Chia hai vế cho \(n\,\Delta t\) là ra công thức.</li>
+</ol>
+Đọc bằng lời: <b>vế phải là "độ trễ đo bằng số bước điều khiển", chia cho độ dài chunk</b>. Chính là con số d của RTC chia cho n.</div></div>
+
+<div class="tw"><table class="t">
+<tr><th>Ví dụ số (tự đặt)</th><th class="num">ℓ_S</th><th class="num">ℓ_S / Δt</th><th class="num">n</th><th class="num">g tối thiểu</th><th>Đọc ra</th></tr>
+<tr><td>GPU mạnh, gần robot</td><td class="num">100 ms</td><td class="num">3 bước</td><td class="num">50</td><td class="num">0,06</td><td>Gửi khi còn ~3 hành động là đủ</td></tr>
+<tr><td>GPU yếu hoặc qua mạng</td><td class="num">300 ms</td><td class="num">9 bước</td><td class="num">50</td><td class="num">0,18</td><td>Phải gửi khi còn ≥ 9 hành động</td></tr>
+<tr><td>CPU, chunk ngắn</td><td class="num">500 ms</td><td class="num">15 bước</td><td class="num">20</td><td class="num">0,75</td><td>Gần như phải gửi liên tục</td></tr>
+</table></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Nếu không có bộ lọc trùng, client gửi quan sát mỗi \((1-g)\,n\,\Delta t\) giây, và nhận chunk mới mỗi \((1-g)\,n\,\Delta t + \mathbb{E}[\ell_S]\) giây, trung bình.</div>
+<div class="n"><span class="lab">Nghĩa là (và một chỗ chưa khớp)</span>Nếu gửi đều mỗi P giây thì nhận cũng đều mỗi P giây (chỉ lệch pha ℓ), nên câu "nhận mỗi P + ℓ" khó hiểu. Thử tính theo logic của code: lúc gửi còn \(g n\) hành động; chunk về sau ℓ, hành động quá hạn bị bỏ nên hàng đợi lên khoảng \(n - \ell/\Delta t\); rồi giảm về \(g n\) để gửi tiếp. Tổng một vòng: \(\ell/\Delta t + (n - \ell/\Delta t - g n) = (1-g)n\) bước. Vậy với code LeRobot, chu kỳ ≈ \((1-g)\,n\,\Delta t\), <b>không cộng thêm ℓ</b>. Công thức "+ ℓ" đúng nếu chunk mới được coi là bắt đầu "từ lúc nhận" (không bỏ phần quá hạn). Mô phỏng ở 8.4 cho ra số lần gọi khớp với \((1-g)n\). Đây là suy luận của mình; nên kiểm với tác giả hoặc chạy code thật.</div></div>
+
+<div class="pv"><div class="p"><span class="lab">Paper viết · ba trường hợp (Hình 3A)</span><b>g = 0</b>: chạy hết chunk mới gửi, chờ trung bình \(\mathbb{E}[\ell_S]\) giây mỗi lần. <b>g = 0,7</b>: dùng ~30% hàng đợi rồi gửi; phần chồng nhau làm "đệm" chống lỗi mô hình. <b>g = 1</b>: gửi ở mọi bước (như ACT, Diffusion Policy); hàng đợi gần như luôn đầy, răng cưa nhỏ; mỗi bước một lần forward, rất tốn.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Trên Hình 3, trục tung đi tới khoảng 20, nên thí nghiệm vẽ hình dùng chunk cỡ 20 (không phải 50). Ở g = 1, hàng đợi đứng ở ~16–17 chứ không về 20, vì trong lúc server tính, client vẫn tiêu hành động. Hình 3B (có lọc trùng, g = 0,5): mũi tên đỏ chỉ lúc hàng đợi rỗng nên quan sát gần trùng vẫn được xử lý.</div></div>
+
+<h3 id="async-sim">8.4 Mô phỏng hàng đợi <span class="lv m">Phải nắm</span></h3>
+<div class="widget">
+<h4>Tự chỉnh g, độ trễ, độ dài chunk</h4>
+<p style="margin:0 0 6px;font-size:.92rem;color:var(--muted)">Logic mô phỏng giống <code>robot_client.py</code>: Δt = 33,3 ms; gửi khi |hàng đợi|/n ≤ g và không có yêu cầu đang chờ; hành động quá hạn bị bỏ; chỗ chồng dùng hàm f. Độ trễ cố định (có thể thêm dao động). Robot cần làm 300 hành động. Đây là mô phỏng đồ chơi, không phải đo thật.</p>
+<div class="ctrl">
+<span>g = <b id="gV">0,70</b></span><input type="range" id="gS" min="0" max="1" step="0.05" value="0.7">
+<span>ℓ_S = <b id="lV">300</b> ms</span><input type="range" id="lS" min="30" max="1200" step="10" value="300">
+</div>
+<div class="ctrl">
+<span>n = <b id="nV">50</b></span><input type="range" id="nS" min="10" max="100" step="5" value="50">
+<span>dao động độ trễ ±<b id="jV">0</b>%</span><input type="range" id="jS" min="0" max="60" step="10" value="0">
+</div>
+<svg class="svgbox" id="qSvg" viewBox="0 0 900 230" role="img" aria-label="Kích thước hàng đợi theo thời gian"></svg>
+<div class="leg"><span><i style="background:var(--pri)"></i>bất đồng bộ (g đang chọn)</span><span><i style="background:var(--grey)"></i>đồng bộ (g = 0)</span><span><i style="background:var(--accent)"></i>ngưỡng g·n</span><span><i style="background:var(--red);opacity:.4"></i>tick robot đứng im (async)</span></div>
+<div class="kpi" id="qKpi"></div>
+<div class="out" id="qOut"></div>
+</div>
+<div class="co note"><b class="t">Thí nghiệm tự làm (đoán trước rồi mới kéo)</b>
+<ol style="margin:4px 0 0 18px;padding:0">
+<li>Đặt ℓ = 300 ms, n = 50. Công thức cho g tối thiểu = 0,18. <i>Bạn đoán</i> với g = 0,1 robot đứng im nhiều hay ít hơn g = 0? Với g = 0,2 thì sao? Kéo để kiểm.</li>
+<li>Giữ g = 0,7, tăng n từ 50 lên 100. Số lần gọi mô hình tăng hay giảm? Vì sao? (Gợi ý: chu kỳ ≈ (1−g)·n.)</li>
+<li>Đặt g = 1. Số lần gọi có đúng "mỗi bước một lần" như paper nói không? Nếu không, cái gì giới hạn nó? (Gợi ý: mỗi lúc chỉ có một yêu cầu đang chờ.)</li>
+</ol></div>
+<details class="more"><summary>Xem chi tiết: số tham chiếu từ bản Python của mô phỏng</summary>
+<p>Cùng logic, viết bằng Python (file <code>async_queue_sim.py</code> ở mục 12), 300 hành động, Δt = 33,3 ms, n = 50, không dao động:</p>
+<div class="tw"><table class="t">
+<tr><th>ℓ_S</th><th class="num">g = 0</th><th class="num">g = 0,1</th><th class="num">g = 0,3</th><th class="num">g = 0,5</th><th class="num">g = 0,7</th><th class="num">g = 1</th></tr>
+<tr><td>100 ms: thời gian / tick đứng im / lần gọi</td><td class="num">10,60 s / 18 / 7</td><td class="num">10,10 / 3 / 7</td><td class="num">10,10 / 3 / 9</td><td class="num">10,10 / 3 / 13</td><td class="num">10,10 / 3 / 21</td><td class="num">10,10 / 3 / 76</td></tr>
+<tr><td>300 ms: thời gian / tick đứng im / lần gọi</td><td class="num">11,80 s / 54 / 7</td><td class="num">11,10 / 33 / 7</td><td class="num">10,30 / 9 / 9</td><td class="num">10,30 / 9 / 13</td><td class="num">10,30 / 9 / 21</td><td class="num">10,30 / 9 / 31</td></tr>
+</table></div>
+<p>3 hoặc 9 tick đứng im còn lại là lần chờ khởi động duy nhất. Từ g vượt ngưỡng (0,06 hoặc 0,18) trở đi, thời gian không giảm thêm, chỉ tốn thêm lần gọi.</p>
+</details>
+
+<h4>Bộ lọc quan sát gần trùng <span class="lv s">Nên biết</span></h4>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Hai quan sát coi là gần trùng nếu khoảng cách trong <i>joint-space</i> nhỏ hơn ngưỡng ε. Quan sát gần trùng bị bỏ, trừ khi hàng đợi rỗng. Mục đích: tránh gọi server thừa và tránh <i>robot stalling</i> vì hàng đợi liên tục bị ghép với chunk gần như giống hệt.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Lúc robot đứng yên (ví dụ đầu episode), ảnh và trạng thái gần như không đổi, mô hình sẽ trả về chunk giống hệt, ghép vào cũng không làm robot nhúc nhích hơn. Lọc chỉ dựa trên <b>trạng thái khớp</b>, không xét ảnh: nếu vật bị dịch chuyển mà tay robot đứng yên, quan sát vẫn bị coi là "trùng" (suy luận của mình từ cách định nghĩa). Code: <code>observations_similar</code>, chuẩn L2 của hiệu trạng thái &lt; <code>atol = 1</code>.</div></div>
+
+<h3 id="async-res">8.5 Kết quả trên robot thật (Hình 5) <span class="lv m">Phải nắm</span></h3>
+<div class="tw"><table class="t">
+<tr><th></th><th class="num">Gắp-đặt</th><th class="num">Xếp chồng</th><th class="num">Phân loại</th><th class="num">TB</th></tr>
+<tr><td>Sync</td><td class="num">75</td><td class="num">90</td><td class="num">70</td><td class="num">78,3</td></tr>
+<tr><td>Async</td><td class="num">80</td><td class="num">90</td><td class="num">50</td><td class="num">73,3</td></tr>
+</table></div>
+<div class="two">
+<div class="tw"><table class="t">
+<tr><th>Hình 5b: thời gian xong việc (s)</th><th class="num">Tổng</th><th class="num">TB</th><th class="num">Độ lệch</th></tr>
+<tr><td>Sync</td><td class="num">137,5</td><td class="num">13,75</td><td class="num">2,42</td></tr>
+<tr><td>Async</td><td class="num">97,0</td><td class="num">9,70</td><td class="num">2,95</td></tr>
+</table></div>
+<div class="tw"><table class="t">
+<tr><th>Hình 5c: số khối trong thời gian cố định</th><th class="num">Tổng</th><th class="num">TB</th><th class="num">Độ lệch</th></tr>
+<tr><td>Sync</td><td class="num">9</td><td class="num">1,8</td><td class="num">0,45</td></tr>
+<tr><td>Async</td><td class="num">19</td><td class="num">3,8</td><td class="num">1,3</td></tr>
+</table></div>
+</div>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>Hai chế độ cho tỉ lệ thành công tương đương; async nhanh hơn ~30% (9,7 s so với 13,75 s) và trong thời gian cố định (<i>e.g.</i>, 60 giây) làm được 19 so với 9 lần. Siêu tham số tối ưu cho gắp-đặt rồi dùng lại cho các tác vụ khác.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Tự kiểm: (13,75 − 9,7) / 13,75 = 29,5% ✓. Tổng/TB cho thấy 5b là 10 lượt, 5c là 5 lượt (137,5 / 13,75 = 10; 9 / 1,8 = 5). Ba điểm cần dè dặt: (1) <b>phân loại tụt 70 → 50</b> (20 điểm), paper vẫn gọi là "comparable"; (2) không ghi g, n, độ trễ thực tế, phần cứng server; (3) thời gian cố định ghi "e.g., 60 seconds", không chắc là 60 giây. Đo tốc độ chỉ trên gắp-đặt.</div></div>
+
+<h3 id="async-rtc">8.6 So với RTC đã học <span class="lv m">Phải nắm</span></h3>
+<p>Cả hai giải cùng một bài toán gốc: <b>mô hình tính chậm hơn một bước điều khiển</b>, robot không được đứng chờ. Khác nhau ở <b>chỗ chunk cũ và chunk mới gặp nhau</b>.</p>
+<div class="tw"><table class="t">
+<tr><th>Điểm so sánh</th><th>SmolVLA async (Sec 3.3)</th><th>RTC inference-time</th><th>RTC training-time</th></tr>
+<tr><td><b>Khi nào gọi mô hình</b></td><td>Khi hàng đợi còn ≤ g·n hành động</td><td>Sau mỗi s bước thực thi (s ≥ d)</td><td>Như RTC inference</td></tr>
+<tr><td>Liên hệ ký hiệu</td><td>g·n ⇔ số hành động còn lại; (1−g)·n ⇔ s</td><td>H, s, d</td><td>H, s, d</td></tr>
+<tr><td>Trong lúc chờ</td><td>Chạy tiếp hàng đợi cũ</td><td>Chạy tiếp d hành động của chunk cũ</td><td>Như RTC inference</td></tr>
+<tr><td><b>Chunk mới có biết chunk cũ không?</b></td><td><b>Không</b>: sinh độc lập, chỉ nhìn quan sát mới</td><td><b>Có</b>: inpainting bằng guidance (ΠGDM) trong từng bước khử nhiễu, đóng băng d đầu, mặt nạ mềm</td><td><b>Có</b>: d hành động đầu đưa vào dạng sạch (τ theo từng token) khi huấn luyện và khi chạy</td></tr>
+<tr><td><b>Ghép chỗ chồng</b></td><td>Bỏ phần quá hạn; phần chồng trộn bằng f (code: 0,3·cũ + 0,7·mới)</td><td>Không cần trộn: chunk mới đã khớp với phần đang chạy</td><td>Như RTC inference</td></tr>
+<tr><td>Đổi mô hình / huấn luyện lại?</td><td>Không</td><td>Không (chỉ đổi vòng suy luận)</td><td>Có (fine-tune với độ trễ giả lập)</td></tr>
+<tr><td>Chi phí thêm mỗi lần gọi</td><td>Gần 0 (chỉ tốn thêm lần gọi nếu g lớn)</td><td>Backward qua mạng ở mỗi bước khử nhiễu (π0.5: 76 → 97 ms)</td><td>Gần 0</td></tr>
+<tr><td>Áp cho policy nào</td><td>Mọi policy sinh chunk (ACT, diffusion, flow…)</td><td>Chỉ policy flow/diffusion</td><td>Chỉ policy flow, cần huấn luyện</td></tr>
+<tr><td>Trong bảng của paper RTC, gần với</td><td><code>latest_only</code> ≈ "naive async"; <code>weighted_average</code> ≈ một kiểu trộn chunk (gần temporal ensembling)</td><td>—</td><td>—</td></tr>
+<tr><td><b>Rủi ro chính</b></td><td>Chunk cũ và mới chọn <b>hai cách làm khác nhau</b> (vòng trái / vòng phải): trộn ra đường giữa, hoặc giật khi đổi</td><td>Ước lượng d sai; chi phí backward</td><td>Phải huấn luyện; d lấy mẫu trong khoảng cố định</td></tr>
+<tr><td>Đo trong paper</td><td>Thời gian xong việc, số khối; tỉ lệ thành công gần bằng sync (3 tác vụ)</td><td>Kinetix + 6 tác vụ robot thật, so với naive, TE, BID</td><td>Kinetix + 2 tác vụ thật</td></tr>
+</table></div>
+
+<div class="widget">
+<h4>Trộn chunk vs RTC: chuyện gì xảy ra ở chỗ nối</h4>
+<p style="margin:0 0 6px;font-size:.92rem;color:var(--muted)">Quỹ đạo 1 chiều theo thời gian, vật cản ở giữa. Chunk cũ (xám) đi vòng trên. Chunk mới (xanh) về sau d bước. Đường cam là thứ robot thực sự chạy. "RTC" ở đây là <b>minh họa hình dạng kết quả</b> theo cơ chế của RTC (chunk mới bị kéo cho khớp phần đang chạy, nên ở lại cùng cách làm), không phải chạy ΠGDM thật.</p>
+<div class="ctrl"><span>Trường hợp:</span>
+<select id="mxCase"><option value="same">Chunk mới cùng hướng, lệch nhẹ</option><option value="flip">Chunk mới đổi cách làm (vòng dưới)</option></select>
+<span>Cách ghép:</span>
+<select id="mxFn"><option value="weighted">weighted_average (0,3 cũ + 0,7 mới)</option><option value="latest">latest_only</option><option value="average">average (0,5 + 0,5)</option><option value="conservative">conservative (0,7 cũ + 0,3 mới)</option><option value="rtc">RTC (minh họa)</option></select>
+<span>d = <b id="mxDV">4</b></span><input type="range" id="mxD" min="1" max="8" step="1" value="4" style="width:120px">
+</div>
+<svg class="svgbox" id="mxSvg" viewBox="0 0 900 300" role="img" aria-label="So sánh cách ghép chunk"></svg>
+<div class="kpi" id="mxKpi"></div>
+<div class="out" id="mxOut"></div>
+</div>
+
+<div class="key"><b class="t">Một câu để nhớ</b>
+SmolVLA async là <b>bộ khung hệ thống</b> (client–server, hàng đợi, khi nào gọi) với <b>cách nối đơn giản</b> (trộn sau khi sinh). RTC là <b>cách nối thông minh</b> (sinh có điều kiện), không bàn bộ khung. Hai thứ ghép được với nhau: trong LeRobot hiện nay, SmolVLA đã chạy được với RTC (<code>lerobot-rollout --inference.type=rtc</code>, cấu hình <code>execution_horizon</code>, <code>max_guidance_weight</code>).</div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="sec" id="setup">
+<h2>9. Thiết lập thí nghiệm &amp; huấn luyện (Section 4.1–4.4) <span class="lv s">Nên biết</span></h2>
+<div class="tw"><table class="t">
+<tr><th>Mục</th><th>Giá trị trong paper</th></tr>
+<tr><td>Pretrain</td><td>200.000 bước, batch toàn cục 256, warmup 100 bước, cosine 1e-4 → 2,5e-6, AdamW β₁ = 0,9, β₂ = 0,95, ảnh resize 512 × 512, bf16 + <code>torch.compile</code>, 4 GPU (vì batch lớn; "huấn luyện được trên 1 GPU")</td></tr>
+<tr><td>Fine-tune mô phỏng</td><td>100.000 bước, batch 64</td></tr>
+<tr><td>Fine-tune robot thật</td><td>200.000 bước ("có thể ít hơn nhiều mà không mất nhiều điểm")</td></tr>
+<tr><td>Phần được học</td><td>Chỉ action expert; VLM đóng băng</td></tr>
+<tr><td>Chunk / bước Euler</td><td>n = 50; 10 bước</td></tr>
+<tr><td><b>Cách chạy khi đánh giá</b></td><td>Robot thật: <b>sync</b>, chạy hết chunk rồi mới quan sát lại. Mô phỏng: quan sát lại và dự đoán sau <b>mỗi</b> hành động</td></tr>
+<tr><td>Tổng chi phí dự án</td><td>~30K giờ GPU</td></tr>
+<tr><td>LIBERO</td><td>Dataset 1.693 episode (physical-intelligence/libero), 4 bộ × 10 tác vụ, <b>10 lượt/tác vụ</b></td></tr>
+<tr><td>Meta-World</td><td>Dataset mới 2.500 episode (50/tác vụ), 50 tác vụ, 10 lượt/tác vụ</td></tr>
+<tr><td>Robot thật</td><td>SO-100: 3 dataset (gắp-đặt, xếp chồng, phân loại); SO-101: 1 dataset (gắp-đặt lego). Mỗi dataset 50 demo = 5 vị trí × 10</td></tr>
+<tr><td>Chấm robot thật</td><td>Điểm từng phần: gắp-đặt 0,5 + 0,5; xếp chồng 0,5 + 0,5; phân loại 4 × 0,25</td></tr>
+<tr><td>Baseline</td><td>π0 3,3B (fine-tune trên dataset đích), ACT ~80M (huấn luyện từ đầu, mỗi tác vụ một mô hình)</td></tr>
+</table></div>
+<div class="co warn"><b class="t">Ba chỗ lệch nhỏ khi đọc Sec 4</b>
+(1) Robot thật dùng <b>sync và chạy hết 50 hành động</b>, trong khi Bảng 13 cho thấy trên LIBERO, chạy 50 bước rồi mới quan sát lại chỉ được 51,8%, so với 80,3% khi quan sát lại mỗi bước. (2) Code LeRobot mặc định warmup 1.000 bước và giảm LR trong 30.000 bước, khác số trong paper; hãy đặt lại nếu muốn tái lập. (3) π0 được ghi là 3,3B ở Bảng 2 và Sec 4.4, nhưng 3,5B ở Bảng 3 và một hàng Meta-World.</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sec" id="results">
+<h2>10. Kết quả chính (Section 4.5, Bảng 2–5) <span class="lv m">Phải nắm</span></h2>
+<h3>10.1 Mô phỏng (Bảng 2)</h3>
+<div class="tw"><table class="t">
+<tr><th>LIBERO</th><th>Pretrain robot</th><th class="num">Spatial</th><th class="num">Object</th><th class="num">Goal</th><th class="num">Long</th><th class="num">TB</th></tr>
+<tr><td>Diffusion Policy</td><td>Không</td><td class="num">78,3</td><td class="num">92,5</td><td class="num">68,3</td><td class="num">50,5</td><td class="num">72,4</td></tr>
+<tr><td>Octo (0,09B)</td><td>Có</td><td class="num">78,9</td><td class="num">85,7</td><td class="num">84,6</td><td class="num">51,1</td><td class="num">75,1</td></tr>
+<tr><td>OpenVLA (7B)</td><td>Có</td><td class="num">84,7</td><td class="num">88,4</td><td class="num">79,2</td><td class="num">53,7</td><td class="num">76,5</td></tr>
+<tr><td>π0 (PaliGemma-3B, chỉ khởi tạo VLM)</td><td>Không</td><td class="num">87</td><td class="num">63</td><td class="num">89</td><td class="num">48</td><td class="num">71,8</td></tr>
+<tr><td>π0 (3,3B)</td><td>Có</td><td class="num">90</td><td class="num">86</td><td class="num">95</td><td class="num">73</td><td class="num">86,0</td></tr>
+<tr><td>SmolVLA (0,24B)</td><td>Không</td><td class="num">87</td><td class="num">93</td><td class="num">88</td><td class="num">63</td><td class="num">82,75</td></tr>
+<tr class="hl"><td>SmolVLA (0,45B)</td><td>Không</td><td class="num">90</td><td class="num">96</td><td class="num">92</td><td class="num">71</td><td class="num">87,3</td></tr>
+<tr><td>SmolVLA (2,25B)</td><td>Không</td><td class="num">93</td><td class="num">94</td><td class="num">91</td><td class="num">77</td><td class="num"><b>88,75</b></td></tr>
+</table></div>
+<div class="tw"><table class="t">
+<tr><th>Meta-World</th><th>Pretrain robot</th><th class="num">Easy</th><th class="num">Medium</th><th class="num">Hard</th><th class="num">Very Hard</th><th class="num">TB</th></tr>
+<tr><td>Diffusion Policy</td><td>Không</td><td class="num">23,1</td><td class="num">10,7</td><td class="num">1,9</td><td class="num">6,1</td><td class="num">10,5</td></tr>
+<tr><td>TinyVLA</td><td>Không</td><td class="num">77,6</td><td class="num">21,5</td><td class="num">11,4</td><td class="num">15,8</td><td class="num">31,6</td></tr>
+<tr><td>π0 (3,5B-PaliGemma)</td><td>Không</td><td class="num">80,4</td><td class="num">40,9</td><td class="num">36,7</td><td class="num">44,0</td><td class="num">50,5</td></tr>
+<tr><td>π0 (3,5B)</td><td>Có</td><td class="num">71,8</td><td class="num">48,2</td><td class="num">41,7</td><td class="num">30,0</td><td class="num">47,9</td></tr>
+<tr><td>SmolVLA (0,24B)</td><td>Không</td><td class="num">86,43</td><td class="num">46,36</td><td class="num">35</td><td class="num">60</td><td class="num">56,95</td></tr>
+<tr class="hl"><td>SmolVLA (0,45B)</td><td>Không</td><td class="num">82,5</td><td class="num">41,8</td><td class="num">45,0</td><td class="num">60,0</td><td class="num">57,3</td></tr>
+<tr><td>SmolVLA (2,25B)</td><td>Không</td><td class="num">87,14</td><td class="num">51,82</td><td class="num">70</td><td class="num">64</td><td class="num"><b>68,24</b></td></tr>
+</table></div>
+<p style="font-size:.85rem;color:var(--muted)">Số lấy từ Bảng 2 (trang 11 PDF), đối chiếu ảnh trang; trung bình từng hàng đã tự cộng lại, khớp.</p>
+<div class="pv"><div class="p"><span class="lab">Paper viết</span>SmolVLA hơn Octo, OpenVLA, Diffusion Policy; hơn π0 khởi tạo từ VLM; <i>performs competitively</i> với π0 có pretrain robot, dù SmolVLA không pretrain robot cho mô phỏng. So với π0: nhanh hơn ~40% khi huấn luyện, ít hơn 6 lần bộ nhớ.</div>
+<div class="n"><span class="lab">Nghĩa là</span>Ba điều đáng chú ý: (1) Số của Diffusion Policy, Octo, OpenVLA lấy từ paper OpenVLA (theo chú thích Bảng 2); theo mình biết paper đó chấm 50 lượt/tác vụ, còn SmolVLA chấm 10 lượt/tác vụ (100 lượt/bộ). (2) Trên Meta-World, π0 <b>có</b> pretrain (47,9) lại thua π0 <b>không</b> pretrain (50,5): paper không giải thích. (3) Bản 2,25B chỉ hơn bản 0,45B 1,45 điểm ở LIBERO, nhưng hơn 10,9 điểm ở Meta-World.</div></div>
+<div class="co crit"><b class="t">Bẫy khi so với π0</b>
+Cùng π0 trên LIBERO, ba paper cho ba số: SmolVLA 86,0 (90/86/95/73); OpenVLA-OFT 94,2 (96,8/98,8/95,8/85,2); Qwen-VLA 94,4. Chênh lớn nhất ở <b>Object</b> (86 so với 98,8) và <b>Long</b> (73 so với 85,2). Có thể do cách fine-tune, số bước, cách chọn checkpoint hay số lượt thử khác nhau. Kết luận an toàn: "SmolVLA gần π0 <i>khi chạy theo thiết lập của nhóm SmolVLA</i>".</div>
+
+<h3>10.2 Robot thật (Bảng 3, 4)</h3>
+<div class="two">
+<div class="tw"><table class="t">
+<tr><th>SO-100</th><th class="num">Gắp-đặt</th><th class="num">Xếp</th><th class="num">Phân loại</th><th class="num">TB</th></tr>
+<tr><td>ACT (một tác vụ)</td><td class="num">70</td><td class="num">50</td><td class="num">25</td><td class="num">48,3</td></tr>
+<tr><td>π0 3,5B (đa tác vụ)</td><td class="num"><b>100</b></td><td class="num">40</td><td class="num">45</td><td class="num">61,7</td></tr>
+<tr class="hl"><td>SmolVLA 0,45B (đa tác vụ)</td><td class="num">75</td><td class="num"><b>90</b></td><td class="num"><b>70</b></td><td class="num"><b>78,3</b></td></tr>
+</table></div>
+<div class="tw"><table class="t">
+<tr><th>SO-101 gắp lego (một tác vụ)</th><th class="num">Trong phân phối</th><th class="num">Ngoài phân phối</th></tr>
+<tr><td>ACT</td><td class="num">70</td><td class="num">40</td></tr>
+<tr class="hl"><td>SmolVLA 0,45B</td><td class="num">90</td><td class="num">50</td></tr>
+</table></div>
+</div>
+<p>SmolVLA không có dữ liệu SO-101 lúc pretrain; "ngoài phân phối" là đặt khối lego ở vị trí chưa gặp. Ở SO-100, π0 thắng tuyệt đối ở gắp-đặt (100 so với 75); SmolVLA thắng ở xếp chồng và phân loại. Paper không ghi số lượt thử cho Bảng 3, 4.</p>
+
+<h3>10.3 Pretrain cộng đồng có giúp không? (Bảng 5)</h3>
+<div class="tw"><table class="t">
+<tr><th>SmolVLA 0,45B, SO-100</th><th>Pretrain cộng đồng</th><th class="num">Gắp-đặt</th><th class="num">Xếp</th><th class="num">Phân loại</th><th class="num">TB</th></tr>
+<tr><td>Một tác vụ</td><td>Không</td><td class="num">55</td><td class="num">45</td><td class="num">20</td><td class="num">40</td></tr>
+<tr><td>Đa tác vụ</td><td>Không</td><td class="num">80</td><td class="num">40</td><td class="num">35</td><td class="num">51,7</td></tr>
+<tr class="hl"><td>Đa tác vụ</td><td>Có</td><td class="num">75</td><td class="num">90</td><td class="num">70</td><td class="num">78,3</td></tr>
+</table></div>
+<div class="say"><b class="t">Câu trả lời "pretrain vs finetune" cho paper này</b>
+"Ở SmolVLA, pretrain là học từ 481 dataset cộng đồng trên SO-100, chỉ học action expert vì VLM đóng băng. Fine-tune là học tiếp trên dataset của tác vụ đích. Bảng 5: cùng đa tác vụ, có pretrain 78,3 so với không 51,7 (+26,6). Học đa tác vụ cũng giúp: 40 → 51,7. Cần nói thêm: dữ liệu pretrain là cùng loại robot với robot đánh giá, nên đây là bằng chứng cho 'pretrain trong miền', chưa phải cho 'pretrain chéo robot' như GR00T hay Qwen-VLA. Và ở gắp-đặt, pretrain còn làm giảm nhẹ (80 → 75)."</div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="sec" id="ablation">
+<h2>11. Ablation: Bảng 6–13 (Section 4.7) <span class="lv m">Phải nắm</span></h2>
+<p>Mọi ablation chạy trên LIBERO, <b>không pretrain robot</b>, VLM đóng băng, chỉ học expert. Trước khi đọc từng bảng, nhớ hai cảnh báo chung:</p>
+<div class="two">
+<div class="co warn" style="margin:0"><b class="t">Cảnh báo 1: nhiễu thống kê</b>LIBERO 10 lượt × 40 tác vụ = 400 lượt cho cột TB, 100 lượt cho mỗi bộ. Mình tính khoảng tin cậy Wilson 95%: TB 80% ± khoảng 4 điểm (75,8–83,6); một bộ ở 50% ± khoảng 10 điểm. Một lần chạy, không ghi seed. <b>Chênh dưới ~5 điểm ở cột TB chưa đủ để kết luận.</b> Tài liệu LIBERO của LeRobot cũng tự nêu điều này.</div>
+<div class="co warn" style="margin:0"><b class="t">Cảnh báo 2: một hàng lặp lại 6 lần</b>Hàng "89 94 85 53 → 80,3" xuất hiện ở Bảng 8 (N = 32), 9 (×0,50), 10 (flow matching), 11 (prefix CA), 12 (n = 50), 13 (1 bước). Có lẽ đó là <b>cấu hình tham chiếu</b> của các ablation (32 lớp, rộng 0,5, chỉ CA…), <b>khác</b> mô hình cuối (16 lớp, rộng 0,75, CA+SA). Paper không nói. Và hàng CA ở Bảng 6 (79,0) lại khác 80,3.</div>
+</div>
+
+<div class="widget">
+<h4>Xem từng bảng</h4>
+<div class="tabs" id="abTabs"></div>
+<div class="leg"><span><i style="background:var(--pri)"></i>lựa chọn của SmolVLA cuối</span><span><i style="background:var(--gold)"></i>hàng "89 94 85 53" lặp lại</span><span><i style="background:var(--grey)"></i>khác</span><span><i style="background:var(--pri);opacity:.2"></i>dải ±4 quanh hàng tốt nhất (nhiễu ước lượng)</span></div>
+<div class="bars" id="abBars" style="margin-top:8px"></div>
+<div class="out" id="abOut"></div>
+</div>
+
+<h3>Mỗi bảng một bài học</h3>
+<div class="lesson"><b class="h">Bảng 6 · CA vs SA:</b> xen kẽ CA+SA tốt nhất (85,5), hơn chỉ CA (79,0) và chỉ SA (74,5). <b>Bài học:</b> hành động cần cả "nhìn tình huống" lẫn "nhìn hành động bên cạnh". Riêng Object (99 so với 92/94) và Long (67 so với 54/40) chênh rõ.<span class="cav">Dè dặt: theo code, lớp "SA" cũng nhìn token VLM (mục 4.1), nên "SA" không có nghĩa là "không nhìn VLM".</span></div>
+<div class="lesson"><b class="h">Bảng 7 · causal vs hai chiều:</b> causal 74,5 so với hai chiều 67,5, gần hết chênh lệch nằm ở Long (40 so với 23). <b>Bài học:</b> để hành động sau dựa vào hành động trước (như viết từng chữ) giúp, nhất là tác vụ dài.<span class="cav">Dè dặt: paper nói CA thuần (không tương tác) "cạnh tranh được", nhưng số CA không nằm trong Bảng 7; so với Bảng 6 (79,0) thì CA thuần còn <b>cao hơn</b> cả causal SA. Lý do "tránh rò rỉ tương lai" là giải thích, không phải chứng minh: lúc khử nhiễu, các hành động sau cũng chỉ là nhiễu đang được khử, không có "đáp án tương lai" nào để rò.</span></div>
+<div class="lesson"><b class="h">Bảng 8 · bỏ lớp VLM:</b> N = 8 / 16 / 24 / 32 → 75,0 / 78,5 / 79,5 / 80,3. Lấy cách một lớp (Skip %2) 75,5; dùng VLM nhỏ hơn 256M 75,8. <b>Bài học:</b> giữ nửa dưới mất ~2 điểm nhưng giảm nửa chi phí; cắt từ VLM lớn tốt hơn VLM nhỏ.<span class="cav">Dè dặt: chữ và chú thích nói "Skip %2 tốt hơn VLM nhỏ hơn", nhưng bảng ghi 75,5 &lt; 75,8. Chênh 16 vs 32 lớp (1,8 điểm) nằm trong nhiễu.</span></div>
+<div class="lesson"><b class="h">Bảng 9 · độ rộng expert:</b> ×1,00 / 0,75 / 0,50 / 0,25 → 82,3 / 77,5 / 80,3 / 73,8. <b>Bài học (paper):</b> expert to hơn tốt hơn; 0,75 là cân bằng.<span class="cav">Dè dặt: số không tăng đều: ×0,75 (lựa chọn cuối) <b>thấp hơn</b> ×0,50. Kết luận "0,75 cân bằng tốt" không có số nào trong bảng đỡ.</span></div>
+<div class="lesson"><b class="h">Bảng 10 · flow matching vs hồi quy L1:</b> 80,25 so với 75,25; chênh lớn ở Long (53 so với 38) và Object (94 so với 85); hồi quy lại hơn ở Spatial (92 so với 89). <b>Bài học:</b> flow hợp với phân phối hành động nhiều đỉnh.<span class="cav">Đối chiếu: OpenVLA-OFT (paper sắp đọc) thấy L1 ngang diffusion trên LIBERO với mô hình 7B. Hai paper khác mô hình, khác thiết lập; giữ làm câu hỏi thảo luận.</span></div>
+<div class="lesson"><b class="h">Bảng 11 · trạng thái ở prefix hay suffix:</b> với CA: prefix 80,3 so với suffix 73,3; với SA: prefix <b>53,3</b> so với suffix 74,8. <b>Bài học (paper):</b> đưa trạng thái vào VLM tốt hơn.<span class="cav">Dè dặt: chữ nói "tốt hơn cho cả CA và SA", nhưng số SA cho thấy <b>ngược lại</b> (prefix SA kém suffix SA tới 21,5 điểm). Đây là chỗ mâu thuẫn rõ nhất trong phần ablation.</span></div>
+<div class="lesson"><b class="h">Bảng 12 · độ dài chunk n:</b> 1 / 10 / 30 / 50 / 100 → 50,0 / 84,0 / 78,5 / 80,3 / 74,5. <b>Bài học:</b> n = 1 (không chunk) rất tệ; 10–50 tốt.<span class="cav">Dè dặt: n = 10 tốt nhất, nhưng mô hình cuối dùng 50. Chạy kèm "quan sát lại mỗi bước" nên chunk dài chỉ đóng vai "đoán xa", không phải "chạy mù xa".</span></div>
+<div class="lesson"><b class="h">Bảng 13 · số bước chạy trước khi quan sát lại:</b> 1 / 10 / 30 / 50 → 80,3 / 82,8 / 70,8 / 51,8. <b>Bài học:</b> quan sát lại thường xuyên giúp nhiều; chạy mù 50 bước tụt gần 30 điểm. Đây chính là lý do cần chạy bất đồng bộ.<span class="cav">Dè dặt: robot thật lại đánh giá kiểu chạy hết 50 bước (Sec 4.3). Và 10 bước còn nhỉnh hơn 1 bước, tức là quan sát lại "mỗi bước" không phải lúc nào cũng tốt nhất.</span></div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="sec" id="torch">
+<h2>12. Code PyTorch nhỏ, chạy được <span class="lv s">Nên biết</span></h2>
+<p><b>Không phải code của tác giả.</b> Mình viết theo PDF và theo cách đọc code LeRobot, kích thước tí hon để chạy trên CPU trong khoảng 1 phút. Hai file:</p>
+<ul>
+<li><code>smolvla_toy.py</code>: VLM tí hon đóng băng (8 lớp, chỉ dùng 4), expert CA xen SA causal, flow matching theo quy ước của code, và bài đồ chơi "vòng trái / vòng phải" so flow với L1.</li>
+<li><code>async_queue_sim.py</code>: mô phỏng hàng đợi bất đồng bộ (cùng logic với widget 8.4).</li>
+</ul>
+<details class="more"><summary>Xem code: smolvla_toy.py</summary>
+<pre><code>"""SmolVLA tí hon: KHÔNG phải code của tác giả. Viết theo PDF + đọc code LeRobot (commit b9cb121, 08/10/2026).
+Mục đích: thấy cách nối VLM với action expert (CA xen SA causal), quy ước τ, và bài đồ chơi flow vs L1.
+"""
+import math, torch, torch.nn as nn, torch.nn.functional as F
+torch.manual_seed(0)
+
+# ---------- 1. Mặt nạ kiểu big_vision/openpi (LeRobot dùng y hệt) ----------
+def make_att_2d_masks(pad, ar):
+    # token i nhìn được token j nếu cumsum(ar)[j] &lt;= cumsum(ar)[i]
+    c = torch.cumsum(ar, dim=1)
+    return (c[:, None, :] &lt;= c[:, :, None]) &amp; pad[:, None, :]
+
+# ---------- 2. Khối attention dùng chung ----------
+class Attn(nn.Module):
+    def __init__(s, d_q, d_kv_in, h=4, hd=8):
+        super().__init__(); s.h, s.hd = h, hd
+        s.q = nn.Linear(d_q, h * hd); s.k = nn.Linear(d_kv_in, h * hd); s.v = nn.Linear(d_kv_in, h * hd); s.o = nn.Linear(h * hd, d_q)
+    def forward(s, xq, xkv, mask):
+        B, Lq, _ = xq.shape; Lk = xkv.shape[1]
+        q = s.q(xq).view(B, Lq, s.h, s.hd).transpose(1, 2)
+        k = s.k(xkv).view(B, Lk, s.h, s.hd).transpose(1, 2)
+        v = s.v(xkv).view(B, Lk, s.h, s.hd).transpose(1, 2)
+        a = (q @ k.transpose(-1, -2)) / math.sqrt(s.hd)
+        a = a.masked_fill(~mask[:, None], -1e9).softmax(-1)
+        return s.o((a @ v).transpose(1, 2).reshape(B, Lq, -1))
+
+class Block(nn.Module):
+    def __init__(s, d, d_kv_in=None):
+        super().__init__(); s.n1 = nn.LayerNorm(d); s.att = Attn(d, d_kv_in or d); s.n2 = nn.LayerNorm(d)
+        s.ff = nn.Sequential(nn.Linear(d, 4 * d), nn.GELU(), nn.Linear(4 * d, d))
+
+# ---------- 3. "VLM" đóng băng: L lớp, chỉ dùng N lớp đầu ----------
+class TinyVLM(nn.Module):
+    def __init__(s, d=32, L=8):
+        super().__init__(); s.layers = nn.ModuleList([Block(d) for _ in range(L)])
+    def forward(s, x, N):
+        feats = []                       # đặc trưng VÀO từng lớp i (code thật lưu K/V của lớp i)
+        m = torch.ones(x.shape[0], x.shape[1], x.shape[1], dtype=torch.bool)
+        for blk in s.layers[:N]:         # bỏ L - N lớp trên: "cái kéo" ở Hình 1
+            feats.append(x)
+            x = x + blk.att(blk.n1(x), blk.n1(x), m); x = x + blk.ff(blk.n2(x))
+        return feats
+
+# ---------- 4. Action expert: lớp chẵn = SA (causal), lớp lẻ = CA ----------
+class Expert(nn.Module):
+    """mode: 'ca+sa' (SmolVLA), 'ca', 'sa'. Theo code LeRobot, lớp 'SA' là attention chung:
+    token hành động nhìn token VLM + các token hành động TRƯỚC nó (causal)."""
+    def __init__(s, d_vlm=32, width=0.75, N=4, A=2, H=8, mode="ca+sa", causal=True):
+        super().__init__(); d = int(d_vlm * width); s.d, s.mode, s.H, s.causal = d, mode, H, causal
+        s.vproj = nn.Linear(d_vlm, d)                      # chiếu đặc trưng VLM -&gt; độ rộng expert
+        s.blocks = nn.ModuleList([Block(d) for _ in range(N)])
+        s.a_in = nn.Linear(A, d); s.t_mlp = nn.Sequential(nn.Linear(2 * d, d), nn.SiLU(), nn.Linear(d, d))
+        s.a_out = nn.Linear(d, A)
+    def time_emb(s, t):                                    # sin-cos của τ, rồi GHÉP với token hành động (kiểu π0)
+        f = torch.exp(torch.linspace(0, math.log(100.0), s.d // 2))
+        return torch.cat([torch.sin(t[:, None] * f), torch.cos(t[:, None] * f)], -1)
+    def forward(s, feats, x_t, t):
+        B, H, _ = x_t.shape
+        a = s.a_in(x_t); a = s.t_mlp(torch.cat([a, s.time_emb(t)[:, None].expand(-1, H, -1)], -1))
+        P = feats[0].shape[1]
+        pad = torch.ones(B, P + H, dtype=torch.bool)
+        ar = torch.tensor([0] * P + ([1] * H if s.causal else [1] + [0] * (H - 1)))[None].expand(B, -1)
+        full = make_att_2d_masks(pad, ar)[:, P:, :]         # hàng = token hành động
+        for i, blk in enumerate(s.blocks):
+            ctx = s.vproj(feats[i])                         # lớp i của expert nhìn lớp i của VLM
+            use_sa = (s.mode == "sa") or (s.mode == "ca+sa" and i % 2 == 0)
+            h = blk.n1(a)
+            if use_sa:   # attention chung: K/V = [token VLM ; token hành động], mặt nạ causal
+                out = blk.att(h, torch.cat([ctx, h], 1), full)
+            else:        # cross-attention: K/V chỉ là token VLM
+                out = blk.att(h, ctx, torch.ones(B, H, P, dtype=torch.bool))
+            a = a + out; a = a + blk.ff(blk.n2(a))
+        return s.a_out(a)
+
+# ---------- 5. Flow matching theo quy ước của CODE (τ = 1 nhiễu) ----------
+def fm_loss(model, feats, A):
+    eps = torch.randn_like(A)
+    t = torch.distributions.Beta(1.5, 1.0).sample((A.shape[0],)) * 0.999 + 0.001   # như LeRobot
+    x_t = t[:, None, None] * eps + (1 - t[:, None, None]) * A
+    u = eps - A                                         # đúng dấu với quy ước τ = 1 nhiễu
+    return F.mse_loss(model(feats, x_t, t), u)
+
+@torch.no_grad()
+def sample(model, feats, B, H, A_dim, steps=10):
+    x = torch.randn(B, H, A_dim); dt = -1.0 / steps
+    for k in range(steps):
+        t = torch.full((B,), 1.0 + k * dt)
+        x = x + dt * model(feats, x, t)                 # τ: 1 -&gt; 0
+    return x
+
+if __name__ == "__main__":
+    vlm = TinyVLM().eval(); [p.requires_grad_(False) for p in vlm.parameters()]
+    B, P, H = 4, 6, 8
+    prefix = torch.randn(B, P, 32)
+
+    # (a) causal thật: đổi token hành động cuối, các token đầu không đổi
+    ex = Expert()
+    feats = vlm(prefix, N=4)
+    x = torch.randn(B, H, 2); t = torch.rand(B)
+    y1 = ex(feats, x, t); x2 = x.clone(); x2[:, -1] += 5.0; y2 = ex(feats, x2, t)
+    print("(a) causal: lệch ở 7 token đầu =", float((y1[:, :-1] - y2[:, :-1]).abs().max().detach()),
+          "| lệch ở token cuối =", round(float((y1[:, -1] - y2[:, -1]).abs().max().detach()), 3))
+    exb = Expert(causal=False); y1 = exb(feats, x, t); y2 = exb(feats, x2, t)
+    print("    bidirectional: lệch ở 7 token đầu =", round(float((y1[:, :-1] - y2[:, :-1]).abs().max().detach()), 3))
+
+    # (b) Ví dụ số quy ước τ
+    a_, e_ = 0.6, -1.2
+    for tt in (1.0, 0.75, 0.0):
+        print(f"(b) τ={tt}: x_τ = {tt*e_ + (1-tt)*a_:+.3f}", end="  ")
+    print("| mục tiêu u = ε − A =", e_ - a_)
+
+    # (c) Bài đồ chơi đa đỉnh: cùng một quan sát, demo đi TRÁI (−1) hoặc PHẢI (+1) với xác suất 1/2
+    def batch(n):
+        side = torch.where(torch.rand(n) &lt; 0.5, -1.0, 1.0)
+        traj = torch.linspace(0.1, 1.0, H)[None, :, None] * torch.stack([side, torch.ones(n)], -1)[:, None, :]
+        return traj + 0.02 * torch.randn(n, H, 2)
+    fixed = torch.randn(1, P, 32).expand(64, -1, -1)       # quan sát cố định
+    f64 = vlm(fixed, N=4)
+    flow, reg = Expert(), Expert()
+    o1 = torch.optim.AdamW(flow.parameters(), 2e-3); o2 = torch.optim.AdamW(reg.parameters(), 2e-3)
+    for it in range(3000):
+        A = batch(64)
+        l1 = fm_loss(flow, f64, A); o1.zero_grad(); l1.backward(); o1.step()
+        pred = reg(f64, torch.zeros_like(A), torch.zeros(64))   # hồi quy: đầu vào rỗng, đoán thẳng A
+        l2 = (pred - A).abs().mean(); o2.zero_grad(); l2.backward(); o2.step()
+    f256 = vlm(fixed[:1].expand(256, -1, -1), N=4)
+    xs_flow = sample(flow, f256, 256, H, 2)[:, -1, 0]
+    xs_reg = reg(f64, torch.zeros(64, H, 2), torch.zeros(64))[:, -1, 0].detach()
+    print("(c) x cuối — flow (256 mẫu): trái", int((xs_flow &lt; -0.5).sum()), "phải", int((xs_flow &gt; 0.5).sum()),
+          "giữa", int((xs_flow.abs() &lt;= 0.5).sum()), f"| L1: trung bình {xs_reg.mean():+.2f}, |x|max {xs_reg.abs().max():.2f}")
+
+    # (d) Số tham số expert của SmolVLA thật, tính tay từ cấu hình (d=960, 0.75·d=720, 16 lớp, 15 đầu, 5 KV, head 64)
+    d, de, nl, hq, hkv, hd = 960, 720, 16, 15, 5, 64
+    def inter(h): h = int(2 * h / 3); h = 4 * h; return 256 * ((h + 255) // 256)
+    I = inter(de); tot = 0
+    for i in range(nl):
+        kin = de if i % 2 == 0 else hkv * hd                 # lớp CA: k/v_proj nhận K/V của VLM (5·64 = 320)
+        tot += de * hq * hd + 2 * kin * hkv * hd + hq * hd * de + 3 * de * I + 2 * de
+    proj = 32 * de + de + de * 32 + 32 + 2 * de * de + de + de * de + de + 32 * d + d
+    print(f"(d) intermediate={I}; 16 lớp expert ≈ {tot/1e6:.1f}M; + các lớp chiếu ≈ {(tot+proj)/1e6:.1f}M (paper: ~100M)")
+</code></pre>
+</details>
+<h4>Kết quả đã chạy (PyTorch 2.14, CPU)</h4>
+<pre><code>(a) causal: lệch ở 7 token đầu = 0.0 | lệch ở token cuối = 0.635
+    bidirectional: lệch ở 7 token đầu = 0.057
+(b) τ=1.0: x_τ = -1.200  (b) τ=0.75: x_τ = -0.750  (b) τ=0.0: x_τ = +0.600  | mục tiêu u = ε − A = -1.8
+(c) x cuối — flow (256 mẫu): trái 81 phải 139 giữa 36 | L1: trung bình -0.01, |x|max 0.01
+(d) intermediate=2048; 16 lớp expert ≈ 98.2M; + các lớp chiếu ≈ 99.9M (paper: ~100M)</code></pre>
+<div class="tw"><table class="t">
+<tr><th>Dòng</th><th>Kiểm điều gì</th><th>Đọc ra</th></tr>
+<tr><td>(a)</td><td>Đổi riêng token hành động cuối, xem các token đầu có đổi không</td><td>Causal: 0,0 (đúng là không nhìn tương lai). Hai chiều: 0,057 (token đầu bị ảnh hưởng)</td></tr>
+<tr><td>(b)</td><td>Quy ước τ của code</td><td>τ = 1 là nhiễu (−1,2), τ = 0 là sạch (+0,6); mục tiêu ε − A = −1,8</td></tr>
+<tr><td>(c)</td><td>Một quan sát, demo 50% vòng trái, 50% vòng phải</td><td>Flow: 86% mẫu rơi vào một trong hai đường (lệch về phải, do huấn luyện ngắn). L1: mọi mẫu ở 0 ± 0,01, tức là đi thẳng vào giữa</td></tr>
+<tr><td>(d)</td><td>Tính tay tham số expert thật từ cấu hình (d = 960, 0,75·d = 720, 16 lớp, GQA 15/5 đầu, FFN 2048)</td><td>≈ 99,9M, khớp "~100M" của paper, nên cách đọc "lớp CA chiếu từ K/V 320 chiều" là hợp lý</td></tr>
+</table></div>
+<details class="more"><summary>Xem code: async_queue_sim.py</summary>
+<pre><code>"""Mô phỏng hàng đợi suy luận bất đồng bộ của SmolVLA (Sec 3.3), theo logic của robot_client.py trong LeRobot.
+Không phải code thật. Mỗi tick = Δt. Độ trễ ℓ cố định (tính bằng tick, làm tròn lên).
+- Gửi quan sát khi |queue|/n &lt;= g (code dùng &lt;=; paper ghi &lt;) và không có yêu cầu nào đang chạy.
+- Chunk mới đánh số thời điểm từ thời điểm của quan sát; hành động đã qua bị bỏ.
+- Chỗ trùng: f(cũ, mới) = 0.3·cũ + 0.7·mới (weighted_average, mặc định của LeRobot).
+"""
+import math
+
+def simulate(g, lat_ms, n=50, dt_ms=1000/30, need=300, w_old=0.3):
+    lat = max(1, math.ceil(lat_ms / dt_ms))
+    queue = {}              # timestep -&gt; giá trị hành động (ở đây chỉ cần biết "có hay không")
+    done = 0                # số hành động đã thực thi = thời điểm của hành động tiếp theo
+    tick = idle = calls = blended = 0
+    inflight = None         # (tick_tới, timestep_quan_sát)
+    trace = []
+    # khởi động: gửi o0, đợi
+    inflight = (lat, 0); calls = 1
+    while done &lt; need:
+        if inflight and tick &gt;= inflight[0]:
+            obs_t = inflight[1]
+            for i in range(n):
+                ts = obs_t + i
+                if ts &lt; done:           # đã qua
+                    continue
+                if ts in queue:
+                    blended += 1
+                queue[ts] = 1
+            inflight = None
+        if queue:
+            ts = min(queue); queue.pop(ts); done = ts + 1
+        else:
+            idle += 1
+        if inflight is None and len(queue) / n &lt;= g:
+            inflight = (tick + 1 + lat, done); calls += 1
+        trace.append(len(queue))
+        tick += 1
+    return dict(ticks=tick, idle=idle, calls=calls, blended=blended, seconds=tick * dt_ms / 1000, trace=trace)
+
+if __name__ == "__main__":
+    for lat_ms in (100, 300):
+        g_min = (lat_ms / (1000 / 30)) / 50
+        print(f"ℓ = {lat_ms} ms -&gt; ngưỡng tối thiểu theo paper g ≥ (ℓ/Δt)/n = {g_min:.3f}")
+        for g in (0.0, 0.1, 0.3, 0.5, 0.7, 1.0):
+            r = simulate(g, lat_ms)
+            print(f"   g={g:.1f}: {r['seconds']:.2f} s cho 300 hành động | tick rỗng {r['idle']:3d} | gọi mô hình {r['calls']:3d} lần | hành động bị trộn {r['blended']}")
+</code></pre>
+</details>
+<div class="co note"><b class="t">Thí nghiệm tự làm với code</b>
+<ol style="margin:4px 0 0 18px;padding:0">
+<li>Trong <code>smolvla_toy.py</code>, đổi <code>Expert()</code> thành <code>Expert(mode="ca")</code> ở dòng (a). <i>Đoán trước</i>: lệch ở 7 token đầu là bao nhiêu? (Gợi ý: lớp CA không cho hành động nhìn nhau.)</li>
+<li>Ở bài (c), giảm số vòng huấn luyện từ 3000 xuống 500. <i>Đoán</i>: số mẫu "giữa" của flow tăng hay giảm? L1 có thay đổi không?</li>
+<li>Trong <code>async_queue_sim.py</code>, đổi <code>w_old</code> không có tác dụng gì tới thời gian. Vì sao? Thứ gì của robot thật sẽ bị nó ảnh hưởng?</li>
+</ol></div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="sec" id="code">
+<h2>13. Nằm ở đâu trong LeRobot, và muốn chạy thử cần gì <span class="lv m">Phải nắm</span></h2>
+<p>Khác 6 paper trước, lần này code <b>có sẵn và mình đã đọc</b>: repo <a href="https://github.com/huggingface/lerobot">huggingface/lerobot</a>, commit <code>b9cb121</code> (08/10/2026). LeRobot thay đổi nhanh: tên lệnh và đường dẫn có thể khác so với lúc paper ra (06/2025), nên luôn mở <code>docs/source/smolvla.mdx</code> của phiên bản bạn dùng.</p>
+
+<h3>13.1 Bản đồ file</h3>
+<div class="tw"><table class="t">
+<tr><th>File (trong <code>src/lerobot/</code>)</th><th>Chứa gì</th><th>Ứng với paper</th></tr>
+<tr><td><code>policies/smolvla/configuration_smolvla.py</code></td><td><code>SmolVLAConfig</code>: <code>chunk_size=50</code>, <code>n_action_steps=50</code>, <code>num_steps=10</code>, <code>num_vlm_layers=16</code>, <code>self_attn_every_n_layers=2</code>, <code>expert_width_multiplier=0.75</code>, <code>attention_mode="cross_attn"</code>, <code>max_state_dim=max_action_dim=32</code>, <code>resize_imgs_with_padding=(512,512)</code>, <code>vlm_model_name</code>, <code>train_expert_only</code>, <code>rtc_config</code></td><td>Sec 3.1, 4.3</td></tr>
+<tr><td><code>policies/smolvla/modeling_smolvla.py</code></td><td><code>SmolVLAPolicy</code> (<code>select_action</code>, <code>predict_action_chunk</code>); <code>VLAFlowMatching</code>: <code>embed_prefix</code> (ảnh, chữ, 1 token trạng thái), <code>embed_suffix</code> (hành động + thời gian, mặt nạ causal), <code>forward</code> (loss), <code>sample_actions</code> (KV cache + 10 bước Euler), <code>denoise_step</code></td><td>Sec 3.1, công thức flow</td></tr>
+<tr><td><code>policies/smolvla/smolvlm_with_expert.py</code></td><td><code>SmolVLMWithExpertModel</code>: cắt lớp VLM, tạo expert hẹp 0,75, chiếu lại <code>k_proj/v_proj</code> cho lớp CA; <code>forward_attn_layer</code> (SA), <code>forward_cross_attn_layer</code> (CA)</td><td>Hình 1, Bảng 6–9</td></tr>
+<tr><td><code>policies/common/flow_matching.py</code></td><td><code>FlowConvention.NOISE_AT_ONE</code>, <code>make_flow_matching_inputs</code>, <code>euler_integrate</code>, <code>sample_time_beta</code></td><td>Quy ước τ (mục 6.4)</td></tr>
+<tr><td><code>policies/common/vla_utils.py</code></td><td><code>make_att_2d_masks</code> (mẹo tổng dồn của big_vision/openpi)</td><td>Mặt nạ (mục 6.3)</td></tr>
+<tr><td><code>policies/rtc/</code></td><td><code>RTCProcessor</code>, <code>RTCConfig</code> (<code>execution_horizon=10</code>, <code>max_guidance_weight=10.0</code>), dùng chung cho π0, π0.5, SmolVLA</td><td>Không có trong paper SmolVLA; nối sang RTC</td></tr>
+<tr><td><code>async_inference/robot_client.py</code></td><td><code>_ready_to_send_observation</code> (|queue|/n ≤ threshold), <code>_aggregate_action_queues</code> (bỏ quá hạn, trộn chỗ chồng), <code>control_loop_action</code></td><td>Sec 3.3, Algorithm 1</td></tr>
+<tr><td><code>async_inference/policy_server.py</code></td><td>Nhận quan sát, lọc trùng (<code>_obs_sanity_checks</code>), chạy policy, đánh số thời điểm cho chunk (<code>_time_action_chunk</code>)</td><td>Sec 3.3</td></tr>
+<tr><td><code>async_inference/configs.py</code>, <code>helpers.py</code></td><td><code>AGGREGATE_FUNCTIONS</code> (4 hàm f), <code>chunk_size_threshold=0.5</code> (là g), <code>observations_similar</code> (<code>atol=1</code>)</td><td>f, g, ε</td></tr>
+</table></div>
+
+<h3>13.2 Khi mở code, tìm gì trước</h3>
+<div class="chk" id="chk2">
+<label><input type="checkbox" data-k="k1"><span>Mở <code>configuration_smolvla.py</code>: ghi lại 8 con số chunk_size, n_action_steps, num_steps, num_vlm_layers, self_attn_every_n_layers, expert_width_multiplier, max_action_dim, vlm_model_name.</span></label>
+<label><input type="checkbox" data-k="k2"><span>Trong <code>embed_suffix</code>: tìm dòng <code>att_masks += [1] * self.config.chunk_size</code>, tự giải thích vì sao nó làm mặt nạ thành causal.</span></label>
+<label><input type="checkbox" data-k="k3"><span>Trong <code>forward</code>: tìm <code>make_flow_matching_inputs(..., FlowConvention.NOISE_AT_ONE)</code>, đối chiếu với công thức của paper.</span></label>
+<label><input type="checkbox" data-k="k4"><span>Trong <code>smolvlm_with_expert.py</code>: tìm điều kiện <code>layer_idx % self.self_attn_every_n_layers == 0</code>, xác định lớp nào là SA.</span></label>
+<label><input type="checkbox" data-k="k5"><span>Trong <code>forward_attn_layer</code>: xem query/key/value của prefix và của hành động có được nối chung không (kiểm điểm "lớp SA cũng nhìn VLM").</span></label>
+<label><input type="checkbox" data-k="k6"><span>Trong <code>robot_client.py</code>: tìm <code>_ready_to_send_observation</code> và <code>_aggregate_action_queues</code>, đối chiếu với Algorithm 1.</span></label>
+<label><input type="checkbox" data-k="k7"><span>Trong <code>sample_actions</code>: tìm chỗ truyền <code>inference_delay</code>, <code>prev_chunk_left_over</code>, <code>execution_horizon</code> cho RTC.</span></label>
+</div>
+
+<h3>13.3 Muốn chạy thử cần gì</h3>
+<div class="tw"><table class="t">
+<tr><th>Cần</th><th>Chi tiết</th></tr>
+<tr><td>Cài đặt</td><td>Cài LeRobot theo <code>docs/source/installation.mdx</code>, rồi <code>pip install -e ".[smolvla]"</code>. Thêm <code>".[async]"</code> nếu chạy server/client, <code>".[libero]"</code> nếu đánh giá LIBERO (chỉ Linux, cần MuJoCo).</td></tr>
+<tr><td>Checkpoint</td><td><code>lerobot/smolvla_base</code> (450M, đã pretrain cộng đồng) để fine-tune. Huấn luyện LIBERO "như paper" thì dùng <code>--policy.type=smolvla --policy.load_vlm_weights=true</code> (chỉ khởi tạo VLM).</td></tr>
+<tr><td>Phần cứng</td><td>Fine-tune: GPU; tài liệu LeRobot nói 20K bước ≈ 4 giờ trên một A100, có notebook Colab. Suy luận: paper nói chạy được trên GPU phổ thông hay CPU, nhưng không có số đo độ trễ.</td></tr>
+<tr><td>Dữ liệu</td><td>Định dạng LeRobotDataset trên Hugging Face Hub. Mốc an toàn: <code>lerobot/libero</code> (dataset dùng trong tài liệu LeRobot). Dataset mentor gợi ý <code>nvidia/libero-r-datasets</code> <b>chưa được kiểm</b> định dạng có khớp LeRobot hay không: tải thử một phần trước, nếu chưa khớp thì fine-tune trên <code>lerobot/libero</code> làm mốc. Với dữ liệu tự thu, tài liệu khuyên ~50 episode, nhiều lần lặp cho mỗi biến thể (dataset của paper: 5 vị trí × 10). Trạng thái và hành động ≤ 32 chiều (đệm 0). Giữ thứ tự camera nhất quán.</td></tr>
+<tr><td>Robot (tùy chọn)</td><td>SO-100/SO-101 hoặc robot LeRobot hỗ trợ; async hiện hỗ trợ <code>so100_follower</code>, <code>so101_follower</code>, <code>bi_so_follower</code>, <code>omx_follower</code>.</td></tr>
+</table></div>
+
+<h4>Ba đường chạy thử, từ dễ tới khó</h4>
+<details class="more"><summary>A · Không có robot: fine-tune trên LIBERO và đánh giá trong mô phỏng</summary>
+<pre><code># Huấn luyện (theo docs/source/libero.mdx)
+lerobot-train \
+  --policy.type=smolvla \
+  --policy.load_vlm_weights=true \
+  --policy.push_to_hub=false \
+  --dataset.repo_id=lerobot/libero \
+  --dataset.video_backend=torchcodec \
+  --output_dir=./outputs/libero_smolvla \
+  --steps=100000 \
+  --batch_size=64
+
+# Đánh giá 4 bộ, 10 lượt mỗi tác vụ (đúng giao thức paper)
+lerobot-eval \
+  --policy.path=./outputs/libero_smolvla/checkpoints/last/pretrained_model \
+  --env.type=libero \
+  --env.task=libero_spatial,libero_object,libero_goal,libero_10 \
+  --eval.batch_size=1 \
+  --eval.n_episodes=10 \
+  --env.max_parallel_tasks=1</code></pre>
+<p style="font-size:.88rem;color:var(--muted)">Đường dẫn checkpoint ở lệnh eval là ví dụ; kiểm thư mục <code>outputs</code> thật. Đặt <code>--policy.n_action_steps</code> để thử lại Bảng 13 (1, 10, 50).</p>
+</details>
+<details class="more"><summary>B · Có dataset, chưa có robot: fine-tune từ smolvla_base</summary>
+<pre><code>lerobot-train \
+  --policy.path=lerobot/smolvla_base \
+  --dataset.repo_id=lerobot/svla_so100_pickplace \
+  --batch_size=64 \
+  --steps=20000 \
+  --output_dir=outputs/train/my_smolvla \
+  --job_name=my_smolvla_training \
+  --policy.device=cuda</code></pre>
+<p style="font-size:.88rem;color:var(--muted)">Dataset là một trong 4 dataset robot thật của paper. Không có robot thì chỉ xem được loss; có thể dùng <code>examples/tutorial/smolvla/using_smolvla_example.py</code> để thử gọi mô hình.</p>
+</details>
+<details class="more"><summary>C · Có robot: chạy bất đồng bộ (server + client)</summary>
+<pre><code># Máy có GPU
+python -m lerobot.async_inference.policy_server --host=127.0.0.1 --port=8080
+
+# Máy nối với robot
+python -m lerobot.async_inference.robot_client \
+  --server_address=127.0.0.1:8080 \
+  --robot.type=so100_follower \
+  --robot.port=/dev/ttyACM0 \
+  --robot.id=follower_so100 \
+  --robot.cameras="{ front: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30}}" \
+  --task="Pick up the cube and place it in the box" \
+  --policy_type=smolvla \
+  --pretrained_name_or_path=HF_USER/my_smolvla \
+  --policy_device=cuda \
+  --actions_per_chunk=50 \
+  --chunk_size_threshold=0.5 \
+  --aggregate_fn_name=weighted_average \
+  --debug_visualize_queue_size=True</code></pre>
+<p style="font-size:.88rem;color:var(--muted)"><code>chunk_size_threshold</code> là g; <code>debug_visualize_queue_size</code> vẽ hình kiểu Hình 3. Cổng, camera, tên mô hình là ví dụ. Muốn RTC thay vì trộn: xem <code>docs/source/rtc.mdx</code> (<code>lerobot-rollout --inference.type=rtc</code>).</p>
+</details>
+
+<div class="co note"><b class="t">Bước tiếp theo</b>Mục này chỉ là bản đồ và lệnh tối thiểu. Phần đọc kỹ architecture, training pipeline, eval pipeline trong LeRobot (mentor giao) sẽ có trang riêng "SmolVLA/LeRobot · Đọc code &amp; chạy thử.html", kèm nhật ký chạy thật.</div>
+<div class="co link"><b class="t">Liên hệ với codebase của nhóm</b>Nếu codebase nhóm là họ π0/π0.5 hay GR00T, cấu trúc <code>embed_prefix</code> / <code>embed_suffix</code> / <code>sample_actions</code> / <code>denoise_step</code> của SmolVLA gần như giống hệt (LeRobot dùng chung khung với π0). Đọc SmolVLA trước là cách rẻ để quen khung đó. Vẫn nhớ hỏi mentor tên codebase.</div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="sec" id="critique">
+<h2>14. Hạn chế &amp; phản biện <span class="lv s">Nên biết</span></h2>
+<h3>Paper tự nhận (Section 5.1)</h3>
+<ul>
+<li>Pretrain chỉ một loại robot (SO-100); cần nhiều loại hơn để tổng quát.</li>
+<li>Dữ liệu ~23K quỹ đạo, nhỏ hơn nhiều so với OpenVLA (~1 triệu).</li>
+<li>Dưới 0,5B tham số; chưa rõ cách mở rộng mà giữ tốc độ.</li>
+<li>VLM gốc được huấn luyện chủ yếu cho đọc tài liệu, OCR; chưa chắc hợp với robot.</li>
+<li>Chưa huấn luyện chung dữ liệu robot với dữ liệu đa phương thức.</li>
+<li>Tác vụ ngắn, đơn giản; chưa có tác vụ dài.</li>
+<li>Chỉ học bắt chước, chưa có RL.</li>
+</ul>
+
+<div class="key"><b class="t">3 điểm phản biện mạnh nhất để nói khi present</b>
+<ol style="margin:4px 0 0 18px;padding:0">
+<li><b>So sánh với π0 khó công bằng.</b> π0 LIBERO 86,0 ở đây so với 94,2 (OpenVLA-OFT) và 94,4 (Qwen-VLA); robot thật đánh giá trên SO-100, đúng robot của dữ liệu pretrain của SmolVLA. (Bảng 2, 3; kiểm trang 11.)</li>
+<li><b>Ablation nhiễu và có chỗ tự mâu thuẫn.</b> 10 lượt/tác vụ (±4 điểm), một lần chạy; Bảng 11 SA ngược lời văn; Bảng 9 không tăng đều; Bảng 8 Skip %2 ngược lời văn; một hàng lặp lại ở 6 bảng mà không nói cấu hình. (Trang 13–14.)</li>
+<li><b>Async được đánh giá mỏng.</b> Robot thật chính dùng sync; async chỉ ở Hình 5, 3 tác vụ, không ghi g, độ trễ, phần cứng; tỉ lệ thành công phân loại tụt 70 → 50; không so với cách nối khác (như RTC, temporal ensembling); hàm f không được định nghĩa. (Trang 6–8, 12.)</li>
+</ol></div>
+
+<h3>Các điểm khác (tự kiểm trong PDF trước khi nói)</h3>
+<ol>
+<li>Công thức flow matching lệch dấu (cùng kiểu GR00T); code LeRobot đúng với quy ước của nó.</li>
+<li>Chú thích Bảng 1: "∼10M episodes" phải là ~10M khung.</li>
+<li>Đoạn văn về Bảng 3 ghi "For the SO101 benchmark, the model is trained on a combination of three datasets", nhưng Bảng 3 là SO-100.</li>
+<li>π0 3,3B (Bảng 2, Sec 4.4) vs 3,5B (Bảng 3, Meta-World).</li>
+<li>Diffusion Policy ở hàng LIBERO trích "Khazatsky et al., 2024" (đó là paper DROID); hàng Meta-World trích đúng Chi et al.</li>
+<li>Robot Meta-World viết "Swayer" (đúng là Sawyer).</li>
+<li>Algorithm 1: suy luận "không chặn" nhưng dòng sau dùng kết quả ngay; "&lt; g" làm g = 0 không bao giờ kích hoạt; f không được định nghĩa.</li>
+<li>Công thức "nhận chunk mỗi (1−g)nΔt + E[ℓ_S]" không khớp với cách code bỏ hành động quá hạn (mục 8.3).</li>
+<li>"Chạy được trên CPU", "nhanh hơn 40%, ít hơn 6 lần bộ nhớ" không có bảng số.</li>
+<li>"Self-attention giúp chunk mượt hơn trên robot thật": định tính, không có số đo.</li>
+<li>Bảng 3, 4 không ghi số lượt thử; điểm từng phần (0,5 + 0,5) nên 75 có thể là "gắp được hết, đặt được một nửa".</li>
+<li>Bộ lọc trùng chỉ xét trạng thái khớp, không xét ảnh.</li>
+</ol>
+</section>
+
+<!-- ============ 15 ============ -->
+<section class="sec" id="mentorq">
+<h2>15. Câu hỏi mentor có thể vặn <span class="lv s">Nên biết</span></h2>
+<p>Thử tự trả lời thành tiếng trước, rồi mới mở gợi ý.</p>
+<details class="q"><summary>1. "VLM đóng băng thì SmolVLA học được gì về thị giác robot? Sao không mở băng như Qwen-VLA?"</summary>Không học thêm gì ở VLM: mọi thứ dồn vào expert ~100M và lớp chiếu trạng thái. Lý do: ít dữ liệu (23K episode), mở băng dễ làm hỏng VLM, và huấn luyện rẻ hơn. Cái giá: VLM vốn mạnh về OCR, chưa chắc hợp robot (paper tự nhận). Qwen-VLA có dữ liệu lớn hơn nhiều và dùng T2A để khởi động expert trước khi mở băng. Trong code, <code>train_expert_only=False</code> sẽ mở băng phần lớn VLM (trừ lớp cuối).</details>
+<details class="q"><summary>2. "Cắt nửa VLM mà chỉ mất 2 điểm: có phải vì LIBERO dễ quá, cần gì VLM?"</summary>Có thể một phần. Bảng 8: 16 lớp 78,5 so với 32 lớp 80,3, chênh nằm trong nhiễu ±4. Nhưng N = 8 vẫn 75,0, và câu lệnh LIBERO khá đơn giản; tác vụ cần hiểu câu lệnh phức tạp có thể nhạy hơn. Không có ablation cắt lớp trên robot thật. Câu trả lời trung thực: "trên LIBERO thì cắt được; chưa có bằng chứng cho tác vụ cần ngôn ngữ phức tạp".</details>
+<details class="q"><summary>3. "Causal mask có ý nghĩa gì khi cả chunk được khử nhiễu cùng lúc? Đâu có 'tương lai' nào bị rò?"</summary>Đúng là khi khử nhiễu, mọi hành động đều đang nhiễu như nhau, không có nhãn tương lai. Lý do "rò rỉ tương lai" của paper là cách nói, không phải chứng minh. Một cách hiểu: causal ép mỗi hành động chỉ dựa vào phần trước, nên chunk "chảy" một chiều theo thời gian, có thể là một thiên hướng tốt. Bằng chứng duy nhất là Bảng 7 (một lần chạy, chênh chủ yếu ở Long). Và CA thuần (79,0 ở Bảng 6) còn cao hơn causal SA (74,5).</details>
+<details class="q"><summary>4. "Async nhanh 30% nhưng tỉ lệ phân loại tụt 20 điểm. Bạn có dùng async không?"</summary>Tùy tác vụ. Với gắp-đặt (siêu tham số được chỉnh cho nó), async thắng cả tốc độ lẫn tỉ lệ (80 so với 75). Với phân loại, siêu tham số dùng lại mà không chỉnh; có thể do cách trộn chunk khi mô hình đổi ý giữa hai hộp (vòng trái/phải). Mỗi tác vụ ít lượt thử nên 20 điểm cũng chưa chắc. Mình sẽ thử chỉnh g và f riêng, hoặc thay trộn bằng RTC.</details>
+<details class="q"><summary>5. "Công thức g ≥ (E[ℓ_S]/Δt)/n: đặt g bằng đúng giá trị đó có ổn không?"</summary>Không nên: đó là điều kiện trung bình. Độ trễ có dao động, mạng có lúc chậm, nên cần biên an toàn. Đặt sát ngưỡng thì những lúc ℓ lớn hơn trung bình robot sẽ đứng chờ. Widget 8.4 với dao động ±40% cho thấy điều đó. Thường chọn g lớn hơn ngưỡng nhưng không tới 1 để khỏi gọi mô hình liên tục.</details>
+<details class="q"><summary>6. "SmolVLA async và RTC khác nhau thế nào? Cái nào tốt hơn?"</summary>Cùng giải độ trễ. SmolVLA async là bộ khung (khi nào gọi, client–server) + nối đơn giản (bỏ phần quá hạn, trộn chỗ chồng). RTC sinh chunk mới có điều kiện theo phần đang chạy, nên không phải trộn hai kế hoạch khác nhau. Khi chunk cũ và mới chọn hai cách làm khác nhau, trộn có thể ra đường giữa (đâm vật cản) hoặc giật. RTC tốn thêm backward (π0.5: 76 → 97 ms), SmolVLA gần như không. Paper SmolVLA không so với RTC; LeRobot hiện cho chạy SmolVLA với RTC, nên có thể tự đo.</details>
+<details class="q"><summary>7. "Flow matching hơn L1 5 điểm ở đây, nhưng OpenVLA-OFT nói L1 ngang diffusion. Tin ai?"</summary>Không mâu thuẫn trực tiếp: khác mô hình (expert 100M từ đầu vs 7B fine-tune), khác cách giải mã (OFT dùng giải mã song song + đầu MLP), khác giao thức (10 vs 50 lượt/tác vụ). Bảng 10 cũng chỉ là một lần chạy, chênh lớn nằm ở Long và Object. Ví dụ vòng trái/phải cho thấy khi demo nhiều đỉnh thật sự, L1 dễ hỏng. Câu hỏi đúng: "dữ liệu của mình có đa đỉnh không?".</details>
+<details class="q"><summary>8. "Pretrain cộng đồng giúp +26,6 điểm. Có phải chỉ vì cùng robot SO-100 không?"</summary>Rất có thể là phần lớn. Dữ liệu pretrain gần như toàn SO-100, robot đánh giá cũng SO-100, nhiều dataset cộng đồng là gắp-đặt khối. Bằng chứng chéo robot duy nhất là SO-101 (Bảng 4), và ở đó không có hàng "không pretrain" để so. Nên nói: "pretrain trong miền giúp rõ; pretrain chéo robot chưa được kiểm".</details>
+<details class="q"><summary>9. "Các ablation dùng cấu hình nào? Kết luận có áp được cho mô hình cuối không?"</summary>Không rõ. Hàng "89 94 85 53 / 80,3" lặp lại ở 6 bảng, gợi ý một cấu hình tham chiếu (32 lớp, rộng 0,5…) khác mô hình cuối (16 lớp, 0,75, CA+SA). Nếu đúng, các ablation là "đổi từng thứ một từ điểm tham chiếu", và tác động khi kết hợp có thể khác. Paper không nói; nên hỏi tác giả hoặc tự chạy lại.</details>
+<details class="q"><summary>10. "Nếu nhóm mình muốn dùng async của SmolVLA cho mô hình khác, cần sửa gì?"</summary>Ít: async là model-agnostic (paper nói vậy, code hỗ trợ ACT, diffusion, π0, π0.5, GR00T…). Cần: policy có <code>predict_action_chunk</code>, đo ℓ_S thật để chọn g, chọn f, và đặt <code>actions_per_chunk</code>. Muốn nối mượt hơn thì thay f bằng RTC (với policy flow).</details>
+</section>
+
+<!-- ============ 16 ============ -->
+<section class="sec" id="quiz">
+<h2>16. Câu hỏi tự kiểm tra <span class="lv s">Nên biết</span></h2>
+<details class="q"><summary>1. Robot có 2 camera, câu lệnh 12 token. Prefix có bao nhiêu token?</summary>2 × 64 + 12 + 1 (trạng thái) = 141.</details>
+<details class="q"><summary>2. SmolVLM2-500M có L = 32 lớp. Nếu N = 24, expert có bao nhiêu lớp, bao nhiêu lớp CA?</summary>Theo code, expert có số lớp bằng số lớp VLM giữ lại: 24 lớp; xen kẽ SA, CA, SA, CA… → 12 lớp CA.</details>
+<details class="q"><summary>3. Với quy ước của code, a = 0,6, ε = −1,2, τ = 0,25: x_τ = ? Mục tiêu = ? Một bước Euler dt = −0,1 với vận tốc đúng cho ra gì?</summary>x = 0,25 × (−1,2) + 0,75 × 0,6 = 0,15. Mục tiêu ε − a = −1,8. x + (−0,1)(−1,8) = 0,33, ứng với τ = 0,15 (0,15 × (−1,2) + 0,85 × 0,6 = 0,33).</details>
+<details class="q"><summary>4. ℓ_S = 250 ms, Δt = 33,3 ms, n = 30. g tối thiểu?</summary>250 / 33,3 ≈ 7,5 bước; 7,5 / 30 = 0,25.</details>
+<details class="q"><summary>5. g = 0,6, n = 50, Δt = 33,3 ms. Theo logic code (bỏ hành động quá hạn), bao lâu gọi mô hình một lần?</summary>(1 − 0,6) × 50 = 20 bước ≈ 0,67 s.</details>
+<details class="q"><summary>6. Trong code, f = weighted_average. Chỗ chồng có hành động cũ 0,8, mới 0,2. Robot chạy giá trị nào?</summary>0,3 × 0,8 + 0,7 × 0,2 = 0,38.</details>
+<details class="q"><summary>7. Vì sao trạng thái mang att_mask = 1 trong prefix?</summary>Để token ảnh và chữ không nhìn được trạng thái (chúng mang 0, tổng dồn nhỏ hơn). Trạng thái vẫn nhìn được ảnh và chữ. Hành động (mỗi cái mang 1) nhìn được tất cả prefix.</details>
+<details class="q"><summary>8. Bảng 13: vì sao "50 bước" là 51,8% còn "1 bước" là 80,3%? Liên hệ gì tới async?</summary>Chạy mù 50 bước thì không phản ứng được khi lệch; quan sát lại thường xuyên sửa được lỗi. Async cho phép quan sát lại thường xuyên mà không phải đứng chờ.</details>
+<details class="q"><summary>9. "SmolVLA 0,45B hơn π0 3,3B trên LIBERO." Câu này cần thêm điều kiện gì?</summary>"Theo số π0 do nhóm SmolVLA chạy (86,0), 10 lượt/tác vụ". Nơi khác π0 đạt 94,2 hoặc 94,4.</details>
+<details class="q"><summary>10. Kể 2 khác biệt giữa "lấy đặc trưng lớp 12" (GR00T) và "giữ 16 lớp đầu" (SmolVLA).</summary>GR00T: một lớp duy nhất, mọi khối cross-attention dùng chung. SmolVLA: mỗi lớp expert dùng K/V của lớp VLM cùng chỉ số (theo code), và số lớp expert đi theo số lớp VLM giữ lại.</details>
+</section>
+
+<!-- ============ 17 ============ -->
+<section class="sec" id="sources">
+<h2>17. Nguồn <span class="lv k">Đọc lướt</span></h2>
+<ul>
+<li>Paper gốc: Shukor et al., <i>SmolVLA: A vision-language-action model for affordable and efficient robotics</i>, arXiv 2506.01844 (v1, 02/06/2025). Mọi con số trên trang lấy từ PDF; Bảng 2–13 và Hình 5 đã đối chiếu ảnh trang 11–14.</li>
+<li>Code: <a href="https://github.com/huggingface/lerobot">github.com/huggingface/lerobot</a>, commit b9cb121 (08/10/2026): <code>policies/smolvla/</code>, <code>policies/common/</code>, <code>policies/rtc/</code>, <code>async_inference/</code>, <code>docs/source/smolvla.mdx</code>, <code>async.mdx</code>, <code>libero.mdx</code>, <code>rtc.mdx</code>.</li>
+<li>Cấu hình VLM: <a href="https://huggingface.co/HuggingFaceTB/SmolVLM2-500M-Video-Instruct">HuggingFaceTB/SmolVLM2-500M-Video-Instruct</a> (hidden 960, 32 lớp, 15/5 đầu, head 64, ảnh 512, patch 16, scale_factor 4).</li>
+<li>Checkpoint: <a href="https://huggingface.co/lerobot/smolvla_base">lerobot/smolvla_base</a> · Dataset robot thật: lerobot/svla_so100_pickplace, svla_so100_stacking, svla_so100_sorting, svla_so101_pickplace.</li>
+<li>SmolVLM: Marafioti et al., arXiv 2504.05299 · SmolLM2: arXiv 2502.02737 · SigLIP: Zhai et al., ICCV 2023.</li>
+<li>π0: arXiv 2410.24164 · GR00T N1: arXiv 2503.14734 · Qwen-VLA: arXiv 2605.30280 · OpenVLA-OFT: arXiv 2502.19645 (số π0 LIBERO 94,2 lấy từ PDF này, Bảng I).</li>
+<li>RTC inference-time: arXiv 2506.07339 · RTC training-time: arXiv 2512.05964.</li>
+<li>ACT: Zhao et al., arXiv 2304.13705 · Diffusion Policy: Chi et al. · LIBERO: arXiv 2306.03310 · Meta-World: Yu et al., CoRL 2020.</li>
+</ul>
+</section>
+
+</main>
+</div>
+<footer>SmolVLA · Đọc hiểu paper — tài liệu học tập cá nhân, thư mục VLA Modeling</footer>
+
+<script>
+(function(){
+"use strict";
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function vn(x,d){return (+x).toFixed(d===undefined?1:d).replace('-','−').replace('.',',');}
+function $(id){return document.getElementById(id);}
+var NS='http://www.w3.org/2000/svg';
+
+/* ---------- checklists ---------- */
+function setupChk(boxId,key,barId){
+  var boxes=[].slice.call(document.querySelectorAll('#'+boxId+' input'));
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){saved={};}
+  function upd(){var n=0;boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);if(b.checked)n++;});if(barId)$(barId).style.width=(100*n/boxes.length)+'%';}
+  boxes.forEach(function(b){b.checked=!!saved[b.dataset.k];b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem(key,JSON.stringify(saved));}catch(e){}upd();});});
+  upd();
+}
+setupChk('chk','smolvla-chk','progBar');
+setupChk('chk2','smolvla-chk2',null);
+
+/* ---------- TOC scroll spy ---------- */
+var links=[].slice.call(document.querySelectorAll('#toc a'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){var y=window.scrollY+120,idx=0;targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});links.forEach(function(a,i){a.classList.toggle('on',i===idx);});}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+/* ---------- architecture diagram ---------- */
+(function(){
+  var svg=$('archSvg'),h='';
+  h+='<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a9895"/></marker></defs>';
+  function box(k,x,y,w,hh,fill,stroke,t1,t2,dash){
+    return '<g class="n" data-k="'+k+'"><rect class="b0" x="'+x+'" y="'+y+'" width="'+w+'" height="'+hh+'" rx="8" style="fill:'+fill+';stroke:'+stroke+';stroke-width:1.5'+(dash?';stroke-dasharray:4 3':'')+'"/>'+
+      '<text x="'+(x+w/2)+'" y="'+(y+(t2?hh/2-2:hh/2+4))+'" text-anchor="middle" style="fill:var(--text);font-size:12.5px;pointer-events:none">'+t1+'</text>'+
+      (t2?'<text x="'+(x+w/2)+'" y="'+(y+hh/2+14)+'" text-anchor="middle" style="fill:var(--muted);font-size:11px;pointer-events:none">'+t2+'</text>':'')+'</g>';
+  }
+  h+=box('img',10,40,150,50,'var(--card)','var(--line)','Ảnh 1–3 camera','512×512, không tiling');
+  h+=box('vis',10,110,150,50,'var(--blue-soft)','var(--blue)','SigLIP + pixel shuffle','❄ → 64 token/ảnh');
+  h+=box('txt',10,190,150,50,'var(--card)','var(--line)','Câu lệnh','≤ 48 token');
+  h+=box('st',10,270,150,50,'var(--card)','var(--line)','Trạng thái robot','đệm tới 32 chiều');
+  h+=box('stp',10,340,150,44,'var(--pri-soft)','var(--pri)','Linear → 1 token','🔥 học');
+  h+='<path class="ar" d="M85,90 V108" marker-end="url(#ah)"/><path class="ar" d="M85,320 V338" marker-end="url(#ah)"/>';
+  h+='<path class="ar" d="M160,135 H200 M160,215 H200 M160,362 H200 M200,135 V477 H236" marker-end="url(#ah)"/>';
+  h+='<text x="196" y="430" text-anchor="end" style="fill:var(--muted);font-size:10.5px">vào lớp 1</text>';
+  // VLM layers
+  h+='<text x="330" y="22" text-anchor="middle" style="fill:var(--text);font-weight:700;font-size:13px">SmolLM2 (VLM) ❄</text>';
+  h+='<g class="n" data-k="cut"><rect class="b0" x="240" y="30" width="180" height="34" rx="6" style="fill:var(--card);stroke:var(--grey);stroke-dasharray:4 3"/><text x="330" y="52" text-anchor="middle" style="fill:var(--muted);font-size:12px;pointer-events:none">✂ lớp 17–32: bỏ</text></g>';
+  var y0=76,lh=26;
+  for(var i=15;i>=0;i--){
+    var y=y0+(15-i)*lh;
+    h+='<g class="n" data-k="vl" data-i="'+i+'"><rect class="b0" x="240" y="'+y+'" width="180" height="'+(lh-4)+'" rx="5" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2"/><text x="330" y="'+(y+16)+'" text-anchor="middle" style="fill:var(--text);font-size:11.5px;pointer-events:none">lớp VLM '+(i+1)+'</text></g>';
+    var ex=(i%2===0);
+    h+='<g class="n" data-k="'+(ex?'sa':'ca')+'" data-i="'+i+'"><rect class="b0" x="560" y="'+y+'" width="190" height="'+(lh-4)+'" rx="5" style="fill:'+(ex?'var(--gold-soft)':'var(--gold)')+';stroke:var(--gold);stroke-width:1.2"/><text x="655" y="'+(y+16)+'" text-anchor="middle" style="fill:'+(ex?'var(--text)':'#fff')+';font-size:11.5px;pointer-events:none">expert '+(i+1)+' · '+(ex?'SA causal':'CA')+'</text></g>';
+    h+='<path d="M420,'+(y+11)+' H558" style="stroke:var(--grey);stroke-width:1;fill:none;'+(ex?'stroke-dasharray:3 3':'')+'" marker-end="url(#ah)"/>';
+  }
+  h+='<text x="490" y="'+(y0-6)+'" text-anchor="middle" style="fill:var(--muted);font-size:11px">K, V lớp i</text>';
+  h+='<text x="655" y="22" text-anchor="middle" style="fill:var(--text);font-weight:700;font-size:13px">Action expert 🔥 (0,75·d)</text>';
+  h+=box('act',780,420,130,56,'var(--card)','var(--line)','Chunk nhiễu x_τ','50 × 32, + τ');
+  h+='<path class="ar" d="M780,448 H760 V'+(y0+15*lh+lh-4)+'" marker-end="url(#ah)"/>';
+  h+=box('out',780,60,130,56,'var(--pri-soft)','var(--pri)','Vận tốc v','50 × 32');
+  h+='<path class="ar" d="M750,'+(y0+11)+' H770 V118" style="fill:none"/><path class="ar" d="M770,88 H778" marker-end="url(#ah)"/>';
+  h+='<path class="ar" d="M845,118 V140 M845,150 V418" style="stroke-dasharray:5 4"/>';
+  h+='<text x="852" y="270" style="fill:var(--muted);font-size:11px" transform="rotate(90 852 270)">10 bước Euler, τ: 1 → 0</text>';
+  h+='<text x="330" y="'+(y0+16*lh+14)+'" text-anchor="middle" style="fill:var(--muted);font-size:11px">prefix: [ảnh][chữ][trạng thái]</text>';
+  svg.innerHTML=h;
+  var INFO={
+    img:'<b>Ảnh.</b> 1–3 camera, resize về 512 × 512 (code đệm để giữ tỉ lệ). Không dùng tiling (SmolVLM-2 gốc có tiling) để giảm token. Tên camera được chuẩn hóa thành OBS_IMAGE_1/2/3 khi pretrain.',
+    vis:'<b>SigLIP + pixel shuffle.</b> Bộ mã hóa ảnh của SmolVLM-2, đóng băng. Ảnh 512, patch 16 → 32 × 32 = 1.024 ô; pixel shuffle gộp 4 × 4 ô → <b>64 token</b> (khớp con số trong paper; tự tính từ cấu hình).',
+    txt:'<b>Câu lệnh.</b> Token hóa như văn bản thường; code giới hạn 48 token. Khi pretrain, câu lệnh cộng đồng được viết lại bằng Qwen2.5-VL-3B.',
+    st:'<b>Trạng thái robot.</b> Góc khớp, kẹp… đệm 0 tới 32 chiều (code: <code>max_state_dim=32</code>).',
+    stp:'<b>Lớp chiếu trạng thái.</b> Một Linear đưa vector 32 chiều thành <b>một token</b> cỡ VLM (960). Được học cùng expert (<code>train_state_proj=True</code>). Đặt trong <b>prefix</b>: Bảng 11 cho thấy (với CA) tốt hơn đặt ở expert.',
+    cut:'<b>16 lớp trên bị bỏ trước khi huấn luyện.</b> SmolLM2 trong SmolVLM2-500M có 32 lớp; giữ N = L/2 = 16. Bảng 8: 16 lớp 78,5 so với 32 lớp 80,3; giảm nửa chi phí của cả VLM lẫn expert.',
+    vl:'<b>Lớp VLM (đóng băng).</b> Xử lý prefix [ảnh][chữ][trạng thái]. Khi suy luận, chạy <b>một lần</b> và lưu K, V của từng lớp vào cache; 10 bước khử nhiễu dùng lại cache này.',
+    sa:'<b>Lớp SA causal</b> (lớp 1, 3, 5…; trong code <code>layer_idx</code> 0, 2, 4…). Theo code, query của token hành động nhìn K/V của <b>prefix lớp VLM cùng chỉ số + các hành động trước nó</b> (mặt nạ causal). Paper chỉ nói "hành động nhìn nhau". FFN và độ rộng 720.',
+    ca:'<b>Lớp CA</b> (lớp 2, 4, 6…; trong code <code>layer_idx</code> 1, 3, 5…). Query của token hành động hỏi K, V của lớp VLM cùng chỉ số (đã cache), được chiếu lại bằng <code>k_proj/v_proj</code> riêng của expert (vào 320 chiều). Hành động không nhìn nhau ở lớp này. Rẻ: chỉ 50 query.',
+    act:'<b>Chunk nhiễu.</b> 50 hành động × 32 chiều (đệm). Theo code: x_τ = τ·ε + (1−τ)·A, τ = 1 là nhiễu. Token hành động = MLP( [action_in_proj(x_τ) ; sincos(τ)] ): τ được <b>ghép</b> vào từng token, không dùng AdaLN.',
+    out:'<b>Vận tốc.</b> action_out_proj đọc 50 token hành động ở lớp cuối → 50 × 32. Huấn luyện: MSE với ε − A. Suy luận: x ← x + (−0,1)·v, lặp 10 lần từ τ = 1 về 0.'
+  };
+  var nodes=[].slice.call(svg.querySelectorAll('.n'));
+  nodes.forEach(function(g){g.addEventListener('click',function(){
+    nodes.forEach(function(o){o.classList.remove('sel');});g.classList.add('sel');
+    var k=g.dataset.k,t=INFO[k]||'';
+    if(g.dataset.i!==undefined)t='<b>Lớp '+(+g.dataset.i+1)+'.</b> '+t;
+    $('archInfo').innerHTML=t;
+  });});
+})();
+
+/* ---------- mask viewer ---------- */
+(function(){
+  function draw(){
+    var mode=$('mkMode').value,suf=$('mkSuffix').checked;
+    var toks=['I','I','L','L'];
+    if(!suf)toks.push('S');
+    var acts=suf?['S','a1','a2','a3','a4','a5']:['a1','a2','a3','a4','a5'];
+    var all=toks.concat(acts),P=toks.length,N=all.length;
+    // ar: prefix img/lang 0, state 1; suffix: each action 1 (causal) or block (bidir)
+    var ar=[];
+    toks.forEach(function(t){ar.push(t==='S'?1:0);});
+    acts.forEach(function(t,i){
+      if(mode==='bi'){ar.push(i===0?1:0);} else if(suf&&t==='S'){ar.push(1);} else {ar.push(1);}
+    });
+    var cs=[],c=0;ar.forEach(function(a){c+=a;cs.push(c);});
+    var g=$('mkGrid');g.style.gridTemplateColumns='repeat('+(N+1)+',24px)';
+    var html='<span class="h"></span>';
+    all.forEach(function(t){html+='<span class="h">'+t+'</span>';});
+    var seen=0,cnt=0;
+    for(var i=0;i<N;i++){
+      html+='<span class="h">'+all[i]+'</span>';
+      for(var j=0;j<N;j++){
+        var ok=cs[j]<=cs[i];
+        var isAct=i>=P, kAct=j>=P;
+        if(mode==='ca'&&isAct){ ok = !kAct ? true : false; if(suf && all[i]!=='S' && all[j]==='S') ok=false; if(suf && all[i]==='S') ok = !kAct; }
+        if(i<P && j>=P) ok=false;
+        html+='<span class="'+(ok?'y':'')+'">'+(ok?'✓':'')+'</span>';
+        if(ok&&isAct){cnt++;}
+      }
+    }
+    g.innerHTML=html;
+    var msg='';
+    if(mode==='sa')msg='<b>SA causal.</b> Hàng a3: nhìn I, L'+(suf?'':', S')+' và a1, a2, a3; không nhìn a4, a5. Token ảnh/chữ không nhìn được trạng thái hay hành động (prefix không bị "nhiễm" bởi suffix).';
+    if(mode==='ca')msg='<b>CA.</b> Mọi hàng hành động nhìn toàn bộ prefix'+(suf?' (trừ S, vì ở chế độ suffix S là token của expert)':'')+', không nhìn hành động nào. Đây là lý do lớp CA rẻ: K/V lấy thẳng từ cache của VLM.';
+    if(mode==='bi')msg='<b>SA hai chiều (Bảng 7, "Bidir").</b> Mọi hành động nhìn nhau, kể cả hành động sau. Bảng 7: 67,5 so với 74,5 của causal, tụt mạnh nhất ở Long (23 so với 40).';
+    if(suf)msg+=' <b>Chế độ suffix (Bảng 11):</b> trạng thái nằm trong phần của expert, nên VLM không nhìn được nó khi xử lý ảnh, chữ.';
+    msg+=' <span style="color:var(--muted)">Mặt nạ dựng theo mẹo tổng dồn của code (<code>make_att_2d_masks</code>); với CA, phần hành động↔hành động bị bỏ hẳn.</span>';
+    $('mkOut').innerHTML=msg;
+  }
+  $('mkMode').addEventListener('change',draw);$('mkSuffix').addEventListener('change',draw);draw();
+})();
+
+/* ---------- tau widget ---------- */
+(function(){
+  function draw(){
+    var t=+$('tS').value,a=0.6,e=-1.2,x=t*e+(1-t)*a;
+    $('tV').textContent=vn(t,2);
+    $('tCode').innerHTML='<b>Code LeRobot</b> (τ = 1 nhiễu)<br>x<sub>τ</sub> = τ·ε + (1−τ)·A = '+vn(t,2)+' × (−1,2) + '+vn(1-t,2)+' × 0,6 = <b>'+vn(x,3)+'</b><br>dx/dτ = ε − A = <b>−1,8</b>; mục tiêu ghi trong code: ε − A = −1,8 ✓<br>Suy luận: τ đi 1 → 0, x ← x + (−0,1)·v';
+    var tp=1-t;
+    $('tPaper').innerHTML='<b>Cách viết của paper</b> (τ = 1 sạch)<br>Cùng điểm này có τ<sub>paper</sub> = <b>'+vn(tp,2)+'</b><br>A<sup>τ</sup> = τA + (1−τ)ε = '+vn(tp,2)+' × 0,6 + '+vn(1-tp,2)+' × (−1,2) = <b>'+vn(x,3)+'</b><br>dA<sup>τ</sup>/dτ = A − ε = <b>+1,8</b>; nhưng paper ghi u = ε − A = −1,8 ✗';
+  }
+  $('tS').addEventListener('input',draw);draw();
+})();
+
+/* ---------- async queue simulator (same logic as async_queue_sim.py) ---------- */
+(function(){
+  var DT=1000/30;
+  function rng(seed){var s=seed>>>0;return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+  function simulate(g,latMs,n,jit,need){
+    var r=rng(7);
+    function lat(){var L=latMs*(1+jit*(2*r()-1));return Math.max(1,Math.ceil(L/DT));}
+    var q={},qn=0,done=0,tick=0,idle=0,calls=1,blended=0,trace=[],idleT=[];
+    var inflight={at:lat(),obs:0};
+    while(done<need&&tick<5000){
+      if(inflight&&tick>=inflight.at){
+        for(var i=0;i<n;i++){var ts=inflight.obs+i;if(ts<done)continue;if(q[ts]){blended++;}else{q[ts]=1;qn++;}}
+        inflight=null;
+      }
+      if(qn>0){var m=Infinity;for(var k in q){if(+k<m)m=+k;}delete q[m];qn--;done=m+1;idleT.push(0);}
+      else{idle++;idleT.push(1);}
+      if(!inflight&&qn/n<=g){inflight={at:tick+1+lat(),obs:done};calls++;}
+      trace.push(qn);tick++;
+    }
+    return {ticks:tick,idle:idle,calls:calls,blended:blended,trace:trace,idleT:idleT,sec:tick*DT/1000};
+  }
+  window.__smolSim=simulate;
+  function draw(){
+    var g=+$('gS').value,l=+$('lS').value,n=+$('nS').value,j=+$('jS').value/100;
+    $('gV').textContent=vn(g,2);$('lV').textContent=l;$('nV').textContent=n;$('jV').textContent=Math.round(j*100);
+    var A=simulate(g,l,n,j,300),S=simulate(0,l,n,j,300);
+    var W=900,H=230,L=40,R=890,T=12,B=200,maxT=Math.max(A.ticks,S.ticks),maxQ=n;
+    function X(t){return L+(R-L)*t/maxT;} function Y(v){return B-(B-T)*v/maxQ;}
+    var h='<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" style="stroke:var(--line)"/><line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+B+'" style="stroke:var(--line)"/>';
+    h+='<text x="'+(L-6)+'" y="'+(T+8)+'" text-anchor="end" style="fill:var(--muted);font-size:11px">'+n+'</text><text x="'+(L-6)+'" y="'+B+'" text-anchor="end" style="fill:var(--muted);font-size:11px">0</text>';
+    h+='<text x="'+R+'" y="'+(B+20)+'" text-anchor="end" style="fill:var(--muted);font-size:11px">tick (Δt = 33 ms) · tổng '+maxT+'</text>';
+    h+='<text x="'+(L+4)+'" y="'+(B+20)+'" style="fill:var(--muted);font-size:11px">|hàng đợi|</text>';
+    for(var i=0;i<A.idleT.length;i++){if(A.idleT[i])h+='<rect x="'+X(i)+'" y="'+T+'" width="'+Math.max(1,(R-L)/maxT)+'" height="'+(B-T)+'" style="fill:var(--red);opacity:.25"/>';}
+    function line(tr,col,w){var p=[];for(var i=0;i<tr.length;i++)p.push(X(i).toFixed(1)+','+Y(tr[i]).toFixed(1));return '<polyline points="'+p.join(' ')+'" style="fill:none;stroke:'+col+';stroke-width:'+w+'"/>';}
+    h+=line(S.trace,'var(--grey)',1.3);h+=line(A.trace,'var(--pri)',2);
+    h+='<line x1="'+L+'" y1="'+Y(g*n)+'" x2="'+R+'" y2="'+Y(g*n)+'" style="stroke:var(--accent);stroke-dasharray:5 4"/>';
+    $('qSvg').innerHTML=h;
+    var gmin=(l/DT)/n,ok=g>=gmin;
+    $('qKpi').innerHTML=
+      '<div class="'+(A.sec<S.sec-0.05?'good':'')+'"><b>'+vn(A.sec,2)+' s</b>xong 300 hành động (async)</div>'+
+      '<div><b>'+vn(S.sec,2)+' s</b>xong 300 hành động (sync)</div>'+
+      '<div class="'+(A.idle>Math.ceil(l/DT)+1?'bad':'good')+'"><b>'+A.idle+'</b>tick đứng im (async)</div>'+
+      '<div><b>'+A.calls+'</b>lần gọi mô hình (sync: '+S.calls+')</div>'+
+      '<div><b>'+A.blended+'</b>hành động bị trộn bởi f</div>'+
+      '<div class="'+(ok?'good':'bad')+'"><b>'+vn(gmin,3)+'</b>g tối thiểu theo paper</div>';
+    var period=(1-g)*n,msg='Độ trễ ≈ <b>'+Math.ceil(l/DT)+' tick</b>. ';
+    msg+= ok ? 'g = '+vn(g,2)+' ≥ ngưỡng '+vn(gmin,3)+': ngoài lần chờ khởi động, robot gần như không đứng im. ' : '<span style="color:var(--red)">g = '+vn(g,2)+' &lt; ngưỡng '+vn(gmin,3)+': chunk mới về muộn hơn lúc hết hàng, nên có quãng đứng im.</span> ';
+    if(g>0&&g<1&&ok)msg+='Chu kỳ gọi theo logic code ≈ (1 − g)·n = '+vn(period,1)+' tick; paper ghi (1 − g)·n + ℓ/Δt = '+vn(period+l/DT,1)+' tick (xem 8.3). Mô phỏng: '+vn(A.ticks/A.calls,1)+' tick/lần. ';
+    if(g>=1)msg+='g = 1: gửi lại ngay khi chunk về (mỗi lúc một yêu cầu), nên số lần gọi bị giới hạn bởi độ trễ, không phải "mọi tick". ';
+    if(j>0)msg+='Có dao động độ trễ: đặt g sát ngưỡng sẽ thỉnh thoảng đứng im; cần biên an toàn.';
+    $('qOut').innerHTML=msg;
+  }
+  ['gS','lS','nS','jS'].forEach(function(id){$(id).addEventListener('input',draw);});draw();
+})();
+
+/* ---------- blend vs RTC widget ---------- */
+(function(){
+  var T=34,n=22,obs2=6;
+  function upper(t){return 0.9*Math.sin(Math.PI*Math.min(t,30)/30);}
+  function draw(){
+    var cs=$('mxCase').value,fn=$('mxFn').value,d=+$('mxD').value;$('mxDV').textContent=d;
+    var arrive=obs2+d;
+    var old=[],nw=[],ex=[];
+    for(var t=0;t<n;t++)old[t]=upper(t);
+    for(var t2=obs2;t2<obs2+n;t2++){nw[t2]= cs==='same' ? upper(t2)+0.14 : -upper(t2);}
+    var w={weighted:0.3,average:0.5,conservative:0.7,latest:0}[fn];
+    for(var t3=0;t3<obs2+n;t3++){
+      var v;
+      if(t3<arrive){v=old[t3];}
+      else if(fn==='rtc'){
+        var tgt = cs==='same' ? upper(t3)+0.14 : upper(t3)+0.05;  // RTC: giữ cùng cách làm với phần đang chạy
+        var k=t3-arrive, sw=Math.exp(-k/4);   // mặt nạ mềm: bám chunk cũ rồi nhả dần
+        v = (t3<n ? sw*old[t3]+(1-sw)*tgt : tgt);
+      }
+      else if(t3<n){v=w*old[t3]+(1-w)*nw[t3];}
+      else{v=nw[t3];}
+      ex[t3]=v;
+    }
+    var W=900,Hh=300,L=40,R=880,Tp=20,Bt=270;
+    function X(t){return L+(R-L)*t/(obs2+n-1);} function Y(v){return (Tp+Bt)/2-(Bt-Tp)/2*v/1.1;}
+    var h='<rect x="'+X(13)+'" y="'+Y(0.3)+'" width="'+(X(19)-X(13))+'" height="'+(Y(-0.3)-Y(0.3))+'" rx="6" style="fill:var(--red);opacity:.18;stroke:var(--red)"/>';
+    h+='<text x="'+((X(13)+X(19))/2)+'" y="'+(Y(0)+4)+'" text-anchor="middle" style="fill:var(--red);font-size:12px">vật cản</text>';
+    h+='<line x1="'+X(arrive)+'" y1="'+Tp+'" x2="'+X(arrive)+'" y2="'+Bt+'" style="stroke:var(--accent);stroke-dasharray:4 3"/>';
+    h+='<text x="'+(X(arrive)+4)+'" y="'+(Tp+10)+'" style="fill:var(--accent);font-size:11px">chunk mới về (t = '+arrive+')</text>';
+    h+='<line x1="'+X(obs2)+'" y1="'+Tp+'" x2="'+X(obs2)+'" y2="'+Bt+'" style="stroke:var(--grey);stroke-dasharray:2 3"/>';
+    h+='<text x="'+(X(obs2)-4)+'" y="'+(Bt-4)+'" text-anchor="end" style="fill:var(--muted);font-size:11px">gửi quan sát (t = '+obs2+')</text>';
+    h+='<line x1="'+X(n-1)+'" y1="'+Tp+'" x2="'+X(n-1)+'" y2="'+Bt+'" style="stroke:var(--grey);stroke-dasharray:2 3"/>';
+    h+='<text x="'+(X(n-1)+4)+'" y="'+(Bt-4)+'" style="fill:var(--muted);font-size:11px">hết chunk cũ</text>';
+    function pl(arr,a,b,col,wd,dash){var p=[];for(var t=a;t<b;t++)if(arr[t]!==undefined)p.push(X(t).toFixed(1)+','+Y(arr[t]).toFixed(1));return '<polyline points="'+p.join(' ')+'" style="fill:none;stroke:'+col+';stroke-width:'+wd+(dash?';stroke-dasharray:'+dash:'')+'"/>';}
+    h+=pl(old,0,n,'var(--grey)',1.5,'5 4');
+    if(fn!=='rtc')h+=pl(nw,obs2,obs2+n,'var(--blue)',1.5,'5 4');
+    h+=pl(ex,0,obs2+n,'var(--accent)',3);
+    for(var t4=0;t4<obs2+n;t4++)h+='<circle cx="'+X(t4)+'" cy="'+Y(ex[t4])+'" r="2.5" style="fill:var(--accent)"/>';
+    $('mxSvg').innerHTML=h;
+    var jump=0,hit=false;for(var t5=1;t5<ex.length;t5++){jump=Math.max(jump,Math.abs(ex[t5]-ex[t5-1]));}
+    for(var t6=13;t6<=19;t6++){if(Math.abs(ex[t6])<0.3)hit=true;}
+    var smooth=0;for(var t7=1;t7<ex.length;t7++){var base=Math.abs(upper(t7)-upper(t7-1));smooth=Math.max(smooth,Math.abs(ex[t7]-ex[t7-1])-base);}
+    $('mxKpi').innerHTML='<div class="'+(jump>0.3?'bad':'good')+'"><b>'+vn(jump,2)+'</b>bước nhảy lớn nhất giữa 2 hành động liền nhau</div><div class="'+(hit?'bad':'good')+'"><b>'+(hit?'Có':'Không')+'</b>chạm vùng vật cản</div><div><b>'+(n-arrive)+'</b>bước bị trộn (t = '+arrive+'…'+(n-1)+')</div><div><b>'+d+'</b>hành động quá hạn bị bỏ ở đầu chunk mới</div>';
+    var msg='';
+    if(fn==='rtc')msg='<b>RTC (minh họa):</b> chunk mới được sinh <i>có điều kiện</i> theo phần đang chạy, nên bám chunk cũ ở đầu rồi chuyển dần, và ở lại cùng cách làm (vòng trên) dù quan sát mới có thể gợi ý vòng dưới. Không có hai kế hoạch nào bị trộn.';
+    else if(cs==='same')msg='Hai chunk cùng cách làm, chỉ lệch nhẹ: trộn làm bước nhảy ở t = '+arrive+' nhỏ hơn latest_only, nhưng lại có một bước nhảy thứ hai ở cuối chunk cũ (t = '+n+') khi trọng số đột ngột về 100% chunk mới (trừ khi f = latest_only).';
+    else msg='Hai chunk chọn hai cách làm khác nhau: '+(fn==='latest'?'latest_only nhảy thẳng từ vòng trên sang vòng dưới, rất giật.':(fn==='average'?'trộn 50/50 cho ra đường thẳng giữa: đúng kiểu "trung bình hai mode" đâm vào vật cản.':'trộn có trọng số kéo quỹ đạo về gần giữa, rồi nhảy khi hết chunk cũ.'))+' Đây là tình huống RTC được thiết kế để tránh.';
+    $('mxOut').innerHTML=msg+' <span style="color:var(--muted)">Quỹ đạo, vị trí vật cản và cách vẽ RTC là minh họa tự đặt.</span>';
+  }
+  ['mxCase','mxFn'].forEach(function(id){$(id).addEventListener('change',draw);});$('mxD').addEventListener('input',draw);draw();
+})();
+
+/* ---------- ablation explorer ---------- */
+(function(){
+  var REF=[89,94,85,53];
+  function fmt(x){var t=String(x);if(t.indexOf('.')<0)t+='.0';return t.replace('.',',');}
+  var TB=[
+   {t:'Bảng 6 · CA vs SA',rows:[['CA',[87,92,83,54],79.0],['SA',[80,94,84,40],74.5],['CA+SA (ours)',[86,99,90,67],85.5,1]],
+    note:'Xen kẽ tốt nhất (85,5), hơn CA 6,5 điểm: vượt dải nhiễu. CA hơn SA 4,5: sát dải nhiễu. Chênh lớn nằm ở Long (67 so với 54/40).'},
+   {t:'Bảng 7 · causal vs hai chiều',rows:[['Bidir',[79,86,82,23],67.5],['Causal',[80,94,84,40],74.5,1]],
+    note:'Causal hơn 7 điểm, gần như toàn bộ đến từ Long (40 so với 23). Hàng Causal trùng hàng SA của Bảng 6, nên đây là thí nghiệm "mọi lớp SA", không phải mô hình CA+SA.'},
+   {t:'Bảng 8 · bỏ lớp VLM',rows:[['N = 8',[77,88,86,49],75.0],['N = 16',[88,91,91,44],78.5,1],['N = 24',[86,97,86,49],79.5],['N = 32',[89,94,85,53],80.3],['Skip %2',[84,90,83,45],75.5],['VLM-256M',[86,83,75,59],75.8]],
+    note:'16 → 32 lớp chỉ thêm 1,8 điểm (trong nhiễu) nhưng gấp đôi chi phí. Chữ nói Skip %2 tốt hơn VLM nhỏ, nhưng 75,5 &lt; 75,8.'},
+   {t:'Bảng 9 · độ rộng expert',rows:[['× 1,00',[87,96,90,56],82.3],['× 0,75',[82,89,84,55],77.5,1],['× 0,50',[89,94,85,53],80.3],['× 0,25',[76,97,83,39],73.8]],
+    note:'Không tăng đều: × 0,75 (lựa chọn cuối) thấp hơn × 0,50. Chỉ × 0,25 tụt rõ. Lời văn "0,75 cân bằng tốt" không có số đỡ.'},
+   {t:'Bảng 10 · flow vs L1',rows:[['Flow matching',[89,94,85,53],80.25,1],['Regression (L1)',[92,85,86,38],75.25]],
+    note:'Flow hơn 5 điểm, sát mép dải nhiễu. Chênh nằm ở Long (53 so với 38) và Object (94 so với 85); L1 lại hơn ở Spatial.'},
+   {t:'Bảng 11 · trạng thái prefix / suffix',rows:[['Prefix · CA',[89,94,85,53],80.3,1],['Suffix · CA',[86,82,78,47],73.3],['Prefix · SA',[62,74,57,20],53.3],['Suffix · SA',[80,92,80,47],74.8]],
+    note:'Với CA: prefix tốt hơn 7 điểm. Với SA: <b>ngược lại</b>, suffix hơn prefix 21,5 điểm. Lời văn nói "tốt hơn cho cả CA và SA" là sai so với bảng.'},
+   {t:'Bảng 12 · độ dài chunk',rows:[['n = 1',[45,77,54,24],50.0],['n = 10',[90,94,94,58],84.0],['n = 30',[85,94,87,48],78.5],['n = 50',[89,94,85,53],80.3,1],['n = 100',[83,88,85,42],74.5]],
+    note:'Không chunk (n = 1) tệ hẳn. n = 10 tốt nhất; mô hình cuối dùng 50. Từ 10 đến 50 chênh trong khoảng nhiễu.'},
+   {t:'Bảng 13 · số bước chạy trước khi quan sát lại',rows:[['1 bước',[89,94,85,53],80.3,1],['10 bước',[89,94,91,57],82.8],['30 bước',[76,91,74,42],70.8],['50 bước',[54,70,58,25],51.8]],
+    note:'Chạy mù 30–50 bước tụt 10–29 điểm: lý do cần quan sát lại thường xuyên, tức là cần async. Robot thật trong paper lại chạy kiểu "50 bước".'}
+  ];
+  var cur=0;
+  var tabs=$('abTabs');
+  TB.forEach(function(tb,i){var b=document.createElement('button');b.type='button';b.textContent=tb.t.split(' · ')[0];b.addEventListener('click',function(){cur=i;draw();});tabs.appendChild(b);});
+  function isRef(s){return s[0]===REF[0]&&s[1]===REF[1]&&s[2]===REF[2]&&s[3]===REF[3];}
+  function draw(){
+    [].slice.call(tabs.children).forEach(function(b,i){b.classList.toggle('on',i===cur);});
+    var tb=TB[cur],best=Math.max.apply(null,tb.rows.map(function(r){return r[2];}));
+    var sc=0.95;
+    var html='';
+    tb.rows.forEach(function(r){
+      var cls=r[3]?'me':(isRef(r[1])?'ref':'');
+      html+='<div class="row"><div class="nm">'+r[0]+' <small>S '+r[1][0]+' · O '+r[1][1]+' · G '+r[1][2]+' · 10 '+r[1][3]+'</small></div><div class="bb">'+
+        '<div class="band" style="left:'+((best-4)*sc)+'%;width:'+(8*sc)+'%"></div>'+
+        '<div class="bar '+cls+'" style="width:'+(r[2]*sc)+'%"><span>'+fmt(r[2])+'</span></div></div></div>';
+    });
+    $('abBars').innerHTML=html;
+    $('abOut').innerHTML='<b>'+tb.t+'.</b> '+tb.note;
+  }
+  draw();
+})();
+})();
+</script>
+</body>
+</html>

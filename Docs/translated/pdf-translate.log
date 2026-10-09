@@ -262,3 +262,283 @@ Traceback (most recent call last):
   File "gui.py", line 893, in _run
   File "scripts\translate_pdf.py", line 512, in translate_pdf
 scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-wreqwyyg\Groot-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. <- EOFError <- BrokenPipeError: [WinError 109] The pipe has been ended
+
+======================================================================
+2026-10-09 08:46:14  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 306, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-0dxsw5z5\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-0dxsw5z5\smolVLA-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. <- EOFError <- BrokenPipeError: [WinError 109] The pipe has been ended
+
+======================================================================
+2026-10-09 08:46:51  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 306, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-2qjh3cy_\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-2qjh3cy_\smolVLA-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. <- EOFError <- BrokenPipeError: [WinError 109] The pipe has been ended
+
+======================================================================
+2026-10-09 10:24:47  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 304, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-ts7cxf39\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-ts7cxf39\smolVLA-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish.
+
+======================================================================
+2026-10-09 10:32:27  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 306, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-5rs_r9k3\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-5rs_r9k3\smolVLA-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. <- EOFError <- BrokenPipeError: [WinError 109] The pipe has been ended
+
+======================================================================
+2026-10-09 10:34:34  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 306, in fetch
+pdf2zh.translator.VerificationDeferredError: Google verification was deferred by the user
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-nahgo3mh\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-nahgo3mh\smolVLA-ocr-sidecar.pdf <- VerificationDeferredError: Google verification was deferred by the user <- EOFError <- BrokenPipeError: [WinError 109] The pipe has been ended
+
+======================================================================
+2026-10-09 10:34:43  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 304, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-60h5259x\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-60h5259x\smolVLA-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish.
+
+======================================================================
+2026-10-09 10:35:00  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 304, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-iax7_35q\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-iax7_35q\smolVLA-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish.
+
+======================================================================
+2026-10-09 10:36:03  D:\VLA Modeling\Docs\smolVLA.pdf
+Traceback (most recent call last):
+  File "pdf2zh\high_level.py", line 955, in translate
+  File "pdf2zh\high_level.py", line 783, in translate_stream
+  File "pdf2zh\high_level.py", line 688, in translate_patch
+  File "pdf2zh\pdfinterp.py", line 439, in process_page
+  File "pdf2zh\converter.py", line 759, in end_page
+  File "pdf2zh\converter.py", line 1487, in receive_layout
+  File "pdf2zh\converter.py", line 1469, in translate_together
+  File "pdf2zh\converter.py", line 1430, in leave_untranslated
+  File "pdf2zh\translator.py", line 658, in _translate_batch
+  File "pdf2zh\translator.py", line 715, in _retrying
+  File "pdf2zh\translator.py", line 658, in <lambda>
+  File "pdf2zh\translator.py", line 703, in _translate_joined
+  File "pdf2zh\translator.py", line 744, in _fetch
+  File "pdf2zh\google_browser.py", line 343, in get
+  File "pdf2zh\google_browser.py", line 306, in fetch
+pdf2zh.translator.ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. 
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "scripts\translate_pdf.py", line 496, in translate_pdf
+  File "scripts\translate_pdf.py", line 400, in _run_engine
+  File "pdf2zh\high_level.py", line 977, in translate
+pdfminer.pdfexceptions.PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-ml8_r1qo\smolVLA-ocr-sidecar.pdf
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "gui.py", line 893, in _run
+  File "scripts\translate_pdf.py", line 512, in translate_pdf
+scripts.translate_pdf.TranslationError: PDF translation core failed: PDFValueError: Failed to translate D:\VLA Modeling\Docs\translated\pdf-translate-ml8_r1qo\smolVLA-ocr-sidecar.pdf <- ServiceUnavailableError: Google browser session was closed, could not start, or verification did not finish. <- EOFError <- BrokenPipeError: [WinError 109] The pipe has been ended
