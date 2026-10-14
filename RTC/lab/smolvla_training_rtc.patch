@@ -1,0 +1,146 @@
+diff --git a/src/lerobot/policies/smolvla/configuration_smolvla.py b/src/lerobot/policies/smolvla/configuration_smolvla.py
+index 04ea7185..c3d95390 100644
+--- a/src/lerobot/policies/smolvla/configuration_smolvla.py
++++ b/src/lerobot/policies/smolvla/configuration_smolvla.py
+@@ -102,6 +102,9 @@ class SmolVLAConfig(PreTrainedConfig):
+ 
+     # Real-Time Chunking (RTC) configuration
+     rtc_config: RTCConfig | None = None
++    # Training-time RTC (arXiv 2512.05964). > 0: khi train, mỗi mẫu lấy d ngẫu nhiên trong {0..max},
++    # d hành động đầu giữ sạch (time = 0) và không tính loss. Cho phép rtc_config.mode="trained".
++    rtc_training_max_delay: int = 0
+ 
+     compile_model: bool = False  # Whether to use torch.compile for model optimization
+     compile_mode: str = "max-autotune"  # Torch compile mode
+@@ -115,6 +118,11 @@ class SmolVLAConfig(PreTrainedConfig):
+                 f"The chunk size is the upper bound for the number of action steps per model invocation. Got "
+                 f"{self.n_action_steps} for `n_action_steps` and {self.chunk_size} for `chunk_size`."
+             )
++        if not 0 <= self.rtc_training_max_delay < self.chunk_size:
++            raise ValueError(
++                f"rtc_training_max_delay must satisfy 0 <= delay < chunk_size ({self.chunk_size}), "
++                f"got {self.rtc_training_max_delay}"
++            )
+         if self.use_delta_joint_actions_aloha:
+             raise NotImplementedError(
+                 "`use_delta_joint_actions_aloha` is used by smolvla for aloha real models. It is not ported yet in LeRobot."
+diff --git a/src/lerobot/policies/smolvla/modeling_smolvla.py b/src/lerobot/policies/smolvla/modeling_smolvla.py
+index 7ecdf068..0563ec83 100644
+--- a/src/lerobot/policies/smolvla/modeling_smolvla.py
++++ b/src/lerobot/policies/smolvla/modeling_smolvla.py
+@@ -180,7 +180,10 @@ class SmolVLAPolicy(PreTrainedPolicy):
+         # Lets create processor if the config provided
+         # If RTC is not enabled - we still can track the denoising data
+         if self.config.rtc_config is not None:
+-            self.rtc_processor = RTCProcessor(self.config.rtc_config)
++            self.rtc_processor = RTCProcessor(
++                self.config.rtc_config,
++                trained_mode_supported=self.config.rtc_training_max_delay > 0,
++            )
+ 
+             # In case of calling init_rtc_processor after the model is created
+             # We need to set the rtc_processor to the model
+@@ -304,13 +307,25 @@ class SmolVLAPolicy(PreTrainedPolicy):
+         actions = self.prepare_action(batch)
+         actions_is_pad = batch.get("action_is_pad")
+         loss_dict: dict[str, float] = {}
+-        losses = self.model.forward(images, img_masks, lang_tokens, lang_masks, state, actions, noise, time)
++        prefix_mask = None
++        if self.config.rtc_training_max_delay > 0:
++            # Training-time RTC: d ~ U{0..max_delay} cho mỗi mẫu, d hành động đầu là prefix sạch
++            bsize, horizon = actions.shape[:2]
++            delays = torch.randint(0, self.config.rtc_training_max_delay + 1, (bsize,), device=actions.device)
++            prefix_mask = torch.arange(horizon, device=actions.device)[None, :] < delays[:, None]
++        losses = self.model.forward(
++            images, img_masks, lang_tokens, lang_masks, state, actions, noise, time, prefix_mask=prefix_mask
++        )
+         action_feature = self.config.action_feature
+         if action_feature is None:
+             raise ValueError("SmolVLA requires an action output feature.")
+         losses = losses[:, :, : action_feature.shape[0]]
+         loss_dict["losses_after_forward"] = losses.clone().mean().item()
+ 
++        if prefix_mask is not None:
++            # Prefix không tính loss; gộp vào mặt nạ padding để công thức chia trung bình bên dưới giữ nguyên
++            actions_is_pad = prefix_mask if actions_is_pad is None else (actions_is_pad | prefix_mask)
++
+         if actions_is_pad is not None:
+             in_episode_bound = ~actions_is_pad
+             losses = losses * in_episode_bound.unsqueeze(-1)
+@@ -672,7 +687,9 @@ class VLAFlowMatching(nn.Module):
+         )
+         time_emb = time_emb.type(dtype=dtype)
+ 
+-        time_emb = time_emb[:, None, :].expand_as(action_emb)
++        if time_emb.ndim == 2:  # (B, D): mọi token cùng mức nhiễu
++            time_emb = time_emb[:, None, :].expand_as(action_emb)
++        # (B, H, D): mỗi token một mức nhiễu (training-time RTC), giữ nguyên
+         action_time_emb = torch.cat([action_emb, time_emb], dim=2)
+ 
+         action_time_emb = self.action_time_mlp_in(action_time_emb)
+@@ -695,7 +712,7 @@ class VLAFlowMatching(nn.Module):
+         return embs, pad_masks, att_masks
+ 
+     def forward(
+-        self, images, img_masks, lang_tokens, lang_masks, state, actions, noise=None, time=None
++        self, images, img_masks, lang_tokens, lang_masks, state, actions, noise=None, time=None, prefix_mask=None
+     ) -> Tensor:
+         """Do a full training forward pass and compute the loss (batch_size x num_steps x num_motors)"""
+         if noise is None:
+@@ -704,11 +721,13 @@ class VLAFlowMatching(nn.Module):
+         if time is None:
+             time = self.sample_time(actions.shape[0], actions.device)
+ 
+-        x_t, u_t, _ = make_flow_matching_inputs(actions, noise, time, convention=FlowConvention.NOISE_AT_ONE)
++        x_t, u_t, model_time = make_flow_matching_inputs(
++            actions, noise, time, convention=FlowConvention.NOISE_AT_ONE, prefix_mask=prefix_mask
++        )
+         prefix_embs, prefix_pad_masks, prefix_att_masks = self.embed_prefix(
+             images, img_masks, lang_tokens, lang_masks, state=state
+         )
+-        suffix_embs, suffix_pad_masks, suffix_att_masks = self.embed_suffix(x_t, time)
++        suffix_embs, suffix_pad_masks, suffix_att_masks = self.embed_suffix(x_t, model_time)
+ 
+         pad_masks = torch.cat([prefix_pad_masks, suffix_pad_masks], dim=1)
+         att_masks = torch.cat([prefix_att_masks, suffix_att_masks], dim=1)
+@@ -762,6 +781,40 @@ class VLAFlowMatching(nn.Module):
+         )
+         num_steps = self.config.num_steps
+ 
++        rtc_cfg = self.config.rtc_config
++        if self._rtc_enabled() and rtc_cfg.mode == "trained":
++            # Training-time RTC lúc suy luận: ghi đè d hành động đầu bằng chunk cũ, gắn time = 0 (sạch)
++            delay = int(kwargs.get("inference_delay") or 0)
++            prev = kwargs.get("prev_chunk_left_over")
++            hard_prefix = hard_prefix_mask = None
++            if prev is not None and delay > 0:
++                if delay > self.config.rtc_training_max_delay:
++                    raise ValueError(
++                        f"inference_delay ({delay}) > rtc_training_max_delay ({self.config.rtc_training_max_delay})"
++                    )
++                prev = prev if prev.ndim == 3 else prev.unsqueeze(0)
++                if prev.shape[1] < delay:
++                    raise ValueError(f"prev_chunk_left_over has {prev.shape[1]} steps < inference_delay={delay}")
++                hard_prefix = torch.zeros_like(noise)
++                hard_prefix[:, :delay, : prev.shape[2]] = prev[:, :delay].to(noise.dtype)
++                hard_prefix_mask = (torch.arange(noise.shape[1], device=device) < delay)[None, :, None].expand_as(
++                    noise
++                )
++            return euler_integrate(
++                lambda input_x_t, current_timestep: self.denoise_step(
++                    x_t=input_x_t,
++                    prefix_pad_masks=prefix_pad_masks,
++                    past_key_values=past_key_values,
++                    timestep=current_timestep,
++                ),
++                noise,
++                num_steps,
++                rtc_processor=self.rtc_processor,
++                rtc_enabled=False,
++                hard_prefix=hard_prefix,
++                hard_prefix_mask=hard_prefix_mask,
++            )
++
+         return euler_integrate(
+             lambda input_x_t, current_timestep: self.denoise_step(
+                 x_t=input_x_t,
