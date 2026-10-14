@@ -96,7 +96,9 @@
       const label = shared ? 'Slide chung' : d.label;
       const hint = shared ? ' title="Một bộ slide cho cả cặp paper"' : '';
       return `<a class="chip${shared ? ' chip--shared' : ''}"${hint} href="paper.html?id=${paper.id}#${d.tab}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d.icon}</svg>${label}</a>`;
-    }).join('');
+    }).join('') + (files.khac || []).map(k =>
+      `<a class="chip chip--extra" href="${encodeURI(k.duongDan)}" title="Mở trang riêng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${k.ten}</a>`
+    ).join('');
     const stateLabel = state === 'done' ? 'Đã xong' : (state === 'active' ? 'Đọc tiếp' : 'Sắp tới');
     const check = state === 'done'
       ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7.5"/></svg>'

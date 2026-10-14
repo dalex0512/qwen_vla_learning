@@ -634,3 +634,5 @@
 }
 .reset:hover { color: var(--ink); }
 .reset[hidden] { display: none; }
+
+.chip--extra { border-style: dotted; }

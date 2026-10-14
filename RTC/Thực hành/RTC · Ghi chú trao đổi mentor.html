@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RTC · Ghi chú trao đổi mentor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+
+/* layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+
+/* paper viết / nghĩa là */
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+
+/* callouts */
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+
+/* tables */
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+
+/* misc */
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* checklist */
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+
+/* steps */
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* details */
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+
+/* arch svg */
+.n{cursor:pointer}
+.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.n.emb rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.frz rect.b0{fill:var(--blue-soft);stroke:var(--blue)}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.n text{fill:var(--text);font-size:13px;text-anchor:middle;pointer-events:none}
+.n text.s{fill:var(--muted);font-size:11.5px}
+.ar{stroke:var(--grey);stroke-width:1.8;fill:none}
+.lbl{fill:var(--muted);font-size:11.5px}
+#archInfo{min-height:96px}
+
+/* bars */
+.bars .row{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{display:flex;flex-direction:column;gap:2px}
+.bars .bar{height:11px;border-radius:4px;position:relative;min-width:2px}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-4px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .dp{background:var(--grey)}
+.bars .gr{background:var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:120px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cells{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.cells span{width:26px;height:26px;border-radius:5px;background:var(--pri-soft);border:1px solid var(--pri);font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cells span.used{background:var(--accent);border-color:var(--accent);color:#fff}
+.cells span.over{background:var(--red);border-color:var(--red);color:#fff}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+
+/* ===== thêm cho trang Qwen-VLA ===== */
+details.more{border:1px dashed var(--line);border-radius:12px;padding:8px 14px;margin:12px 0;background:var(--card)}
+details.more>summary{cursor:pointer;font-weight:600;color:var(--pri);font-size:.93rem}
+details.more>summary::marker{color:var(--pri)}
+details.more[open]>summary{margin-bottom:8px}
+.key{border:2px solid var(--pri);border-radius:14px;padding:12px 18px;margin:14px 0;background:var(--pri-soft)}
+.key b.t{display:block;color:var(--pri-strong);margin-bottom:2px}
+.idea{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:center;border-top:1px solid var(--line);padding:16px 0}
+.idea h3{margin:0 0 6px}
+.idea .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;font-size:.95rem}
+.idea .go{font-size:.85rem;color:var(--muted)}
+.stat div div{border:0;padding:0;border-radius:0}
+.idea svg text{font-size:13px}
+@media (max-width:760px){.idea{grid-template-columns:1fr}}
+.lv{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;vertical-align:middle;margin-left:8px;letter-spacing:.02em;line-height:1.6}
+.lv.m{background:var(--accent);color:#fff}
+.lv.s{background:var(--blue-soft);color:var(--blue)}
+.lv.k{background:var(--code-bg);color:var(--muted);border:1px solid var(--line)}
+nav.toc a i.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+i.d.m{background:var(--accent)} i.d.s{background:var(--blue)} i.d.k{background:var(--grey);opacity:.6}
+.legend-lv{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.9rem;margin:10px 0}
+.basics{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.basics>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.basics>div b.h{display:block;color:var(--pri-strong);margin-bottom:4px}
+.basics>div .why{display:block;margin-top:6px;font-size:.86rem;color:var(--muted)}
+table.t td.keep{color:var(--pri-strong);font-weight:600;white-space:nowrap}
+table.t td.chg{color:var(--accent);font-weight:600;white-space:nowrap}
+table.t td.unk{color:var(--muted);font-weight:600;white-space:nowrap}
+.prompt{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--code-bg);border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:10px;padding:12px 14px;white-space:pre-wrap;line-height:1.6}
+.prompt .v{background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:0 3px}
+.ctrl select,.ctrl input[type=text],.ctrl input[type=number]{font:inherit;font-size:.9rem;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+.grid{display:grid;gap:2px;margin:10px 0;max-width:100%;overflow-x:auto}
+.grid span{width:13px;height:13px;border-radius:2px;background:var(--code-bg);border:1px solid var(--line)}
+.grid span.on{background:var(--pri);border-color:var(--pri)}
+.grid span.pad{background:var(--card);border:1px dashed var(--grey);opacity:.6}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+@media (max-width:760px){.stages{grid-template-columns:1fr 1fr}}
+.stg{border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;background:var(--card);text-align:center;font-size:.85rem}
+.stg.sel{border-color:var(--accent)}
+.stg .nm{font-weight:700;color:var(--pri-strong);font-size:.95rem}
+.stg .blk{border-radius:7px;padding:3px 4px;margin:5px 0;font-size:.8rem;border:1.5px solid}
+.stg .blk.fz{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.stg .blk.tr{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stg .inp{color:var(--muted);font-size:.78rem}
+.stg .ck{margin-top:6px;font-size:.76rem;font-weight:600}
+.arrowrow{display:flex;justify-content:space-around;color:var(--grey);font-size:.8rem;margin:-4px 0 4px}
+.bars .q{background:var(--accent)}
+.bars .g6{background:var(--blue)}
+.delta-up{color:var(--pri-strong);font-weight:600}
+.delta-dn{color:var(--red);font-weight:600}
+.n.vlm rect.b0{fill:var(--accent-soft);stroke:var(--accent)}
+.n.dit rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.rl rect.b0{stroke-dasharray:5 4}
+.say{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:14px 0}
+.say b.t{display:block;color:var(--accent);margin-bottom:4px}
+
+/* ===== thêm cho trang RTC ===== */
+#smSvg,#btSvg,#sfSvg{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px}
+#smMeth label{font-size:.88rem}
+.out .tw{margin:0 0 8px}
+pre code#torchCode{font-size:.82rem}
+.two>div{min-width:0}
+mjx-container[display="true"]{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0;position:relative}
+mjx-container:not([display]){max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle;position:relative}
+.chk code{word-break:break-all}
+.bars .bb{min-width:0;padding-right:118px}
+@media (max-width:600px){.bars .bb{padding-right:96px}}
+
+header.top a{color:#fff}
+header.top a.home{display:inline-block;margin-bottom:8px;font-size:.9rem;font-weight:600;text-decoration:none;opacity:.9}
+header.top a.home:hover{opacity:1;text-decoration:underline}
+nav.toc b{margin-top:6px}
+td code,p code,li code{overflow-wrap:anywhere}
+.qa{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:10px}
+.qcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card);display:flex;flex-direction:column}
+.qcard .qh{font-weight:700;margin-bottom:4px}
+.qcard p{margin:0 0 8px;flex:1}
+.qcard textarea{width:100%;min-height:84px;resize:vertical;font:inherit;font-size:.92rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+footer.pg{max-width:1200px;margin:30px auto;padding:0 16px;color:var(--muted);font-size:.85rem}
+@media print{nav.toc,#themeBtn,a.home,#printBtn,#clearBtn,footer.pg{display:none!important}.layout{display:block}.qcard textarea{border:1px solid #999;min-height:90px}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a class="home" href="../../index.html" target="_top">← Trang chủ</a>
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>RTC · Ghi chú trao đổi với mentor</h1>
+  <p>Mang vào buổi trao đổi: RTC là gì, áp dụng được gì vào việc của nhóm, mình đã làm được gì, và các câu hỏi để biết nhóm đang dùng RTC thế nào. Mỗi câu hỏi có ô ghi chú, tự lưu trong trình duyệt.</p>
+  <div class="meta"><span class="pill">Một trang, đọc trong 5 phút</span><span class="pill">Có ô ghi câu trả lời</span><span class="pill">Nút In để mang giấy</span></div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#what"><i class="d m"></i>1. RTC trong 30 giây</a>
+  <a href="#apply"><i class="d m"></i>2. Áp dụng được gì</a>
+  <a href="#mine"><i class="d m"></i>3. Mình đã làm được gì</a>
+  <a href="#ask"><i class="d m"></i>4. Câu hỏi cho mentor</a>
+  <a href="#after"><i class="d s"></i>5. Sau buổi trao đổi</a>
+  <b style="margin-top:10px">Tài liệu liên quan</b>
+  <a href="RTC%20%C2%B7%20Th%E1%BB%B1c%20h%C3%A0nh%20ch%E1%BA%A1y%20th%E1%BB%AD.html"><i class="d k"></i>Thực hành chạy thử</a>
+  <a href="RTC%20%C2%B7%20Slide%20th%E1%BB%B1c%20h%C3%A0nh.html"><i class="d k"></i>Slide thực hành</a>
+  <a href="../%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20%26%20slide/RTC%20%C2%B7%20%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20%26%20%C3%A1p%20d%E1%BB%A5ng.html"><i class="d k"></i>Đọc hiểu &amp; áp dụng</a>
+</nav>
+
+<main>
+
+<section class="sec" id="what">
+<h2>1. RTC trong 30 giây <span class="lv m">Phải nắm</span></h2>
+<div class="key"><b class="t">Nói với mentor</b>Mô hình VLA sinh ra một chunk hành động nhưng nghĩ chậm hơn nhịp robot cần lệnh. Muốn robot không khựng thì phải chạy bất đồng bộ: robot chạy nốt chunk cũ trong lúc mô hình tính chunk mới. Khi đó chunk mới có thể không nối liền với phần robot vừa chạy (dữ liệu có nhiều cách làm hợp lệ), robot đổi ý giữa chừng và bị giật. RTC bắt chunk mới nối tiếp phần đã cam kết chạy.</div>
+<div class="two">
+<div class="co note"><b class="t">Paper ① · lúc suy luận</b>Khi khử nhiễu chunk mới, kéo phần đầu về đuôi chunk cũ (guidance, coi như vẽ bù). Không train lại; tốn thêm tính toán mỗi lần sinh chunk.</div>
+<div class="co note"><b class="t">Paper ② · lúc huấn luyện</b>Khi train, cho mô hình thấy vài hành động đầu ở dạng sạch. Khi chạy chỉ cần ghi đè. Không tốn thêm khi chạy; phải fine-tune.</div>
+</div>
+<p>Ký hiệu cần nhớ: <b>H</b> độ dài chunk, <b>s</b> số hành động chạy trước khi hỏi chunk mới, <b>d</b> số bước mô hình nghĩ. Ràng buộc <b>d ≤ s ≤ H − d</b>.</p>
+</section>
+
+<section class="sec" id="apply">
+<h2>2. Áp dụng được gì vào việc của nhóm <span class="lv m">Phải nắm</span></h2>
+<div class="tw"><table class="t">
+<thead><tr><th style="width:24%">Việc</th><th>Cụ thể</th><th style="width:28%">Trong LeRobot</th></tr></thead>
+<tbody>
+<tr><td><b>Chạy robot bất đồng bộ</b></td><td>Đo độ trễ thật → d bước; chọn s; một luồng điều khiển, một luồng gọi mô hình. Dùng được cả khi chưa bật RTC.</td><td><code>lerobot-rollout --inference.type=rtc</code></td></tr>
+<tr><td><b>RTC lúc suy luận</b></td><td>Bật ngay trên mô hình flow matching đang có, không train lại.</td><td><code>RTCConfig</code> + <code>inference_delay</code>, <code>prev_chunk_left_over</code> mỗi lần gọi</td></tr>
+<tr><td><b>RTC lúc huấn luyện</b></td><td>Khi nhóm có fine-tune: mỗi hành động một mức nhiễu, phần đầu sạch, bỏ phần đầu khỏi loss.</td><td>Có sẵn cho Pi0.5 (<code>rtc_training_max_delay</code>); SmolVLA: patch của mình</td></tr>
+<tr><td><b>Chỉnh tham số</b></td><td><code>execution_horizon</code> dài thì mượt hơn nhưng phản ứng chậm hơn; s nhỏ thì phản ứng nhanh hơn nhưng gọi mô hình nhiều hơn; β từ khoảng 2 trở lên là đủ.</td><td>Mặc định LINEAR, β = 10, execution_horizon = 10; paper dùng lịch EXP</td></tr>
+<tr><td><b>Chỗ dễ sai</b></td><td><code>execution_horizon</code> là H − s, không phải s · đuôi chunk cũ phải ở không gian đã chuẩn hóa · hành động tương đối phải đổi về cùng gốc · quy ước thời gian (LeRobot: time = 1 là nhiễu).</td><td><code>policies/rtc/relative.py</code> cho hành động tương đối</td></tr>
+<tr><td><b>Cách đánh giá</b></td><td>Giả lập độ trễ trong mô phỏng; đo cả độ giật lẫn thành công; luôn so với chạy đồng bộ và nối ngây thơ. Benchmark tĩnh (LIBERO) khó thấy khác biệt.</td><td><code>examples/rtc/eval_dataset.py</code>; script <code>rtc_libero_eval.py</code> của mình</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="sec" id="mine">
+<h2>3. Mình đã làm được gì <span class="lv m">Phải nắm</span></h2>
+<ul>
+<li><b>Hiểu cơ chế bằng thí nghiệm:</b> bài đồ chơi dùng đúng hàm RTC của LeRobot. Nối ngây thơ đâm khoảng 50% khi có độ trễ; RTC còn 1–3%. (Bài đã chỉnh để hiện tượng lộ rõ: là minh họa, không phải bằng chứng.)</li>
+<li><b>Phát hiện trong code LeRobot:</b> guidance không lấy gradient đi qua mô hình như paper ① (<code>correction == err</code>). Đã kiểm bằng chạy trên commit b9cb121c và ae2b57f.</li>
+<li><b>Công cụ:</b> script đánh giá có độ trễ trên LIBERO (bọc <code>lerobot-eval</code>), script kiểm tra RTC cài đúng, patch thêm RTC lúc huấn luyện cho SmolVLA (đã kiểm trên mô hình tí hon).</li>
+<li><b>Chưa có:</b> số trên SmolVLA thật (độ trễ, LIBERO, fine-tune). Đang chạy.</li>
+</ul>
+</section>
+
+<section class="sec" id="ask">
+<h2>4. Câu hỏi cho mentor <span class="lv m">Phải nắm</span></h2>
+<p>Ba câu đánh dấu ★ là quan trọng nhất: biết chúng thì mới chỉnh phần thực hành và slide cho khớp với cái nhóm đang dùng.</p>
+<div class="qa">
+<div class="qcard"><div class="qh">★ 1. Biến thể và codebase</div><p>Nhóm dùng RTC lúc suy luận hay lúc huấn luyện, hay cả hai? Trên mô hình nào, codebase nào (LeRobot, openpi, code riêng)?</p><textarea data-k="q1" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">★ 2. Con số vận hành</div><p>Robot chạy bao nhiêu Hz? Độ trễ đầu-cuối khoảng bao nhiêu? H, s, d, β đang dùng? d được đo động hay đặt cố định?</p><textarea data-k="q2" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">3. Kiểu hành động</div><p>Hành động tuyệt đối hay tương đối/delta? Nếu tương đối, phần chunk cũ được đổi gốc ở đâu?</p><textarea data-k="q3" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">4. Guidance và chi phí</div><p>Có backward qua mô hình như paper không, hay giống LeRobot (bỏ Jacobian)? Đã đo chi phí thời gian chưa? Anh/chị nghĩ chỗ bỏ Jacobian của LeRobot là cố ý hay lỗi?</p><textarea data-k="q4" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">5. Nếu dùng RTC lúc huấn luyện</div><p>Độ trễ khi train lấy theo phân phối nào, max bao nhiêu? Có thấy chất lượng giảm khi d = 0 không?</p><textarea data-k="q5" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">6. Đánh giá</div><p>Nhóm đánh giá RTC trên robot thật hay mô phỏng, đo chỉ số gì? Hiện còn gặp vấn đề gì (giật, khựng, phản ứng chậm)?</p><textarea data-k="q6" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">★ 7. Việc của mình</div><p>Nhóm muốn mình làm gì tiếp: đọc và hiểu code của nhóm, chạy thử nghiệm, hay cài cho mô hình mới?</p><textarea data-k="q7" placeholder="Ghi câu trả lời…"></textarea></div>
+</div>
+</section>
+
+<section class="sec" id="after">
+<h2>5. Sau buổi trao đổi <span class="lv s">Nên biết</span></h2>
+<div class="chk" id="chk">
+  <label><input type="checkbox" data-k="a1"><span>Ghi lại câu trả lời ★1, ★2, ★7 ngay sau buổi (ô ghi chú ở trên tự lưu).</span></label>
+  <label><input type="checkbox" data-k="a2"><span>Gửi Claude các câu trả lời để chỉnh phần thực hành và slide cho khớp cách nhóm dùng.</span></label>
+  <label><input type="checkbox" data-k="a3"><span>Nếu được cấp code của nhóm: tìm chỗ gọi mô hình, chỗ tính d, và chỗ nối chunk.</span></label>
+  <label><input type="checkbox" data-k="a4"><span>Hỏi lại mentor về Jacobian nếu chưa có câu trả lời; nếu là lỗi, cân nhắc báo lên LeRobot.</span></label>
+</div>
+<p style="margin-top:14px"><button type="button" id="printBtn" class="b o">In trang này</button> <button type="button" id="clearBtn" class="b o">Xóa ghi chú</button></p>
+</section>
+
+</main>
+</div>
+
+<footer class="pg">RTC · Ghi chú trao đổi mentor — tài liệu học tập cá nhân, thư mục VLA Modeling.</footer>
+<script>
+(function(){
+"use strict";
+/* ---------- theme ---------- */
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function vn(x,d){if(!isFinite(x))return '∞';return (+x).toFixed(d===undefined?1:d).replace('-','−').replace('.',',');}
+function $(id){return document.getElementById(id);}
+
+/* ---------- checklists ---------- */
+function checklist(boxSel,key,barId){
+  var boxes=[].slice.call(document.querySelectorAll(boxSel));
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){saved={};}
+  function upd(){
+    var n=0;boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);if(b.checked)n++;});
+    if(barId)$(barId).style.width=(100*n/boxes.length)+'%';
+  }
+  boxes.forEach(function(b){
+    b.checked=!!saved[b.dataset.k];
+    b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem(key,JSON.stringify(saved));}catch(e){}upd();});
+  });
+  upd();
+}
+checklist('#chk input','rtcnote-chk',null);
+
+
+/* ---------- TOC scroll spy ---------- */
+var links=[].slice.call(document.querySelectorAll('#toc a[href^="#"]'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){
+  var y=window.scrollY+120,idx=0;
+  targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});
+  links.forEach(function(a,i){a.classList.toggle('on',i===idx);});
+}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+
+/* ---------- ghi chú tự lưu ---------- */
+var areas=[].slice.call(document.querySelectorAll('textarea[data-k]'));
+var KEY='rtcnote-answers', saved={};
+try{saved=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){saved={};}
+areas.forEach(function(a){a.value=saved[a.dataset.k]||'';a.addEventListener('input',function(){saved[a.dataset.k]=a.value;try{localStorage.setItem(KEY,JSON.stringify(saved));}catch(e){}});});
+$('printBtn').addEventListener('click',function(){window.print();});
+var armed=false;
+$('clearBtn').addEventListener('click',function(){
+  if(!armed){armed=true;this.textContent='Bấm lần nữa để xóa hết ghi chú';var b=this;setTimeout(function(){armed=false;b.textContent='Xóa ghi chú';},3000);return;}
+  saved={};areas.forEach(function(a){a.value='';});try{localStorage.removeItem(KEY);}catch(e){}this.textContent='Đã xóa';armed=false;
+});
+})();
+</script>
+</body>
+</html>

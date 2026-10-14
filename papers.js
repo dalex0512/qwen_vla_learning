@@ -15,6 +15,7 @@
  *   + slide: trang HTML slide trình bày
  *   + pdfGoc: file PDF gốc
  *   + pdfViet: file PDF bản dịch tiếng Việt
+ *   + khac (tùy chọn): danh sách trang thêm [{ ten, duongDan }], hiện thành nút trên trang chủ
  */
 
 const PAPERS = [
@@ -77,10 +78,16 @@ const PAPERS = [
     moTa: "Chạy action chunk mượt khi suy luận",
     trangThai: "dang-doc",
     files: {
-      docHieu: "RTC/RTC-Inference · Đọc hiểu paper.html",
-      slide: "RTC/RTC · Slide trình bày.html",
+      docHieu: "RTC/Đọc hiểu & slide/RTC-Inference · Đọc hiểu paper.html",
+      slide: "RTC/Đọc hiểu & slide/RTC · Slide trình bày.html",
       pdfGoc: "Docs/RTC inference time.pdf",
-      pdfViet: "Docs/translated/RTC inference time-vi.pdf"
+      pdfViet: "Docs/translated/RTC inference time-vi.pdf",
+      khac: [
+        { ten: "Đọc hiểu & áp dụng", duongDan: "RTC/Đọc hiểu & slide/RTC · Đọc hiểu & áp dụng.html" },
+        { ten: "Thực hành", duongDan: "RTC/Thực hành/RTC · Thực hành chạy thử.html" },
+        { ten: "Slide thực hành", duongDan: "RTC/Thực hành/RTC · Slide thực hành.html" },
+        { ten: "Ghi chú mentor", duongDan: "RTC/Thực hành/RTC · Ghi chú trao đổi mentor.html" }
+      ]
     }
   },
   {
@@ -94,10 +101,16 @@ const PAPERS = [
     moTa: "Đưa RTC vào lúc huấn luyện",
     trangThai: "dang-doc",
     files: {
-      docHieu: "RTC/RTC-Training · Đọc hiểu paper.html",
-      slide: "RTC/RTC · Slide trình bày.html",
+      docHieu: "RTC/Đọc hiểu & slide/RTC-Training · Đọc hiểu paper.html",
+      slide: "RTC/Đọc hiểu & slide/RTC · Slide trình bày.html",
       pdfGoc: "Docs/RTC training Time.pdf",
-      pdfViet: "Docs/translated/RTC training Time-vi.pdf"
+      pdfViet: "Docs/translated/RTC training Time-vi.pdf",
+      khac: [
+        { ten: "Đọc hiểu & áp dụng", duongDan: "RTC/Đọc hiểu & slide/RTC · Đọc hiểu & áp dụng.html" },
+        { ten: "Thực hành", duongDan: "RTC/Thực hành/RTC · Thực hành chạy thử.html" },
+        { ten: "Slide thực hành", duongDan: "RTC/Thực hành/RTC · Slide thực hành.html" },
+        { ten: "Ghi chú mentor", duongDan: "RTC/Thực hành/RTC · Ghi chú trao đổi mentor.html" }
+      ]
     }
   },
   {

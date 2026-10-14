@@ -13,6 +13,7 @@ Tham số riêng (phần còn lại chuyển nguyên cho lerobot-eval):
   --lab.delay      d, số bước trễ giả lập (LIBERO 20 Hz: 1 bước = 50 ms)
   --lab.s          số hành động chạy của mỗi chunk trước khi hỏi chunk mới (cần d <= s <= H - d)
   --lab.execution_horizon, --lab.beta, --lab.schedule   tham số RTCConfig
+  --seed           (của lerobot-eval, mặc định 1000) đổi để chạy nhiều seed; tong_hop_libero.py gộp theo cấu hình
   --lab.stats      file JSON ghi độ giật và thời gian gọi mô hình (mặc định: <output_dir>/rtc_lab_stats.json)
 
 Ví dụ:
@@ -51,7 +52,9 @@ from lerobot.scripts import lerobot_eval as E  # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from rtc_full_jacobian import FullJacobianRTC  # noqa: E402
 
-STATS = {"lab": vars(LAB), "episodes": [], "predict_s": []}
+SEED = next((a.split("=", 1)[1] for a in rest if a.startswith("--seed=")), "1000")   # mặc định của lerobot-eval
+POLICY = next((a.split("=", 1)[1] for a in rest if a.startswith("--policy.path=")), "")
+STATS = {"lab": vars(LAB), "seed": SEED, "policy": POLICY, "episodes": [], "predict_s": []}
 
 
 class DelayedChunk:
