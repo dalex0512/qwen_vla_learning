@@ -441,40 +441,12 @@ with torch.enable_grad():
           </div>
           <div class="col">
             <ul>
-              <li><b>Ít episode:</b> 50 mỗi ô; chênh thành công chưa có ý nghĩa thống kê (p ≈ 0,10).</li>
-              <li><b>Một điểm chưa giải thích:</b> RTC lúc huấn luyện ở d = 0 trong bài đồ chơi (67%).</li>
-              <li><b>Chưa thử robot thật</b> (<span class="mono">lerobot-rollout --inference.type=rtc</span>).</li>
+           
             </ul>
           </div>
         </div>
         <div class="pn">16</div>
         <div class="notes"><p>Em nói rõ giới hạn. Bài đồ chơi cho em hiểu cơ chế và xu hướng, không cho con số mang sang robot. Độ trễ trên LIBERO là em giả lập, dù d lấy từ đo thật. Mỗi ô 50 episode nên chênh lệch thành công giữa các cách chưa đủ để khẳng định, cả ở bước ba lẫn bước bốn; chỉ có độ nhảy và thời gian là rõ. Em mới thử một checkpoint và năm tác vụ.</p><p>Có một điểm em chưa giải thích được là bản paper hai ở d bằng 0 trong bài đồ chơi; em có giả thuyết là khi train chỉ một phần bảy mẫu có d bằng 0, nhưng chưa kiểm.</p></div>
-      </section>
-
-      <!-- 16 QUESTIONS -->
-      <section class="slide" aria-label="Slide 17: Câu hỏi và việc tiếp">
-        <div class="kicker">Thảo luận</div>
-        <h2>Em muốn hỏi, và đề xuất bước tiếp</h2>
-        <div class="row grow">
-          <div class="col card teal">
-            <h4>Câu hỏi cho anh/chị</h4>
-            <ul style="font-size:19px;margin-top:8px">
-              <li>Guidance bỏ Jacobian trong LeRobot: cố ý hay lỗi? Có nên báo lên repo?</li>
-              <li>Nhóm có robot (SO-100/101) để em thử <span class="mono">lerobot-rollout</span> với RTC không?</li>
-              <li>Nhóm cần RTC lúc suy luận (không train lại) hay chấp nhận fine-tune để dùng RTC lúc huấn luyện?</li>
-            </ul>
-          </div>
-          <div class="col card">
-            <h4>Đề xuất bước tiếp</h4>
-            <ul style="font-size:19px;margin-top:8px">
-              <li>Thêm tác vụ động hoặc nhiễu hành động để LIBERO lộ khác biệt rõ hơn.</li>
-              <li>Thêm 2–3 seed ở d = 15 (khoảng 1 giờ mỗi seed) để kiểm chênh thành công.</li>
-              <li>Nếu patch ổn: đề xuất SmolVLA training-time RTC lên LeRobot.</li>
-            </ul>
-          </div>
-        </div>
-        <div class="pn">17</div>
-        <div class="notes"><p>Em có ba câu hỏi. Về chỗ Jacobian trong LeRobot: cố ý hay lỗi. Về việc nhóm có robot để thử RTC thật không. Và nhóm muốn hướng nào: RTC lúc suy luận không cần train lại, hay chấp nhận fine-tune để chạy không tốn thêm thời gian như em vừa thử.</p><p>Bước tiếp em đề xuất: thêm seed để kiểm chênh lệch thành công, làm thí nghiệm LIBERO khó hơn để thấy khác biệt, và vì patch đã chạy được và cho kết quả khớp paper hai, nếu anh chị đồng ý em có thể đề xuất nó lên LeRobot.</p><p>Tóm lại: em đã hiểu cơ chế bằng thí nghiệm, đo được vấn đề độ trễ trên chính mô hình của mình, áp được cả hai cách RTC và thấy chúng làm chỗ nối mượt hơn rõ rệt. Em cảm ơn ạ.</p></div>
       </section>
 
     </div>

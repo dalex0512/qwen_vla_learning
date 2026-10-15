@@ -255,7 +255,9 @@ td code,p code,li code{overflow-wrap:anywhere}
 .qa{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:10px}
 .qcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card);display:flex;flex-direction:column}
 .qcard .qh{font-weight:700;margin-bottom:4px}
-.qcard p{margin:0 0 8px;flex:1}
+.qcard p{margin:0 0 8px}
+.qcard p.why{font-size:.86rem;color:var(--muted);flex:1;border-left:3px solid var(--line);padding-left:8px}
+p.muted{color:var(--muted);margin-top:-4px}
 .qcard textarea{width:100%;min-height:84px;resize:vertical;font:inherit;font-size:.92rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
 footer.pg{max-width:1200px;margin:30px auto;padding:0 16px;color:var(--muted);font-size:.85rem}
 @media print{nav.toc,#themeBtn,a.home,#printBtn,#clearBtn,footer.pg{display:none!important}.layout{display:block}.qcard textarea{border:1px solid #999;min-height:90px}}
@@ -267,7 +269,7 @@ footer.pg{max-width:1200px;margin:30px auto;padding:0 16px;color:var(--muted);fo
   <a class="home" href="../../index.html" target="_top">← Trang chủ</a>
   <button id="themeBtn" type="button">◐ Sáng / Tối</button>
   <h1>RTC · Ghi chú trao đổi với mentor</h1>
-  <p>Mang vào buổi trao đổi: RTC là gì, áp dụng được gì vào việc của nhóm, mình đã làm được gì, và các câu hỏi để biết nhóm đang dùng RTC thế nào. Mỗi câu hỏi có ô ghi chú, tự lưu trong trình duyệt.</p>
+  <p>Mang vào buổi trao đổi: RTC là gì, áp dụng được gì vào việc của nhóm, mình đã làm được gì, và các câu hỏi để biết nhóm đang dùng RTC thế nào. 12 câu hỏi đã soát lại theo kết quả thực hành, mỗi câu có ô ghi chú, tự lưu trong trình duyệt.</p>
   <div class="meta"><span class="pill">Một trang, đọc trong 5 phút</span><span class="pill">Có ô ghi câu trả lời</span><span class="pill">Nút In để mang giấy</span></div>
 </div></header>
 
@@ -282,6 +284,7 @@ footer.pg{max-width:1200px;margin:30px auto;padding:0 16px;color:var(--muted);fo
   <b style="margin-top:10px">Tài liệu liên quan</b>
   <a href="RTC%20%C2%B7%20Th%E1%BB%B1c%20h%C3%A0nh%20ch%E1%BA%A1y%20th%E1%BB%AD.html"><i class="d k"></i>Thực hành chạy thử</a>
   <a href="RTC%20%C2%B7%20Slide%20th%E1%BB%B1c%20h%C3%A0nh.html"><i class="d k"></i>Slide thực hành</a>
+  <a href="RTC%20%C2%B7%20B%C3%A1o%20c%C3%A1o%20th%E1%BB%B1c%20h%C3%A0nh.html"><i class="d k"></i>Báo cáo thực hành</a>
   <a href="../%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20%26%20slide/RTC%20%C2%B7%20%C4%90%E1%BB%8Dc%20hi%E1%BB%83u%20%26%20%C3%A1p%20d%E1%BB%A5ng.html"><i class="d k"></i>Đọc hiểu &amp; áp dụng</a>
 </nav>
 
@@ -325,22 +328,33 @@ footer.pg{max-width:1200px;margin:30px auto;padding:0 16px;color:var(--muted);fo
 
 <section class="sec" id="ask">
 <h2>4. Câu hỏi cho mentor <span class="lv m">Phải nắm</span></h2>
-<p>Ba câu đánh dấu ★ là quan trọng nhất: biết chúng thì mới chỉnh phần thực hành và slide cho khớp với cái nhóm đang dùng.</p>
-<div class="qa">
-<div class="qcard"><div class="qh">★ 1. Biến thể và codebase</div><p>Nhóm dùng RTC lúc suy luận hay lúc huấn luyện, hay cả hai? Trên mô hình nào, codebase nào (LeRobot, openpi, code riêng)?</p><textarea data-k="q1" placeholder="Ghi câu trả lời…"></textarea></div>
-<div class="qcard"><div class="qh">★ 2. Con số vận hành</div><p>Robot chạy bao nhiêu Hz? Độ trễ đầu-cuối khoảng bao nhiêu? H, s, d, β đang dùng? d được đo động hay đặt cố định?</p><textarea data-k="q2" placeholder="Ghi câu trả lời…"></textarea></div>
-<div class="qcard"><div class="qh">3. Kiểu hành động</div><p>Hành động tuyệt đối hay tương đối/delta? Nếu tương đối, phần chunk cũ được đổi gốc ở đâu?</p><textarea data-k="q3" placeholder="Ghi câu trả lời…"></textarea></div>
-<div class="qcard"><div class="qh">4. Guidance và chi phí</div><p>Có backward qua mô hình như paper không, hay giống LeRobot (bỏ Jacobian)? Đã đo chi phí thời gian chưa? Anh/chị nghĩ chỗ bỏ Jacobian của LeRobot là cố ý hay lỗi?</p><textarea data-k="q4" placeholder="Ghi câu trả lời…"></textarea></div>
-<div class="qcard"><div class="qh">5. Nếu dùng RTC lúc huấn luyện</div><p>Độ trễ khi train lấy theo phân phối nào, max bao nhiêu? Có thấy chất lượng giảm khi d = 0 không?</p><textarea data-k="q5" placeholder="Ghi câu trả lời…"></textarea></div>
-<div class="qcard"><div class="qh">6. Đánh giá</div><p>Nhóm đánh giá RTC trên robot thật hay mô phỏng, đo chỉ số gì? Hiện còn gặp vấn đề gì (giật, khựng, phản ứng chậm)?</p><textarea data-k="q6" placeholder="Ghi câu trả lời…"></textarea></div>
-<div class="qcard"><div class="qh">★ 7. Việc của mình</div><p>Nhóm muốn mình làm gì tiếp: đọc và hiểu code của nhóm, chạy thử nghiệm, hay cài cho mô hình mới?</p><textarea data-k="q7" placeholder="Ghi câu trả lời…"></textarea></div>
+<p>12 câu, chia 4 nhóm theo thứ tự nên hỏi. Mỗi câu có dòng <b>Vì sao hỏi</b> nhắc số liệu của mình, để đưa ra nếu mentor hỏi lại. Nếu chỉ có 10 phút thì hỏi 5 câu ★ trước.</p>
+<h3>A. Nhóm đang dùng RTC thế nào</h3><p class="muted">Hỏi trước để biết bối cảnh; mọi câu sau phụ thuộc vào đây.</p><div class="qa">
+<div class="qcard"><div class="qh">★ 1. Biến thể, mô hình, codebase</div><p>Nhóm dùng RTC lúc suy luận (paper ①, LeRobot gọi là <code>mode="guided"</code>), lúc huấn luyện (paper ②, <code>mode="trained"</code>) hay cả hai? Trên mô hình nào, chạy bằng <code>lerobot-rollout --inference.type=rtc</code>, openpi hay code riêng? Nếu là LeRobot thì bản nào?</p><p class="why"><b>Vì sao hỏi:</b> Mình làm trên LeRobot commit b9cb121c + SmolVLA. Nếu nhóm dùng Pi0.5 hay code khác, phần thực hành cần chuyển sang đó.</p><textarea data-k="q1" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">★ 2. Con số vận hành và cách tính d</div><p>Robot chạy bao nhiêu Hz? H, s, execution_horizon, β, lịch (LINEAR hay EXP) là bao nhiêu? d được tính lúc chạy hay đặt cố định? Độ trễ tính những gì: chỉ GPU, hay cả camera, tiền xử lý, mạng?</p><p class="why"><b>Vì sao hỏi:</b> <code>lerobot-rollout</code> lấy d = ceil(độ trễ <b>lớn nhất</b> trong 100 lần gần nhất ÷ thời gian một bước) và hỏi chunk mới khi hàng đợi ≤ 30 hành động. Mình dùng p95 cố định (d = 15 ở 20 Hz) và chỉ đo thời gian GPU.</p><textarea data-k="q2" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">3. Kiểu hành động</div><p>Hành động tuyệt đối hay tương đối (delta)? Nếu tương đối, nhóm có đổi gốc đuôi chunk cũ trước khi đưa vào RTC không?</p><p class="why"><b>Vì sao hỏi:</b> LIBERO dùng hành động tuyệt đối nên mình chưa đụng tới. LeRobot có <code>reanchor_relative_rtc_prefix</code> cho trường hợp tương đối; quên bước này thì RTC kéo về sai chỗ.</p><textarea data-k="q3" placeholder="Ghi câu trả lời…"></textarea></div>
+</div>
+<h3>B. Phương pháp: những chỗ mình chưa chắc</h3><p class="muted">Mỗi câu kèm số mình đo được để mentor thấy mình hỏi từ thí nghiệm, không phải hỏi suông.</p><div class="qa">
+<div class="qcard"><div class="qh">★ 4. Jacobian trong guidance</div><p>LeRobot không lấy gradient qua mô hình như paper ① (hướng sửa đúng bằng sai số, coi Jacobian là đơn vị). Đây là xấp xỉ cố ý để nhanh hay là lỗi? Nhóm đã so chất lượng hai cách chưa? Nhóm có nên giữ cách của LeRobot không?</p><p class="why"><b>Vì sao hỏi:</b> Bản đúng paper chậm gần gấp đôi (1.011 ms so với 613 ms); hướng sửa của hai cách chỉ giống nhau một phần (cos 0,58–0,64). Mình chưa đo được bản nào cho kết quả tốt hơn.</p><textarea data-k="q4" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">5. execution_horizon so với H − s</div><p>Paper để vùng kéo mềm dài H − s. LeRobot mặc định execution_horizon = 10 và chỉ giữ cứng min(d, execution_horizon) hành động đầu. Nhóm đặt execution_horizon theo quy tắc nào? Có lúc nào nó nhỏ hơn d không?</p><p class="why"><b>Vì sao hỏi:</b> Lần đầu mình để 10 trong khi d = 15, nên vài hành động đã chạy không được kéo. Sau đó mình dùng min(d + 10, H − s). Rollout của LeRobot còn đệm đuôi chunk cũ bằng cách lặp hành động cuối cho đủ execution_horizon.</p><textarea data-k="q5" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">6. Chọn β và lịch trọng số</div><p>Nhóm có chỉnh β và lịch (LINEAR / EXP) không, hay để mặc định? Dựa vào chỉ số nào để chọn: độ giật, thành công, hay khả năng phản ứng khi cảnh thay đổi?</p><p class="why"><b>Vì sao hỏi:</b> Bài đồ chơi: RTC kéo cứng gần như không đâm ở d nhỏ, còn kéo mềm thì mượt hơn nhưng kém hơn khi d lớn. Đây là đánh đổi giữa mượt và phản ứng nhanh.</p><textarea data-k="q6" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">7. RTC lúc huấn luyện</div><p>Khi train, độ trễ được lấy theo phân phối nào, tối đa bao nhiêu? Khi chạy, độ trễ thật có hay vượt mức đã train không? (LeRobot bỏ chunk nếu độ trễ đo được lớn hơn độ trễ đã dùng để điều kiện.) Có thấy chất lượng giảm khi d = 0 không?</p><p class="why"><b>Vì sao hỏi:</b> Mình lấy d đều trong {0..20}. Trên SmolVLA: mượt ngang bản suy luận (độ nhảy 0,88 so với 0,90) mà không tốn thêm thời gian (455 ms so với 465 ms). Bài đồ chơi: bản huấn luyện chỉ đạt 67% ở d = 0, mình chưa giải thích được.</p><textarea data-k="q7" placeholder="Ghi câu trả lời…"></textarea></div>
+</div>
+<h3>C. Đánh giá: mình đo vậy đã đúng hướng chưa</h3><p class="muted">Đây là chỗ dễ được góp ý nhất; hỏi để biết nên làm tiếp thế nào.</p><div class="qa">
+<div class="qcard"><div class="qh">★ 8. Cách đánh giá của mình có hợp lý không</div><p>Mình giả lập độ trễ trên LIBERO-Object, mỗi ô 50 episode, đo thành công và độ nhảy ở chỗ nối. Như vậy có đủ để kết luận không? Nhóm đánh giá RTC trên robot thật hay mô phỏng, đo chỉ số gì?</p><p class="why"><b>Vì sao hỏi:</b> Độ trễ làm nối ngây thơ tụt từ 90% xuống 56–62%. RTC giảm độ nhảy khoảng một nửa và tăng thành công 10–12 điểm, nhưng p ≈ 0,10. Ở Lab 8, cả ba cấu hình đều 35/50. Benchmark tĩnh khó làm lộ khác biệt.</p><textarea data-k="q8" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">9. Chỉ số độ mượt</div><p>"Độ nhảy" là chỉ số mình tự đặt (bước nhảy lớn nhất giữa hai hành động liền nhau, 6 chiều tư thế, đã chuẩn hóa). Nhóm có dùng chỉ số chuẩn nào không, ví dụ jerk, gia tốc, hay đo trên khớp robot?</p><p class="why"><b>Vì sao hỏi:</b> Muốn số của mình so được với số của nhóm.</p><textarea data-k="q9" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">10. Cách so khi fine-tune</div><p>Mình fine-tune 4.000 bước, chỉ action expert, kèm một bản đối chứng train y hệt nhưng không có prefix. Cách đối chứng này có đúng không? Cần train bao lâu thì so mới có ý nghĩa?</p><p class="why"><b>Vì sao hỏi:</b> Loss cuối 0,233 so với 0,258 không so trực tiếp được, vì bản có prefix bỏ phần đầu khỏi loss.</p><textarea data-k="q10" placeholder="Ghi câu trả lời…"></textarea></div>
+</div>
+<h3>D. Việc tiếp theo của mình</h3><p class="muted">Hỏi cuối buổi để rời đi với việc cụ thể.</p><div class="qa">
+<div class="qcard"><div class="qh">★ 11. Nhóm muốn mình làm gì tiếp</div><p>Chọn hướng nào: (a) chạy thêm seed / benchmark khó hơn để kết luận chắc, (b) chạy trên robot thật, (c) chuyển sang mô hình và code của nhóm, (d) hoàn thiện patch RTC lúc huấn luyện cho SmolVLA rồi gửi lên LeRobot?</p><p class="why"><b>Vì sao hỏi:</b> Thêm 2–3 seed ở d = 15 tốn khoảng 1 giờ mỗi seed trên máy mình.</p><textarea data-k="q11" placeholder="Ghi câu trả lời…"></textarea></div>
+<div class="qcard"><div class="qh">12. Tài nguyên và quy trình</div><p>Mình có được dùng GPU hay robot của nhóm không? Code (phần lớn do Claude viết, mình đã chạy và kiểm) có cần ai review trước khi đưa vào repo nhóm không? Chuyện Jacobian nên hỏi nội bộ trước hay báo thẳng lên LeRobot?</p><p class="why"><b>Vì sao hỏi:</b> Làm rõ để không làm sai quy trình của nhóm.</p><textarea data-k="q12" placeholder="Ghi câu trả lời…"></textarea></div>
 </div>
 </section>
 
 <section class="sec" id="after">
 <h2>5. Sau buổi trao đổi <span class="lv s">Nên biết</span></h2>
 <div class="chk" id="chk">
-  <label><input type="checkbox" data-k="a1"><span>Ghi lại câu trả lời ★1, ★2, ★7 ngay sau buổi (ô ghi chú ở trên tự lưu).</span></label>
+  <label><input type="checkbox" data-k="a1"><span>Ghi lại câu trả lời các câu ★ (1, 2, 4, 8, 11) ngay sau buổi (ô ghi chú ở trên tự lưu).</span></label>
   <label><input type="checkbox" data-k="a2"><span>Gửi Claude các câu trả lời để chỉnh phần thực hành và slide cho khớp cách nhóm dùng.</span></label>
   <label><input type="checkbox" data-k="a3"><span>Nếu được cấp code của nhóm: tìm chỗ gọi mô hình, chỗ tính d, và chỗ nối chunk.</span></label>
   <label><input type="checkbox" data-k="a4"><span>Hỏi lại mentor về Jacobian nếu chưa có câu trả lời; nếu là lỗi, cân nhắc báo lên LeRobot.</span></label>
