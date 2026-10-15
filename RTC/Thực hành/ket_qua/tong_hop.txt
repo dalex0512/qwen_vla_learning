@@ -1,0 +1,13 @@
+mode        d   s  thành công        KTC 95%      k/n       seed  giật TB  ms/lần  lượt
+naive       0  10       90.0%       [79; 96]  45/50    1000,2000    1.673     439  naive_d0_s1000 naive_d0_s2000
+rtc         0  10       92.0%       [81; 97]  46/50    1000,2000    0.881     611  rtc_d0_s1000 rtc_d0_s2000
+naive      15  15       56.0%       [42; 69]  28/50    1000,2000    1.934     449  naive_d15_s1000 naive_d15_s2000
+rtc        15  15       66.0%       [52; 78]  33/50    1000,2000    0.954     538  rtc_d15_s1000 rtc_d15_s2000
+naive      23  23       62.0%       [48; 74]  31/50    1000,2000    1.595     541  naive_d23_s1000 naive_d23_s2000
+rtc        23  23       74.0%       [60; 84]  37/50    1000,2000    0.914     633  rtc_d23_s1000 rtc_d23_s2000
+naive*      4  10      100.0%      [34; 100]   2/2          1000    1.087     519  latency_naive
+rtc*        4  10      100.0%      [34; 100]   2/2          1000    0.801     613  latency_rtc
+rtc_full*   4  10      100.0%      [34; 100]   2/2          1000    0.775    1011  latency_rtc_full
+
+* = lượt đo độ trễ (Lab 6), ít episode, không dùng để so thành công.
+KTC 95%: khoảng tin cậy Wilson của tỉ lệ thành công. Hai cấu hình có khoảng chồng nhau nhiều thì chưa kết luận được bên nào hơn.

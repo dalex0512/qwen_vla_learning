@@ -343,6 +343,15 @@ cp -r "/mnt/d/VLA Modeling/RTC/Thực hành/lab/." ~/rtc_lab/   # chép vào ổ
 cd ~/rtc_lab
 pip install matplotlib                             # nếu chưa có
 python -c "import lerobot, torch; print(lerobot.__file__, torch.__version__)"</code></pre>
+<h3>Muốn lấy kết quả trước, hiểu sau?</h3>
+<p>Được. Cách đỡ chờ nhất: <b>cho phần GPU chạy nền trước</b> (lâu nhất), trong lúc đó chạy phần CPU, rồi đọc từng bước bên dưới với kết quả của chính bạn.</p>
+<pre><code>cd ~/lerobot
+nohup bash ~/rtc_lab/chay_het_gpu.sh > ~/rtc_lab_gpu.log 2>&1 &    # Lab 6 → kiểm tra → Lab 7, 3–4 giờ
+tail -f ~/rtc_lab_gpu.log                                          # xem tiến độ; Ctrl+C chỉ thoát xem
+
+cd ~/rtc_lab && bash chay_het_cpu.sh                               # Lab 0–4, ~5 phút</code></pre>
+<p><code>chay_het_gpu.sh</code> tự đo độ trễ, tự tính d, chạy kiểm tra cài đặt (dừng nếu có mục KHÔNG ĐẠT), rồi chạy naive và rtc ở d = 0, d và 1,5 × d với 2 seed, cuối cùng in bảng tổng hợp vào <code>outputs/rtc_lab/tong_hop.txt</code>. Chạy lại lệnh thì lượt nào đã xong sẽ được bỏ qua. Lab 5 và Lab 8 vẫn chạy tay (Lab 8 cần áp patch và fine-tune).</p>
+<div class="co warn"><b class="t">Lưu ý</b>Phần CPU tốn 5 phút nên chạy tay theo từng bước cũng không mất thêm bao nhiêu thời gian chờ. Mentor sẽ hỏi "vì sao"; các bước "đoán trước" là chỗ luyện trả lời.</div>
 <h3>Cách làm phần A: từng bước nhỏ</h3>
 <p>Mỗi lab có các <b>Bước</b> nhỏ: đọc "Để hiểu", gõ đoạn code, <b>đoán trước</b> kết quả, chạy, rồi mới mở "Kết quả mình chạy" và "Giải thích". Chạy cả file <code>labX_….py</code> là bước cuối của mỗi lab, để có hình và bảng đầy đủ.</p>
 <p>Dùng <b>IPython</b> cho dễ dán nhiều dòng một lúc, và chạy <b>tất cả các bước trong cùng một phiên</b>, theo thứ tự, vì bước sau dùng biến của bước trước:</p>
@@ -366,7 +375,8 @@ O, C = make_dataset(n_episodes=512, seed=0)  # cần cho Bước 0.2–0.3</code
 <tr><td><code>kiem_tra_cai_dat.py</code></td><td>5 phép kiểm RTC đã cài đúng trên SmolVLA thật (K1–K4), chỉ cần checkpoint + dataset trong cache</td></tr>
 <tr><td><code>tong_hop_libero.py</code></td><td>Gom các lượt eval thành một bảng, gộp các seed, kèm khoảng tin cậy 95%</td></tr>
 <tr><td><code>smolvla_training_rtc.patch</code></td><td>Patch cho SmolVLA học với prefix sạch (paper ②), áp lên commit b9cb121c</td></tr>
-<tr><td><code>results/</code></td><td>Kết quả mình đã chạy (hình, JSON, <code>all_output.txt</code>) để bạn so</td></tr>
+<tr><td><code>results_mau/</code></td><td>Kết quả mình đã chạy (hình, JSON, <code>all_output.txt</code>) để bạn so. Lab của bạn ghi vào <code>results/</code> riêng</td></tr>
+<tr><td><code>chay_het_cpu.sh</code>, <code>chay_het_gpu.sh</code></td><td>Chạy hết phần A (5 phút) hoặc phần B (Lab 6 → kiểm tra → Lab 7, 3–4 giờ) một lượt</td></tr>
 </tbody></table></div>
 <div class="co note"><b class="t">Phiên bản</b>Mọi đường dẫn và tên hàm đã kiểm trên LeRobot commit <code>b9cb121c</code> (bản bạn cài ngày 09/10). Phần RTC giống hệt bản mới nhất mình xem (<code>ae2b57f</code>, 13/10), chỉ khác một dòng <code>assert</code> thành <code>raise</code>. Nếu bạn <code>git pull</code>, đường dẫn runtime robot đổi từ <code>rollout/inference/rtc.py</code> sang <code>inference/rtc.py</code>.</div>
 <div class="co warn"><b class="t">Số của bạn có thể lệch chút</b>Mình chạy phần A trên CPU Linux, PyTorch 2.11. Cùng seed nhưng khác CPU thì phép cộng số thực có thể lệch rất nhỏ, nên tỉ lệ có thể khác vài phần trăm. Xu hướng giữa các cách mới là thứ cần so.</div>
@@ -1102,11 +1112,15 @@ python ~/rtc_lab/tong_hop_libero.py outputs/rtc_lab</code></pre>
     s, d = self.lab.s, self.lab.delay
     if self.chunk is None:                                   # chunk đầu tiên: đồng bộ
         self.chunk, self.i = self._predict(batch), 0
-    if self.pending is None and self.i == s:                 # đến lúc hỏi chunk mới
-        leftover = self.chunk[:, s:]                         # phần CHƯA chạy của chunk cũ
-        self.pending, self.wait = self._predict(batch, leftover), d
     if self.pending is not None and self.wait == 0:          # chunk mới "về" sau d bước
         self.chunk, self.i, self.pending = self.pending, d, None
+    if self.pending is None and self.i &gt;= s:                 # đã chạy đủ s hành động: hỏi chunk mới
+        leftover = self.chunk[:, s:]                         # phần CHƯA chạy của chunk cũ
+        self.pending, self.wait = self._predict(batch, leftover), d
+        if d == 0:                                           # không trễ: dùng ngay
+            self.chunk, self.i, self.pending = self.pending, 0, None
+    if self.i &gt;= self.chunk.shape[1]:
+        raise RuntimeError(f"hết chunk (i={self.i}); kiểm tra d &lt;= s &lt;= H - d")
     action = self.chunk[:, self.i]
     self.i += 1
     if self.pending is not None:
@@ -1153,6 +1167,11 @@ python ~/rtc_lab/tong_hop_libero.py outputs/rtc_lab</code></pre>
 <h2>11. Lab 8: RTC lúc huấn luyện cho SmolVLA <span class="lv s">Nên biết</span></h2>
 <h3>Nền cần cho bài này</h3>
 <p>Paper ②: lúc huấn luyện, giả lập độ trễ bằng cách giữ d hành động đầu của chunk thật ở dạng sạch, gắn cho chúng mức nhiễu "sạch", và không tính loss ở đó. Mô hình học "biết d bước đầu, đoán phần sau". Lúc chạy chỉ cần ghi đè, không cần backward. Cần 2 thứ mà SmolVLA hiện chưa có: (1) mô hình nhận được <b>thời gian theo từng token</b>, (2) loss có mặt nạ. LeRobot đã làm việc này cho Pi0.5; patch dưới làm tương tự cho SmolVLA.</p>
+<div class="co note"><b class="t">Chạy hết Lab 8 một lượt</b>Script <code>chay_lab8.sh</code> làm toàn bộ: áp patch (bỏ qua nếu đã áp), chạy thử 50 bước, fine-tune có prefix và đối chứng (mỗi lượt 4.000 bước), kiểm tra K4, eval 3 cách ở d = 15 với 2 seed, rồi in bảng vào <code>outputs/rtc_lab8/tong_hop_lab8.txt</code>. Khoảng 3,5–4 giờ, chạy lại được.
+<pre><code>cd ~/lerobot
+nohup bash ~/rtc_lab/chay_lab8.sh > ~/rtc_lab8.log 2>&1 &
+tail -f ~/rtc_lab8.log</code></pre>
+Các bước dưới đây giải thích từng phần script làm.</div>
 <h3>Làm từng bước</h3>
 <div class="stepbox" id="b8-1">
 <div class="sh"><span class="sn">Bước 8.1</span>Đọc patch trước khi áp</div>
@@ -1258,6 +1277,7 @@ python ~/rtc_lab/tong_hop_libero.py outputs/rtc_lab</code></pre>
 <ol class="steps">
 <li><b>Đo độ trễ, tính d</b> (Lab 6). Robot thật: đo đầu-cuối, lấy giá trị lớn (p95 hoặc max của vài lần gần nhất).</li>
 <li><b>Chọn s</b> với d ≤ s ≤ H − d. s nhỏ phản ứng nhanh nhưng gọi mô hình nhiều hơn (Lab 4b).</li>
+<li><b>Đặt <code>execution_horizon</code> ≥ d.</b> LeRobot tính <code>min(d, execution_horizon)</code> ô đầu là đóng băng; nếu d = 15 mà để mặc định 10 thì 5 ô đã chạy sẽ không được kéo. <code>chay_het_gpu.sh</code> dùng d + 10 (không quá H − s).</li>
 <li><b>Bắt đầu bằng RTC lúc suy luận</b>, không cần train lại: <code>RTCConfig(enabled=True, prefix_attention_schedule=EXP, max_guidance_weight=10, execution_horizon=10)</code>, gọi <code>predict_action_chunk(batch, inference_delay=d, prev_chunk_left_over=đuôi chunk cũ)</code>. Trên robot: <code>lerobot-rollout --inference.type=rtc</code> làm sẵn cả vòng.</li>
 <li><b>Chỉnh</b>: phản ứng chậm thì giảm <code>execution_horizon</code> hoặc s; còn giật thì tăng <code>execution_horizon</code> (Lab 4a).</li>
 <li><b>Chuyển sang RTC lúc huấn luyện</b> khi phần khử nhiễu thêm ra là đáng kể, hoặc d lớn và guidance không giữ nổi. Cần fine-tune với max ≥ d lớn nhất sẽ gặp (Lab 8).</li>

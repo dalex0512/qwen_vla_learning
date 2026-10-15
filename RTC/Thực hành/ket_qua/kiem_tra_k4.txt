@@ -1,0 +1,19 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING:huggingface_hub.utils._http:Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading  HuggingFaceTB/SmolVLM2-500M-Video-Instruct weights ...
+Loading weights:   0%|          | 0/489 [00:00<?, ?it/s]Loading weights:  10%|█         | 50/489 [00:00<00:00, 465.28it/s]Loading weights:  32%|███▏      | 158/489 [00:00<00:00, 812.92it/s]Loading weights:  53%|█████▎    | 258/489 [00:00<00:00, 809.97it/s]Loading weights:  91%|█████████ | 445/489 [00:00<00:00, 1145.16it/s]Loading weights: 100%|██████████| 489/489 [00:00<00:00, 1097.59it/s]
+Reducing the number of VLM layers to 16 ...
+Loading weights from local directory
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1559.37it/s]
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1116.55it/s]
+
+=== Kiểm tra cài đặt RTC ===
+[THÔNG TIN] K0 nhiễu nền (chạy lại y hệt)        lệch lớn nhất 0.00e+00 (chỉ để tham khảo)
+[ĐẠT      ] K1 β ≈ 0 gần như không đổi gì        lệch 1.05e-01, so với tác động của β = 10 là 2.00e+00 (5.3%)
+[ĐẠT      ] K2 phần đầu bám chunk cũ             lệch 15 ô đầu: không RTC 0.270 → RTC 0.008
+[ĐẠT      ] K3a LeRobot: correction == err       10 bước có guidance
+[ĐẠT      ] K3b đúng paper: correction ≠ err     cos ở bước 2 = 0.583; lệch 15 ô đầu 0.042
+[ĐẠT      ] K4 trained: prefix trùng chunk cũ    lệch 0.00e+00; 1163 ms
+
+Thời gian 1 lần gọi (lần đo đơn, chỉ tham khảo): không RTC 550 ms · RTC LeRobot 771 ms · RTC đúng paper 1039 ms

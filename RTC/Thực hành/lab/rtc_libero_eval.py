@@ -128,11 +128,15 @@ class DelayedChunk:
         s, d = self.lab.s, self.lab.delay
         if self.chunk is None:                                   # chunk đầu tiên: đồng bộ
             self.chunk, self.i = self._predict(batch), 0
-        if self.pending is None and self.i == s:                 # đến lúc hỏi chunk mới
-            leftover = self.chunk[:, s:]                         # phần CHƯA chạy của chunk cũ
-            self.pending, self.wait = self._predict(batch, leftover), d
         if self.pending is not None and self.wait == 0:          # chunk mới "về" sau d bước
             self.chunk, self.i, self.pending = self.pending, d, None
+        if self.pending is None and self.i >= s:                 # đã chạy đủ s hành động: hỏi chunk mới
+            leftover = self.chunk[:, s:]                         # phần CHƯA chạy của chunk cũ
+            self.pending, self.wait = self._predict(batch, leftover), d
+            if d == 0:                                           # không trễ: dùng ngay
+                self.chunk, self.i, self.pending = self.pending, 0, None
+        if self.i >= self.chunk.shape[1]:
+            raise RuntimeError(f"hết chunk (i={self.i}); kiểm tra d <= s <= H - d")
         action = self.chunk[:, self.i]
         self.i += 1
         if self.pending is not None:

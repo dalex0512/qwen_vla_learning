@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RTC · Báo cáo thực hành</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+(function(){ try { var t = localStorage.getItem('vla-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(e){} })();
+</script>
+<style>
+:root{
+  --bg:#f6faf9; --card:#ffffff; --text:#1c2a28; --muted:#5a6b68; --line:#dbe6e3;
+  --pri:#00897B; --pri-soft:#e0f2f1; --pri-strong:#00695c;
+  --accent:#e65100; --accent-soft:#fff3e0;
+  --blue:#1e6fd9; --blue-soft:#e4eefc;
+  --red:#c62828; --red-soft:#fdecec;
+  --warn:#7a5d00; --warn-bg:#fff8e1;
+  --code-bg:#eef4f3; --grey:#8a9895;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+    --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+    --accent:#ff8a50; --accent-soft:#3a2214;
+    --blue:#6ea8ff; --blue-soft:#162a45;
+    --red:#ef7a7a; --red-soft:#3a1b1b;
+    --warn:#ffd56b; --warn-bg:#2c2510;
+    --code-bg:#1b2b29; --grey:#7f908c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --card:#152120; --text:#e2ecea; --muted:#9db0ac; --line:#29403c;
+  --pri:#26a69a; --pri-soft:#123a36; --pri-strong:#64d8cb;
+  --accent:#ff8a50; --accent-soft:#3a2214;
+  --blue:#6ea8ff; --blue-soft:#162a45;
+  --red:#ef7a7a; --red-soft:#3a1b1b;
+  --warn:#ffd56b; --warn-bg:#2c2510;
+  --code-bg:#1b2b29; --grey:#7f908c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16.5px;line-height:1.7}
+code,pre,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+a{color:var(--pri)}
+h1,h2,h3,h4{line-height:1.3}
+h2{font-size:1.6rem;margin:0 0 .6em;padding-top:.2em;color:var(--pri-strong)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em}
+h4{font-size:1.02rem;margin:1.3em 0 .4em}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--pri),#00574e);color:#fff;padding:34px 16px 30px}
+header.top .wrap{max-width:1180px;margin:0 auto;position:relative}
+header.top h1{margin:0 0 6px;font-size:2.1rem}
+header.top p{margin:4px 0;opacity:.92}
+header.top .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+header.top .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:99px;font-size:.85rem}
+#themeBtn{position:absolute;right:0;top:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+
+/* layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:24px 16px 80px}
+nav.toc{position:sticky;top:14px;align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:.88rem;border-right:1px solid var(--line);padding-right:12px}
+nav.toc b{display:block;margin-bottom:6px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:6px;border-left:3px solid transparent}
+nav.toc a.sub{padding-left:20px;font-size:.84rem}
+nav.toc a:hover{color:var(--text);background:var(--pri-soft)}
+nav.toc a.on{color:var(--pri-strong);border-left-color:var(--pri);background:var(--pri-soft);font-weight:600}
+main{min-width:0}
+section.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin-bottom:16px}
+  section.sec{padding:20px 16px}
+  header.top h1{font-size:1.6rem}
+  #themeBtn{position:static;margin-bottom:10px}
+}
+
+/* paper viết / nghĩa là */
+.pv{display:grid;grid-template-columns:1fr 1.35fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.pv>div{padding:12px 16px}
+.pv .p{background:var(--code-bg);font-size:.93rem;color:var(--muted)}
+.pv .n{border-left:4px solid var(--pri)}
+.pv .lab{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pv .p .lab{color:var(--grey)}
+.pv .n .lab{color:var(--pri)}
+@media (max-width:700px){.pv{grid-template-columns:1fr}.pv .n{border-left:0;border-top:4px solid var(--pri)}}
+
+/* callouts */
+.co{border-radius:12px;padding:12px 16px;margin:14px 0;border:1px solid var(--line)}
+.co.note{background:var(--pri-soft);border-color:transparent}
+.co.warn{background:var(--warn-bg);border-color:transparent}
+.co.warn b.t{color:var(--warn)}
+.co.link{background:var(--blue-soft);border-color:transparent}
+.co.crit{background:var(--red-soft);border-color:transparent}
+.co b.t{display:block;margin-bottom:2px}
+
+/* tables */
+.tw{overflow-x:auto;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.92rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code-bg);font-weight:600}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:var(--pri-soft);font-weight:600}
+
+/* misc */
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+.tldr div{background:var(--pri-soft);border-radius:12px;padding:12px 14px;font-size:.94rem}
+.tldr div b{display:block;color:var(--pri-strong)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:1.4rem;font-weight:700;color:var(--pri)}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.widget{border:2px solid var(--pri);border-radius:14px;padding:16px;margin:18px 0;background:var(--card)}
+.widget h4{margin:0 0 8px;color:var(--pri)}
+.widget h4::before{content:"▶ Bấm thử · ";font-size:.8rem;letter-spacing:.04em}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0;font-size:.92rem}
+.ctrl input[type=range]{width:180px;accent-color:var(--pri)}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+button.b.o{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+button.b.on{background:var(--accent)}
+.out{background:var(--code-bg);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:8px}
+svg text{font-family:'Be Vietnam Pro',sans-serif}
+.svgbox{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* checklist */
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.chk input{margin-top:6px;accent-color:var(--pri);width:17px;height:17px;flex:none}
+.chk label.done span{color:var(--muted);text-decoration:line-through}
+.prog{height:8px;background:var(--code-bg);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+
+/* steps */
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* details */
+details.q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{color:var(--pri-strong);margin-bottom:6px}
+
+/* arch svg */
+.n{cursor:pointer}
+.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.n.emb rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.frz rect.b0{fill:var(--blue-soft);stroke:var(--blue)}
+.n:hover rect.b0{stroke-width:2.6}
+.n.sel rect.b0{stroke:var(--accent);stroke-width:3}
+.n text{fill:var(--text);font-size:13px;text-anchor:middle;pointer-events:none}
+.n text.s{fill:var(--muted);font-size:11.5px}
+.ar{stroke:var(--grey);stroke-width:1.8;fill:none}
+.lbl{fill:var(--muted);font-size:11.5px}
+#archInfo{min-height:96px}
+
+/* bars */
+.bars .row{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.bars .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .nm small{color:var(--muted)}
+.bars .bb{display:flex;flex-direction:column;gap:2px}
+.bars .bar{height:11px;border-radius:4px;position:relative;min-width:2px}
+.bars .bar span{position:absolute;left:calc(100% + 5px);top:-4px;font-size:.74rem;color:var(--muted);white-space:nowrap}
+.bars .dp{background:var(--grey)}
+.bars .gr{background:var(--pri)}
+@media (max-width:600px){.bars .row{grid-template-columns:120px 1fr}}
+.leg{display:flex;gap:16px;font-size:.84rem;color:var(--muted);flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cells{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.cells span{width:26px;height:26px;border-radius:5px;background:var(--pri-soft);border:1px solid var(--pri);font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cells span.used{background:var(--accent);border-color:var(--accent);color:#fff}
+.cells span.over{background:var(--red);border-color:var(--red);color:#fff}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--pri-soft);color:var(--pri-strong);font-weight:600;margin-right:4px}
+.tag.o{background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);text-align:center;font-size:.85rem;padding:20px}
+
+/* ===== thêm cho trang Qwen-VLA ===== */
+details.more{border:1px dashed var(--line);border-radius:12px;padding:8px 14px;margin:12px 0;background:var(--card)}
+details.more>summary{cursor:pointer;font-weight:600;color:var(--pri);font-size:.93rem}
+details.more>summary::marker{color:var(--pri)}
+details.more[open]>summary{margin-bottom:8px}
+.key{border:2px solid var(--pri);border-radius:14px;padding:12px 18px;margin:14px 0;background:var(--pri-soft)}
+.key b.t{display:block;color:var(--pri-strong);margin-bottom:2px}
+.idea{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:center;border-top:1px solid var(--line);padding:16px 0}
+.idea h3{margin:0 0 6px}
+.idea .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;font-size:.95rem}
+.idea .go{font-size:.85rem;color:var(--muted)}
+.stat div div{border:0;padding:0;border-radius:0}
+.idea svg text{font-size:13px}
+@media (max-width:760px){.idea{grid-template-columns:1fr}}
+.lv{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;vertical-align:middle;margin-left:8px;letter-spacing:.02em;line-height:1.6}
+.lv.m{background:var(--accent);color:#fff}
+.lv.s{background:var(--blue-soft);color:var(--blue)}
+.lv.k{background:var(--code-bg);color:var(--muted);border:1px solid var(--line)}
+nav.toc a i.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+i.d.m{background:var(--accent)} i.d.s{background:var(--blue)} i.d.k{background:var(--grey);opacity:.6}
+.legend-lv{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.9rem;margin:10px 0}
+.basics{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.basics>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.basics>div b.h{display:block;color:var(--pri-strong);margin-bottom:4px}
+.basics>div .why{display:block;margin-top:6px;font-size:.86rem;color:var(--muted)}
+table.t td.keep{color:var(--pri-strong);font-weight:600;white-space:nowrap}
+table.t td.chg{color:var(--accent);font-weight:600;white-space:nowrap}
+table.t td.unk{color:var(--muted);font-weight:600;white-space:nowrap}
+.prompt{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--code-bg);border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:10px;padding:12px 14px;white-space:pre-wrap;line-height:1.6}
+.prompt .v{background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:0 3px}
+.ctrl select,.ctrl input[type=text],.ctrl input[type=number]{font:inherit;font-size:.9rem;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+.grid{display:grid;gap:2px;margin:10px 0;max-width:100%;overflow-x:auto}
+.grid span{width:13px;height:13px;border-radius:2px;background:var(--code-bg);border:1px solid var(--line)}
+.grid span.on{background:var(--pri);border-color:var(--pri)}
+.grid span.pad{background:var(--card);border:1px dashed var(--grey);opacity:.6}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+@media (max-width:760px){.stages{grid-template-columns:1fr 1fr}}
+.stg{border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;background:var(--card);text-align:center;font-size:.85rem}
+.stg.sel{border-color:var(--accent)}
+.stg .nm{font-weight:700;color:var(--pri-strong);font-size:.95rem}
+.stg .blk{border-radius:7px;padding:3px 4px;margin:5px 0;font-size:.8rem;border:1.5px solid}
+.stg .blk.fz{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.stg .blk.tr{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stg .inp{color:var(--muted);font-size:.78rem}
+.stg .ck{margin-top:6px;font-size:.76rem;font-weight:600}
+.arrowrow{display:flex;justify-content:space-around;color:var(--grey);font-size:.8rem;margin:-4px 0 4px}
+.bars .q{background:var(--accent)}
+.bars .g6{background:var(--blue)}
+.delta-up{color:var(--pri-strong);font-weight:600}
+.delta-dn{color:var(--red);font-weight:600}
+.n.vlm rect.b0{fill:var(--accent-soft);stroke:var(--accent)}
+.n.dit rect.b0{fill:var(--pri-soft);stroke:var(--pri)}
+.n.rl rect.b0{stroke-dasharray:5 4}
+.say{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:14px 0}
+.say b.t{display:block;color:var(--accent);margin-bottom:4px}
+
+/* ===== thêm cho trang RTC ===== */
+#smSvg,#btSvg,#sfSvg{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px}
+#smMeth label{font-size:.88rem}
+.out .tw{margin:0 0 8px}
+pre code#torchCode{font-size:.82rem}
+.two>div{min-width:0}
+mjx-container[display="true"]{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0;position:relative}
+mjx-container:not([display]){max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle;position:relative}
+.chk code{word-break:break-all}
+.bars .bb{min-width:0;padding-right:118px}
+@media (max-width:600px){.bars .bb{padding-right:96px}}
+
+header.top a{color:#fff}
+header.top a.home{display:inline-block;margin-bottom:8px;font-size:.9rem;font-weight:600;text-decoration:none;opacity:.9}
+header.top a.home:hover{opacity:1;text-decoration:underline}
+nav.toc b{margin-top:6px}
+td code,p code,li code{overflow-wrap:anywhere}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin:14px 0}
+.fbox{flex:1 1 150px;border:1px solid var(--line);border-left:4px solid #00897B;border-radius:10px;padding:10px 12px;background:var(--card);display:flex;flex-direction:column;gap:4px}
+.fbox b{font-size:.98rem}.fbox span{font-size:.9rem;flex:1}.fbox i{font-size:.82rem;color:#00897B;font-style:normal;font-weight:600}
+.farrow{align-self:center;font-size:1.4rem;color:var(--muted)}
+@media(max-width:700px){.farrow{transform:rotate(90deg);width:100%;text-align:center}}
+.qa{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:10px}
+.qcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card);display:flex;flex-direction:column}
+.qcard .qh{font-weight:700;margin-bottom:4px}
+.qcard p{margin:0 0 8px;flex:1}
+.qcard textarea{width:100%;min-height:84px;resize:vertical;font:inherit;font-size:.92rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+footer.pg{max-width:1200px;margin:30px auto;padding:0 16px;color:var(--muted);font-size:.85rem}
+@media print{nav.toc,#themeBtn,a.home,footer.pg{display:none!important}.layout{display:block}.qcard textarea{border:1px solid #999;min-height:90px}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a class="home" href="../../index.html" target="_top">← Trang chủ</a>
+  <button id="themeBtn" type="button">◐ Sáng / Tối</button>
+  <h1>RTC · Báo cáo thực hành</h1>
+  <p>Mình đã áp dụng hai paper Real-Time Chunking vào SmolVLA trên LeRobot như thế nào: dùng công cụ gì, dữ liệu gì, chạy pipeline nào, train ra sao, và được kết quả gì. Viết để đọc lại khi cần giải thích cho mentor.</p>
+  <div class="meta"><span class="pill">14–15/10/2026</span><span class="pill">LeRobot commit b9cb121c</span><span class="pill">RTX 3050 Laptop 6 GB · WSL2</span><span class="pill">Mọi số liệu là số đã chạy thật</span></div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Mục lục</b>
+  <a href="#tomtat"><i class="d m"></i>1. Tóm tắt</a>
+  <a href="#muctieu"><i class="d m"></i>2. Mục tiêu</a>
+  <a href="#bando"><i class="d m"></i>3. Bản đồ công việc</a>
+  <a href="#moitruong"><i class="d s"></i>4. Môi trường, công cụ</a>
+  <a href="#mohinh"><i class="d m"></i>5. Mô hình SmolVLA</a>
+  <a href="#dulieu"><i class="d m"></i>6. Dữ liệu</a>
+  <a href="#phuongphap"><i class="d m"></i>7. Phương pháp đã áp dụng</a>
+  <a href="#p1"><i class="d m"></i>8. Pipeline A · đồ chơi</a>
+  <a href="#p2"><i class="d m"></i>9. Pipeline B · đo độ trễ, kiểm tra</a>
+  <a href="#p3"><i class="d m"></i>10. Pipeline C · eval có độ trễ</a>
+  <a href="#p4"><i class="d m"></i>11. Pipeline D · train có prefix</a>
+  <a href="#ketqua"><i class="d m"></i>12. Kết quả</a>
+  <a href="#rutra"><i class="d m"></i>13. Áp dụng được gì</a>
+  <a href="#suco"><i class="d s"></i>14. Sự cố và cách sửa</a>
+  <a href="#hanche"><i class="d s"></i>15. Hạn chế, bước tiếp</a>
+  <a href="#phuluc"><i class="d k"></i>16. Phụ lục: file, lệnh, thuật ngữ</a>
+</nav>
+
+<main>
+
+<!-- 1 -->
+<section class="sec" id="tomtat">
+<h2>1. Tóm tắt <span class="lv m">Phải nắm</span></h2>
+<div class="key"><b class="t">Một câu</b>Mình đo được trên chính máy và mô hình của mình rằng SmolVLA mất khoảng nửa giây cho mỗi chunk, độ trễ đó làm robot trong mô phỏng thành công kém hẳn; áp RTC (cả bản lúc suy luận có sẵn trong LeRobot và bản lúc huấn luyện mình tự thêm cho SmolVLA) làm chỗ nối giữa các chunk mượt hơn khoảng gấp đôi, và bản lúc huấn luyện không tốn thêm thời gian chạy.</div>
+<div class="tldr">
+  <div><b>Vấn đề, đo thật</b>SmolVLA trên RTX 3050: 519 ms mỗi lần gọi (trung vị), tức robot đi thêm 12–15 bước ở 20 Hz trong lúc mô hình nghĩ. Có độ trễ đó, nối chunk ngây thơ chỉ còn 56–62% thành công, so với 90% khi chạy đồng bộ.</div>
+  <div><b>RTC lúc suy luận</b>Độ nhảy ở chỗ nối giảm khoảng một nửa ở mọi mức trễ (ví dụ 1,93 → 0,95). Thành công cao hơn 10–12 điểm nhưng chưa đủ chắc về thống kê (p ≈ 0,10). Tốn thêm khoảng 18–22% thời gian mỗi lần gọi.</div>
+  <div><b>RTC lúc huấn luyện (tự thêm)</b>Patch 70 dòng cho SmolVLA + fine-tune 4.000 bước. Mượt ngang bản lúc suy luận (0,88 vs 0,90) mà thời gian gọi bằng nối ngây thơ (455 vs 465 ms). Đúng khẳng định của paper ②.</div>
+  <div><b>Phát hiện trong code</b>Bản RTC lúc suy luận của LeRobot không lấy gradient đi qua mô hình như paper ① (coi Jacobian là ma trận đơn vị). Kiểm bằng chạy trên cả mô hình tí hon và SmolVLA thật.</div>
+</div>
+</section>
+
+<!-- 2 -->
+<section class="sec" id="muctieu">
+<h2>2. Mục tiêu <span class="lv m">Phải nắm</span></h2>
+<p>Mentor cho biết RTC là phương pháp nhóm đang dùng. Mục tiêu của phần thực hành:</p>
+<ol>
+<li><b>Hiểu cơ chế</b>: vì sao nối chunk hỏng khi có độ trễ, và hai paper sửa nó thế nào.</li>
+<li><b>Dùng được RTC trong codebase thật</b>: LeRobot + SmolVLA, mô hình mentor giao.</li>
+<li><b>Chứng minh đã áp dụng</b> bằng số đo trên chính mô hình mình đã fine-tune, có kiểm tra cài đặt đúng.</li>
+<li><b>Tự mở rộng</b> chỗ LeRobot chưa có: RTC lúc huấn luyện cho SmolVLA.</li>
+</ol>
+<div class="tw"><table class="t">
+<thead><tr><th>Paper</th><th>Ý chính</th><th>Mình dùng thế nào</th></tr></thead>
+<tbody>
+<tr><td>① Real-Time Execution of Action Chunking Flow Policies (arXiv 2506.07339)</td><td>Lúc sinh chunk mới, kéo phần đầu về đuôi chunk cũ (guidance, coi như vẽ bù). Không train lại.</td><td>Dùng bản có sẵn trong LeRobot (<code>RTCProcessor</code>); viết thêm bản đúng công thức paper để so.</td></tr>
+<tr><td>② Training-Time Action Conditioning for Efficient RTC (arXiv 2512.05964)</td><td>Lúc train, cho mô hình thấy d hành động đầu ở dạng sạch; lúc chạy chỉ ghi đè. Không tốn thêm khi chạy.</td><td>Tự viết patch cho SmolVLA (LeRobot mới có cho Pi0.5), fine-tune, so với ①.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 3 -->
+<section class="sec" id="bando">
+<h2>3. Bản đồ công việc <span class="lv m">Phải nắm</span></h2>
+<p>Bốn pipeline, làm theo thứ tự. Mỗi khung là một phần của báo cáo này.</p>
+<div class="flow">
+  <div class="fbox"><b>A · Đồ chơi (CPU)</b><span>Dữ liệu tự sinh 2 mode → MLP flow matching → lấy mẫu bằng hàm LeRobot → chạy có độ trễ → đếm đâm, giật</span><i>Hiểu cơ chế</i></div>
+  <div class="farrow">→</div>
+  <div class="fbox"><b>B · Đo độ trễ + kiểm tra (GPU)</b><span>SmolVLA thật → đo ms mỗi lần gọi → d = 15 → 5 phép kiểm RTC cài đúng</span><i>Có d thật, tin được code</i></div>
+  <div class="farrow">→</div>
+  <div class="fbox"><b>C · Eval có độ trễ (GPU)</b><span>lerobot-eval + LIBERO-Object, thay <code>select_action</code> bằng lịch chunk có trễ → ngây thơ vs RTC ①</span><i>Kết quả chính</i></div>
+  <div class="farrow">→</div>
+  <div class="fbox"><b>D · Train có prefix (GPU)</b><span>Patch SmolVLA → fine-tune 4.000 bước (+ đối chứng) → eval ngây thơ / ① / ②</span><i>Tự mở rộng</i></div>
+</div>
+</section>
+
+<!-- 4 -->
+<section class="sec" id="moitruong">
+<h2>4. Môi trường và công cụ <span class="lv s">Nên biết</span></h2>
+<div class="tw"><table class="t">
+<tbody>
+<tr><td>Máy</td><td>Laptop RTX 3050 6 GB, 19,7 GB RAM; Windows + WSL2, Ubuntu 24.04</td></tr>
+<tr><td>Python</td><td>Miniforge, môi trường conda <code>lerobot</code>, Python 3.12</td></tr>
+<tr><td>Thư viện chính</td><td>LeRobot 0.6.2 (commit b9cb121c, cài <code>-e</code>), PyTorch 2.11.0+cu130, transformers 5.5.4</td></tr>
+<tr><td>Mô phỏng</td><td>LIBERO qua <code>hf-libero</code>, MuJoCo, vẽ ảnh bằng EGL (<code>export MUJOCO_GL=egl</code>)</td></tr>
+<tr><td>Code RTC của LeRobot</td><td><code>policies/rtc/</code> (cấu hình, guidance), <code>policies/common/flow_matching.py</code> (vòng khử nhiễu), <code>policies/smolvla/</code></td></tr>
+<tr><td>Code mình viết (thư mục <code>RTC/Thực hành/lab</code>)</td><td>
+<code>common.py</code> (bài đồ chơi) · <code>rtc_full_jacobian.py</code> (guidance đúng paper) · <code>rtc_libero_eval.py</code> (eval có độ trễ) · <code>kiem_tra_cai_dat.py</code> (5 phép kiểm) · <code>smolvla_training_rtc.patch</code> (RTC lúc huấn luyện) · <code>tong_hop_libero.py</code> (bảng + khoảng tin cậy) · <code>chay_het_gpu.sh</code>, <code>chay_lab8.sh</code> (chạy một lượt)</td></tr>
+</tbody></table></div>
+<div class="co note"><b class="t">Ai viết gì</b>Code trong thư mục lab do Claude viết theo yêu cầu, mình đọc, chạy và kiểm kết quả. Toàn bộ số đo GPU là mình chạy trên máy mình. Nên nói rõ điều này với mentor nếu được hỏi.</div>
+</section>
+
+<!-- 5 -->
+<section class="sec" id="mohinh">
+<h2>5. Mô hình SmolVLA <span class="lv m">Phải nắm</span></h2>
+<div class="two">
+<div>
+<h3>Kiến trúc (phần liên quan RTC)</h3>
+<ul>
+<li><b>VLM</b> SmolVLM2-500M đọc 2 ảnh (camera ngoài + camera cổ tay, resize 512), câu lệnh và trạng thái robot (8 chiều, đệm lên 32). Tính một lần mỗi chunk, giữ lại dạng KV cache.</li>
+<li><b>Action expert</b> (~100M tham số, trên tổng ~450M) sinh <b>chunk 50 hành động</b> (7 chiều, đệm lên 32) bằng <b>flow matching</b>, <b>10 bước khử nhiễu</b>.</li>
+<li>Thời gian khử nhiễu đưa vào bằng embedding sin-cos rồi ghép với action qua MLP. Đây là chỗ patch của mình sửa để nhận thời gian theo từng hành động.</li>
+</ul>
+</div>
+<div>
+<h3>Quy ước cần nhớ</h3>
+<ul>
+<li><code>time = 1</code> là nhiễu, <code>time = 0</code> là sạch (ngược paper RTC, ở đó τ = 1 − time).</li>
+<li>Lúc train: x_t = time·nhiễu + (1 − time)·hành động; mô hình đoán u = nhiễu − hành động; time ~ Beta(1,5; 1).</li>
+<li>Lúc chạy: bắt đầu từ nhiễu, 10 bước <code>dt = −0,1</code>.</li>
+<li>Đầu ra mô hình ở <b>không gian đã chuẩn hóa</b>; RTC làm việc ở không gian này.</li>
+</ul>
+</div>
+</div>
+<h3>Checkpoint dùng</h3>
+<div class="tw"><table class="t">
+<tbody>
+<tr><td>Tên</td><td><code>outputs/train/obj_bs16x4_21k/checkpoints/021000/pretrained_model</code></td></tr>
+<tr><td>Train thế nào</td><td>Mình train trước đó (09–10/10): <code>lerobot-train --policy.type=smolvla --policy.load_vlm_weights=true</code>, VLM nạp sẵn, chỉ train action expert; 454 episode LIBERO-Object; batch 16 × gom 4 = 64; 21.000 micro-batch; bf16; khoảng 7 giờ; loss cuối 0,264</td></tr>
+<tr><td>Chất lượng</td><td>96% trên LIBERO-Object (eval thường, chạy 10 hành động mỗi chunk)</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 6 -->
+<section class="sec" id="dulieu">
+<h2>6. Dữ liệu <span class="lv m">Phải nắm</span></h2>
+<p>Không phần nào dùng dữ liệu của hai paper RTC (paper dùng mô phỏng Kinetix và robot thật của họ, không công bố dữ liệu robot). RTC áp được lên bất kỳ dataset chunk hành động nào.</p>
+<div class="tw"><table class="t">
+<thead><tr><th>Dữ liệu</th><th>Là gì</th><th>Dùng ở đâu</th></tr></thead>
+<tbody>
+<tr><td><b>Dữ liệu đồ chơi</b> (tự sinh)</td><td>"Chuyên gia" viết tay chạy bài vòng qua vật cản: 4.096 episode → 163.840 cặp (quan sát 4 số, chunk 16 × 2). Đầu đường, nhãn vòng trên/dưới 50/50 (2 mode).</td><td>Pipeline A</td></tr>
+<tr><td><b><code>lerobot/libero</code></b> (Hugging Face, bản v3.0)</td><td>Bản LeRobot chuyển từ benchmark LIBERO: 1.693 episode, 40 tác vụ. Phần LIBERO-Object: 454 episode, 10 tác vụ "pick up the … and place it in the basket", 66.984 khung.</td><td>Checkpoint gốc; vài khung cho phép kiểm (pipeline B); fine-tune (pipeline D)</td></tr>
+<tr><td><b>Mô phỏng LIBERO</b>, bộ <code>libero_object</code></td><td>Robot làm thật trong mô phỏng, 20 Hz, tối đa 280 bước mỗi episode; thành công do môi trường chấm.</td><td>Đo độ trễ (B), eval (C, D): tác vụ 0–4</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 7 -->
+<section class="sec" id="phuongphap">
+<h2>7. Phương pháp đã áp dụng <span class="lv m">Phải nắm</span></h2>
+<h3>Ba con số điều khiển mọi thứ</h3>
+<p><b>H</b> = độ dài chunk (SmolVLA 50). <b>s</b> = số hành động chạy trước khi hỏi chunk mới. <b>d</b> = số bước robot đi trong lúc mô hình nghĩ (đo được, không tự chọn). Ràng buộc <b>d ≤ s ≤ H − d</b>. Chunk mới bắt đầu được dùng từ ô d; d ô đầu của nó ứng với khoảng thời gian robot vẫn chạy chunk cũ.</p>
+<div class="tw"><table class="t">
+<thead><tr><th>Thành phần</th><th>Paper nói</th><th>LeRobot có sẵn</th><th>Mình làm</th></tr></thead>
+<tbody>
+<tr><td>Chạy bất đồng bộ</td><td>Algorithm 1: luồng điều khiển + luồng gọi mô hình</td><td><code>lerobot-rollout --inference.type=rtc</code> (robot thật)</td><td>Giả lập trong mô phỏng: <code>rtc_libero_eval.py</code></td></tr>
+<tr><td>Guidance (①)</td><td>Kéo phần đầu về chunk cũ, gradient qua mô hình (ΠGDM), mặt nạ mềm (5), kẹp β</td><td><code>RTCProcessor</code>: có mặt nạ, kẹp β; <b>bỏ Jacobian</b></td><td>Dùng bản LeRobot; viết <code>FullJacobianRTC</code> đúng paper để so</td></tr>
+<tr><td>Prefix lúc train (②)</td><td>d ngẫu nhiên, d ô đầu sạch, bỏ khỏi loss; lúc chạy ghi đè</td><td>Chỉ Pi0.5 (<code>rtc_training_max_delay</code>); hàm chung <code>make_flow_matching_inputs(prefix_mask)</code>, <code>euler_integrate(hard_prefix)</code></td><td>Patch cho SmolVLA dùng lại đúng các hàm chung đó</td></tr>
+</tbody></table></div>
+<h3>Đổi tên paper ↔ LeRobot</h3>
+<div class="tw"><table class="t">
+<tbody>
+<tr><td>d</td><td><code>inference_delay</code>, truyền mỗi lần gọi <code>predict_action_chunk</code></td></tr>
+<tr><td>đuôi chunk cũ</td><td><code>prev_chunk_left_over</code> = <code>chunk[:, s:]</code>, không gian đã chuẩn hóa</td></tr>
+<tr><td>vùng bám mềm (H − s)</td><td><code>execution_horizon</code> (không phải s). Phải ≥ d</td></tr>
+<tr><td>mặt nạ (5) của paper</td><td><code>prefix_attention_schedule=EXP</code> (mặc định là LINEAR)</td></tr>
+<tr><td>β</td><td><code>max_guidance_weight</code> (dùng 10 cho 10 bước)</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 8 -->
+<section class="sec" id="p1">
+<h2>8. Pipeline A · bài đồ chơi (CPU) <span class="lv m">Phải nắm</span></h2>
+<ol class="steps">
+<li><b>Sinh dữ liệu</b> (<code>make_dataset</code>): điểm đi từ x = 0 sang 1 trong 40 bước, vật cản tròn ở giữa, đích dao động. Hành động = vận tốc (giống delta của LIBERO).</li>
+<li><b>Huấn luyện 2 mô hình</b> (<code>train</code>, ~3 phút): MLP 3 lớp 512, H = 16, 4.000 bước, batch 1.024. Mô hình thường, và mô hình có prefix (d ∈ {0..6}) gọi đúng <code>make_flow_matching_inputs(prefix_mask)</code> của LeRobot.</li>
+<li><b>Lấy mẫu</b> (<code>sample_chunk</code>): <code>euler_integrate</code> của LeRobot; RTC ① qua <code>RTCProcessor</code>; RTC ② qua <code>hard_prefix</code>.</li>
+<li><b>Chạy có độ trễ</b> (<code>run_async</code>): chạy s hành động → hỏi chunk mới từ quan sát hiện tại → d bước tiếp vẫn chạy chunk cũ → đổi sang chunk mới từ ô d.</li>
+<li><b>Đo</b>: thành công (không chạm vật cản, tới đích lệch &lt; 0,08), tỉ lệ chạm, độ giật (thay đổi vận tốc lớn nhất), 1.000 episode mỗi ô.</li>
+</ol>
+<div class="co warn"><b class="t">Minh họa, không phải bằng chứng</b>Thiết lập đã được chỉnh để hiện tượng lộ rõ (nhãn 50/50 ở đầu đường, ngưỡng 0,08). Dùng để giải thích cơ chế.</div>
+</section>
+
+<!-- 9 -->
+<section class="sec" id="p2">
+<h2>9. Pipeline B · đo độ trễ và kiểm tra cài đặt (GPU) <span class="lv m">Phải nắm</span></h2>
+<h3>Đo độ trễ</h3>
+<p>Chạy LIBERO-Object tác vụ 0, 2 episode, mỗi cách gọi một lượt. Script bấm giờ từng lần gọi <code>predict_action_chunk</code> (có <code>cuda.synchronize</code>, chỉ thời gian GPU). Quy ra <b>d = ⌈p95 / 50 ms⌉</b> (LIBERO 20 Hz). Lấy d theo độ trễ <b>khi bật RTC</b> vì đó là độ trễ thật khi chạy RTC: <b>d = 15</b>; thêm mức 1,5 × d = <b>23</b>.</p>
+<h3>Kiểm tra cài đặt (<code>kiem_tra_cai_dat.py</code>)</h3>
+<p>Lấy 2 khung cách nhau s bước của cùng một episode trong <code>lerobot/libero</code>; sinh chunk cũ ở khung đầu, chunk mới ở khung sau, cùng một nhiễu, rồi kiểm:</p>
+<div class="tw"><table class="t">
+<thead><tr><th>Phép kiểm</th><th>Ý nghĩa</th></tr></thead>
+<tbody>
+<tr><td>K0 · chạy lại y hệt</td><td>Đo "nhiễu nền" của GPU</td></tr>
+<tr><td>K1 · β gần 0</td><td>Tắt gần hết guidance thì kết quả gần như không đổi (&lt; 10% tác động của β = 10)</td></tr>
+<tr><td>K2 · β = 10</td><td>d hành động đầu của chunk mới phải bám đuôi chunk cũ</td></tr>
+<tr><td>K3 · Jacobian</td><td>Bản LeRobot: correction = err; bản đúng paper: khác</td></tr>
+<tr><td>K4 · mode trained</td><td>d hành động đầu trùng tuyệt đối chunk cũ (checkpoint có prefix)</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 10 -->
+<section class="sec" id="p3">
+<h2>10. Pipeline C · eval có độ trễ trên LIBERO (GPU) <span class="lv m">Phải nắm</span></h2>
+<p>Mô phỏng LIBERO đứng chờ mô hình nghĩ xong, nên tự nhiên không có độ trễ. Mình giả lập giống paper ① trên Kinetix, bằng cách bọc <code>lerobot-eval</code>:</p>
+<ol class="steps">
+<li><b>Giữ nguyên lerobot-eval</b>: tạo môi trường, tiền xử lý (ảnh, câu lệnh, chuẩn hóa), hậu xử lý, đếm thành công, quay video.</li>
+<li><b>Thay <code>select_action</code></b> của policy (ghi đè trên object vì eval kiểm <code>isinstance(PreTrainedPolicy)</code>) bằng lịch chunk: mỗi bước trả 1 hành động; khi đã chạy s hành động thì gọi mô hình với quan sát hiện tại (kèm đuôi chunk cũ nếu là RTC); d bước sau vẫn trả hành động của chunk cũ; rồi đổi sang chunk mới, bắt đầu từ ô d.</li>
+<li><b>Tắt <code>inference_mode</code></b> khi gọi mô hình, vì guidance cần autograd.</li>
+<li><b>Ghi thêm</b> độ nhảy mỗi episode và thời gian mỗi lần gọi vào <code>rtc_lab_stats.json</code>.</li>
+</ol>
+<div class="tw"><table class="t">
+<thead><tr><th>Cấu hình</th><th>Giá trị</th></tr></thead>
+<tbody>
+<tr><td>Tác vụ, episode</td><td>LIBERO-Object tác vụ 0–4 × 5 episode × 2 seed (1000, 2000) = <b>50 episode mỗi ô</b></td></tr>
+<tr><td>Mức trễ</td><td>d = 0 (chạy đồng bộ, mốc), 15 (đo thật), 23 (1,5 × d)</td></tr>
+<tr><td>s</td><td>max(10, d)</td></tr>
+<tr><td>RTC ①</td><td>EXP, β = 10, <code>execution_horizon</code> = min(d + 10, H − s)</td></tr>
+<tr><td>Thời gian</td><td>~10–11 phút mỗi lượt 25 episode; cả lưới khoảng 2 giờ</td></tr>
+<tr><td>Chỉ số</td><td>Thành công + khoảng tin cậy Wilson 95%; độ nhảy = bước nhảy lớn nhất giữa 2 hành động liền nhau, 6 chiều tư thế, đã chuẩn hóa (mình tự định nghĩa); ms mỗi lần gọi (trung vị)</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 11 -->
+<section class="sec" id="p4">
+<h2>11. Pipeline D · train SmolVLA có prefix (GPU) <span class="lv m">Phải nắm</span></h2>
+<h3>Patch (<code>smolvla_training_rtc.patch</code>, ~70 dòng, 2 file)</h3>
+<div class="tw"><table class="t">
+<tbody>
+<tr><td><code>SmolVLAConfig</code></td><td>Thêm <code>rtc_training_max_delay</code> (mặc định 0 = như cũ)</td></tr>
+<tr><td><code>SmolVLAPolicy.forward</code></td><td>Mỗi mẫu lấy d ngẫu nhiên trong {0..max}; tạo <code>prefix_mask</code>; gộp vào mặt nạ padding để loss bỏ qua d ô đầu</td></tr>
+<tr><td><code>VLAFlowMatching.forward</code></td><td><code>make_flow_matching_inputs(…, prefix_mask)</code>: d ô đầu giữ sạch, time = 0; time vào mô hình dạng (B, 50)</td></tr>
+<tr><td><code>embed_suffix</code></td><td>Nhận time (B,) như cũ hoặc (B, 50): embedding sin-cos theo từng hành động, <b>không thêm tham số</b></td></tr>
+<tr><td><code>sample_actions</code></td><td><code>mode="trained"</code>: ghi đè d ô đầu bằng chunk cũ qua <code>euler_integrate(hard_prefix=…)</code></td></tr>
+</tbody></table></div>
+<h3>Fine-tune (<code>chay_lab8.sh</code>)</h3>
+<div class="tw"><table class="t">
+<tbody>
+<tr><td>Khởi đầu</td><td>Checkpoint 21k ở mục 5 (<code>--policy.path</code>), chỉ train action expert (mặc định SmolVLA)</td></tr>
+<tr><td>Dữ liệu</td><td><code>lerobot/libero</code>, 454 episode LIBERO-Object (giống lần train gốc)</td></tr>
+<tr><td>Độ trễ khi train</td><td>d đều trong {0..20} (bao d = 15 đo được, có biên)</td></tr>
+<tr><td>Siêu tham số</td><td>4.000 micro-batch × 16, gom 4 → 1.000 lần cập nhật (~1 epoch); bf16; lr 1e-4, warmup 200, decay cosine tới 2,5e-6 sau 4.000 bước</td></tr>
+<tr><td>Đối chứng</td><td>Y hệt nhưng <code>rtc_training_max_delay=0</code>, để tách tác dụng của prefix khỏi tác dụng của "train thêm"</td></tr>
+<tr><td>Trước khi train</td><td>Chạy thử 50 bước để bắt lỗi</td></tr>
+<tr><td>Eval</td><td>d = 15, cùng cấu hình mục 10: đối chứng + ngây thơ; đối chứng + RTC ①; có prefix + RTC ②</td></tr>
+<tr><td>Thời gian</td><td>Cả Lab 8 (thử, 2 lượt train, kiểm tra, 6 lượt eval) khoảng 3 giờ 40 phút</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 12 -->
+<section class="sec" id="ketqua">
+<h2>12. Kết quả <span class="lv m">Phải nắm</span></h2>
+<h3>A · Bài đồ chơi (1.000 episode mỗi ô, s = 8, H = 16)</h3>
+<div class="tw"><table class="t">
+<thead><tr><th>Cách nối</th><th>d = 0</th><th>d = 2</th><th>d = 4</th><th>d = 6</th><th>Chạm vật cản (d = 2–6)</th></tr></thead>
+<tbody>
+<tr><td>Ngây thơ</td><td>94%</td><td>50%</td><td>43%</td><td>27%</td><td>~50%</td></tr>
+<tr><td>RTC ① cứng (ZEROS)</td><td>94%</td><td>100%</td><td>99%</td><td>66%</td><td>1–2%</td></tr>
+<tr><td>RTC ① mềm (EXP, LeRobot)</td><td>100%</td><td>99%</td><td>82%</td><td>56%</td><td>1–2%</td></tr>
+<tr><td>RTC ① mềm, đúng paper</td><td>99%</td><td>99%</td><td>90%</td><td>55%</td><td>1–3%</td></tr>
+<tr><td>RTC ② prefix</td><td>67%</td><td>99%</td><td>98%</td><td>67%</td><td>1–2%</td></tr>
+</tbody></table></div>
+<p>Rút ra: dữ liệu nhiều mode + độ trễ làm chunk mới "đổi ý" → đâm. RTC chặn được. Bản mềm mượt nhất nhưng phản ứng chậm hơn khi đích di chuyển.</p>
+
+<h3>B · Độ trễ SmolVLA trên RTX 3050</h3>
+<div class="tw"><table class="t">
+<thead><tr><th>Cách gọi</th><th>Trung vị</th><th>p95</th><th>d ở 20 Hz</th></tr></thead>
+<tbody>
+<tr><td>Không RTC</td><td>519 ms</td><td>577 ms</td><td>12</td></tr>
+<tr><td>RTC ① của LeRobot</td><td>613 ms (+18%)</td><td>710 ms</td><td><b>15</b></td></tr>
+<tr><td>RTC ① đúng paper (backward qua mô hình)</td><td>1.011 ms (+95%)</td><td>1.100 ms</td><td>22</td></tr>
+</tbody></table></div>
+
+<h3>B · Kiểm tra cài đặt (d = 15)</h3>
+<div class="tw"><table class="t">
+<thead><tr><th>Phép kiểm</th><th>Checkpoint gốc 21k</th><th>Checkpoint có prefix</th></tr></thead>
+<tbody>
+<tr><td>K0 · chạy lại y hệt</td><td>trùng tuyệt đối</td><td>trùng tuyệt đối</td></tr>
+<tr><td>K1 · β gần 0</td><td>lệch 0,028 = 1,4% ✓</td><td>lệch 0,105 = 5,3% ✓</td></tr>
+<tr><td>K2 · bám chunk cũ (15 ô đầu)</td><td>0,386 → 0,008 ✓</td><td>0,270 → 0,008 ✓</td></tr>
+<tr><td>K3 · Jacobian</td><td>LeRobot bỏ; đúng paper cos 0,643 ✓</td><td>LeRobot bỏ; đúng paper cos 0,583 ✓</td></tr>
+<tr><td>K4 · trained</td><td>(không áp dụng)</td><td>lệch đúng 0 ✓</td></tr>
+</tbody></table></div>
+
+<h3>C · LIBERO-Object có độ trễ (checkpoint 21k, 50 episode mỗi ô)</h3>
+<div class="tw"><table class="t">
+<thead><tr><th>Độ trễ</th><th>Cách</th><th>Thành công</th><th>KTC 95%</th><th>Độ nhảy</th><th>ms/lần gọi</th></tr></thead>
+<tbody>
+<tr><td rowspan="2">d = 0</td><td>ngây thơ</td><td>90% (45/50)</td><td>79–96</td><td>1,67</td><td>439</td></tr>
+<tr><td>RTC ①</td><td>92% (46/50)</td><td>81–97</td><td><b>0,88</b></td><td>611</td></tr>
+<tr><td rowspan="2">d = 15</td><td>ngây thơ</td><td>56% (28/50)</td><td>42–69</td><td>1,93</td><td>449</td></tr>
+<tr><td>RTC ①</td><td>66% (33/50)</td><td>52–78</td><td><b>0,95</b></td><td>538</td></tr>
+<tr><td rowspan="2">d = 23</td><td>ngây thơ</td><td>62% (31/50)</td><td>48–74</td><td>1,60</td><td>541</td></tr>
+<tr><td>RTC ①</td><td>74% (37/50)</td><td>60–84</td><td><b>0,91</b></td><td>633</td></tr>
+</tbody></table></div>
+<p>Gộp hai mức có trễ: ngây thơ 59/100, RTC 70/100; kiểm định hai tỉ lệ cho z = 1,63, p ≈ 0,10, tức <b>xu hướng, chưa khẳng định</b>. Độ nhảy giảm khoảng một nửa thì rõ ở cả 3 mức.</p>
+
+<h3>D · RTC lúc huấn luyện vs lúc suy luận (d = 15, 50 episode mỗi dòng)</h3>
+<div class="tw"><table class="t">
+<thead><tr><th>Checkpoint</th><th>Cách</th><th>Thành công</th><th>KTC 95%</th><th>Độ nhảy</th><th>ms/lần gọi</th></tr></thead>
+<tbody>
+<tr><td>Đối chứng (train thêm, không prefix)</td><td>ngây thơ</td><td>70% (35/50)</td><td>56–81</td><td>1,75</td><td>465</td></tr>
+<tr><td>Đối chứng</td><td>RTC ① suy luận</td><td>70% (35/50)</td><td>56–81</td><td><b>0,90</b></td><td>565 (+22%)</td></tr>
+<tr><td>Có prefix</td><td>RTC ② huấn luyện</td><td>70% (35/50)</td><td>56–81</td><td><b>0,88</b></td><td><b>455</b></td></tr>
+</tbody></table></div>
+<p>Loss cuối: đối chứng 0,258, có prefix 0,233. Hai số này <b>không so được</b> vì lượt có prefix bỏ d ô đầu khỏi loss. Không so chéo với bảng C vì là checkpoint khác.</p>
+</section>
+
+<!-- 13 -->
+<section class="sec" id="rutra">
+<h2>13. Áp dụng được gì <span class="lv m">Phải nắm</span></h2>
+<ol class="steps">
+<li><b>Độ trễ phải đo, không đoán.</b> SmolVLA trên laptop: ~0,5 giây = 12–15 bước ở 20 Hz. Robot thật còn cộng camera và mạng.</li>
+<li><b>Bật RTC lúc suy luận trong LeRobot</b>: <code>RTCConfig(enabled=True, prefix_attention_schedule=EXP, max_guidance_weight=10, execution_horizon ≥ d)</code>, gọi <code>predict_action_chunk(batch, inference_delay=d, prev_chunk_left_over=chunk[:, s:])</code>. Không dùng được qua <code>select_action</code> (bị <code>assert</code> chặn). Trên robot: <code>lerobot-rollout --inference.type=rtc</code>.</li>
+<li><b><code>execution_horizon</code> phải ≥ d</b>: LeRobot chỉ đóng băng min(d, execution_horizon) ô đầu. Mặc định 10 sẽ thiếu khi d = 15.</li>
+<li><b>Chọn s</b> trong khoảng d … H − d. Thí nghiệm đồ chơi cho thấy s nhỏ phản ứng nhanh hơn (đổi lại gọi mô hình nhiều hơn).</li>
+<li><b>Muốn không tốn thêm thời gian chạy</b>: RTC lúc huấn luyện. Cần fine-tune với độ trễ tối đa ≥ d sẽ gặp; với SmolVLA dùng patch của mình.</li>
+<li><b>Luôn kiểm cài đặt trước khi tin số</b> (K1–K4), và báo thành công kèm khoảng tin cậy. Benchmark gần tĩnh như LIBERO khó thấy khác biệt thành công; độ nhảy là chỉ số nhạy hơn.</li>
+</ol>
+</section>
+
+<!-- 14 -->
+<section class="sec" id="suco">
+<h2>14. Sự cố đã gặp và cách sửa <span class="lv s">Nên biết</span></h2>
+<div class="tw"><table class="t">
+<thead><tr><th>Sự cố</th><th>Nguyên nhân</th><th>Sửa</th></tr></thead>
+<tbody>
+<tr><td>K1 "KHÔNG ĐẠT" ở lần chạy đầu</td><td>Đòi trùng tuyệt đối; trên GPU bật autograd làm đổi cách tính, lệch nhỏ cộng dồn</td><td>So với tác động của RTC (&lt; 10%) và in thêm K0</td></tr>
+<tr><td><code>execution_horizon = 10</code> trong khi d = 12–15</td><td>Vài hành động đã chạy không được kéo</td><td>Dùng min(d + 10, H − s)</td></tr>
+<tr><td>Mọi lượt d = 15, 23 lỗi <code>IndexError: index 50</code></td><td>Lịch chunk bỏ lỡ lúc hỏi chunk mới khi s = d</td><td>Đổi thứ tự (đổi chunk trước, hỏi khi i ≥ s); kiểm khớp lịch chuẩn ở 5 trường hợp</td></tr>
+<tr><td>Chép bản sửa mà vẫn chạy bản cũ</td><td>Bản sửa không được ghi sang ổ D dù công cụ báo đã ghi</td><td>Ghi lại và kiểm bằng <code>grep</code> trên máy trước khi chạy</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 15 -->
+<section class="sec" id="hanche">
+<h2>15. Hạn chế và bước tiếp <span class="lv s">Nên biết</span></h2>
+<div class="two">
+<div>
+<h3>Hạn chế</h3>
+<ul>
+<li>Độ trễ trên LIBERO là giả lập; d chỉ gồm thời gian GPU.</li>
+<li>50 episode mỗi ô: chênh lệch thành công chưa có ý nghĩa thống kê.</li>
+<li>Một checkpoint, 5 tác vụ LIBERO-Object; chưa thử robot thật.</li>
+<li>"Độ nhảy" là chỉ số tự định nghĩa.</li>
+<li>Bài đồ chơi đã chỉnh để lộ hiện tượng; RTC ② ở d = 0 kém (67%) chưa giải thích.</li>
+</ul>
+</div>
+<div>
+<h3>Bước tiếp</h3>
+<ul>
+<li>Thêm 2–3 seed ở d = 15 (~1 giờ mỗi seed) để kiểm chênh thành công.</li>
+<li>Làm LIBERO khó hơn (nhiễu hành động, tác vụ động) để lộ khác biệt.</li>
+<li>Hỏi mentor về Jacobian; nếu là lỗi, báo LeRobot.</li>
+<li>Nếu nhóm đồng ý: đề xuất patch RTC lúc huấn luyện cho SmolVLA lên LeRobot.</li>
+<li>Thử <code>lerobot-rollout</code> nếu có robot SO-100/101.</li>
+</ul>
+</div>
+</div>
+</section>
+
+<!-- 16 -->
+<section class="sec" id="phuluc">
+<h2>16. Phụ lục: file, lệnh, thuật ngữ <span class="lv k">Đọc lướt</span></h2>
+<h3>Lệnh tái lập (trong <code>~/lerobot</code>, môi trường <code>lerobot</code>)</h3>
+<pre><code>cp -r "/mnt/d/VLA Modeling/RTC/Thực hành/lab/." ~/rtc_lab/
+cd ~/rtc_lab && bash chay_het_cpu.sh                         # A: bài đồ chơi, ~5 phút
+cd ~/lerobot
+nohup bash ~/rtc_lab/chay_het_gpu.sh > ~/rtc_lab_gpu.log 2>&amp;1 &amp;   # B + C, ~2,5 giờ
+nohup bash ~/rtc_lab/chay_lab8.sh > ~/rtc_lab8.log 2>&amp;1 &amp;       # D, ~3,7 giờ</code></pre>
+<h3>Nơi chứa kết quả</h3>
+<ul>
+<li><code>~/lerobot/outputs/rtc_lab/</code>: lượt đo độ trễ, eval C, <code>tong_hop.txt</code>, <code>kiem_tra_cai_dat.txt</code></li>
+<li><code>~/lerobot/outputs/rtc_lab8/</code>: log train, eval D, <code>tong_hop_lab8.txt</code>, <code>kiem_tra_k4.txt</code></li>
+<li><code>~/lerobot/outputs/train/obj_rtc_ft</code>, <code>obj_plain_ft</code>: hai checkpoint fine-tune</li>
+<li>Bản chép trên ổ D: <code>RTC/Thực hành/ket_qua/</code></li>
+</ul>
+<h3>Thuật ngữ</h3>
+<div class="tw"><table class="t">
+<tbody>
+<tr><td>Chunk</td><td>Chuỗi H hành động mô hình sinh ra một lần</td></tr>
+<tr><td>Nối ngây thơ</td><td>Bỏ qua chunk cũ, dùng thẳng chunk mới từ ô d</td></tr>
+<tr><td>Guidance</td><td>Trong lúc khử nhiễu, đẩy kết quả về phía mong muốn (ở đây: về đuôi chunk cũ)</td></tr>
+<tr><td>Prefix</td><td>d hành động đầu của chunk mới, đã bị định đoạt bởi chunk cũ</td></tr>
+<tr><td>Jacobian / VJP</td><td>Cách đầu ra mô hình đổi theo đầu vào; paper ① tính tích sai số × Jacobian bằng một lần backward</td></tr>
+<tr><td>KTC 95% (Wilson)</td><td>Khoảng mà tỉ lệ thành công thật có khả năng nằm trong; hai khoảng chồng nhau nhiều thì chưa nói được bên nào hơn</td></tr>
+<tr><td>Seed</td><td>Số khởi tạo ngẫu nhiên; khác seed = khác vị trí ban đầu và khác nhiễu</td></tr>
+</tbody></table></div>
+<p style="margin-top:14px">Tài liệu liên quan: <a href="RTC%20%C2%B7%20Th%E1%BB%B1c%20h%C3%A0nh%20ch%E1%BA%A1y%20th%E1%BB%AD.html">Thực hành chạy thử</a> · <a href="RTC%20%C2%B7%20Slide%20th%E1%BB%B1c%20h%C3%A0nh.html">Slide thực hành</a> · <a href="RTC%20%C2%B7%20Ghi%20ch%C3%BA%20trao%20%C4%91%E1%BB%95i%20mentor.html">Ghi chú trao đổi mentor</a></p>
+</section>
+
+</main>
+</div>
+
+<footer class="pg">RTC · Báo cáo thực hành — báo cáo những gì đã áp dụng từ hai paper RTC; tài liệu học tập cá nhân, thư mục VLA Modeling.</footer>
+<script>
+(function(){
+"use strict";
+/* ---------- theme ---------- */
+var root=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme');
+  if(!cur){cur=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  var nx=cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',nx);
+  try{localStorage.setItem('vla-theme',nx);}catch(e){}
+});
+function vn(x,d){if(!isFinite(x))return '∞';return (+x).toFixed(d===undefined?1:d).replace('-','−').replace('.',',');}
+function $(id){return document.getElementById(id);}
+
+/* ---------- checklists ---------- */
+function checklist(boxSel,key,barId){
+  var boxes=[].slice.call(document.querySelectorAll(boxSel));
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){saved={};}
+  function upd(){
+    var n=0;boxes.forEach(function(b){b.parentNode.classList.toggle('done',b.checked);if(b.checked)n++;});
+    if(barId)$(barId).style.width=(100*n/boxes.length)+'%';
+  }
+  boxes.forEach(function(b){
+    b.checked=!!saved[b.dataset.k];
+    b.addEventListener('change',function(){saved[b.dataset.k]=b.checked;try{localStorage.setItem(key,JSON.stringify(saved));}catch(e){}upd();});
+  });
+  upd();
+}
+checklist('#chk input','rtcrep-chk',null);
+
+
+/* ---------- TOC scroll spy ---------- */
+var links=[].slice.call(document.querySelectorAll('#toc a[href^="#"]'));
+var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+function spy(){
+  var y=window.scrollY+120,idx=0;
+  targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top+window.scrollY<=y)idx=i;});
+  links.forEach(function(a,i){a.classList.toggle('on',i===idx);});
+}
+window.addEventListener('scroll',spy,{passive:true});spy();
+
+
+})();
+</script>
+</body>
+</html>

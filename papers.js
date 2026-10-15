@@ -86,7 +86,8 @@ const PAPERS = [
         { ten: "Đọc hiểu & áp dụng", duongDan: "RTC/Đọc hiểu & slide/RTC · Đọc hiểu & áp dụng.html" },
         { ten: "Thực hành", duongDan: "RTC/Thực hành/RTC · Thực hành chạy thử.html" },
         { ten: "Slide thực hành", duongDan: "RTC/Thực hành/RTC · Slide thực hành.html" },
-        { ten: "Ghi chú mentor", duongDan: "RTC/Thực hành/RTC · Ghi chú trao đổi mentor.html" }
+        { ten: "Ghi chú mentor", duongDan: "RTC/Thực hành/RTC · Ghi chú trao đổi mentor.html" },
+        { ten: "Báo cáo thực hành", duongDan: "RTC/Thực hành/RTC · Báo cáo thực hành.html" }
       ]
     }
   },
@@ -109,7 +110,8 @@ const PAPERS = [
         { ten: "Đọc hiểu & áp dụng", duongDan: "RTC/Đọc hiểu & slide/RTC · Đọc hiểu & áp dụng.html" },
         { ten: "Thực hành", duongDan: "RTC/Thực hành/RTC · Thực hành chạy thử.html" },
         { ten: "Slide thực hành", duongDan: "RTC/Thực hành/RTC · Slide thực hành.html" },
-        { ten: "Ghi chú mentor", duongDan: "RTC/Thực hành/RTC · Ghi chú trao đổi mentor.html" }
+        { ten: "Ghi chú mentor", duongDan: "RTC/Thực hành/RTC · Ghi chú trao đổi mentor.html" },
+        { ten: "Báo cáo thực hành", duongDan: "RTC/Thực hành/RTC · Báo cáo thực hành.html" }
       ]
     }
   },

@@ -28,7 +28,7 @@ for info_path in sorted(glob.glob(os.path.join(root, "*", "eval_info.json"))):
     st = json.load(open(st_path)) if os.path.exists(st_path) else {}
     lab, sm = st.get("lab", {}), st.get("summary", {})
     key = (lab.get("mode", "?"), lab.get("delay", "?"), lab.get("s", "?"), lab.get("execution_horizon", lab.get("eh", "?")),
-           st.get("policy", ""))
+           st.get("policy", ""), os.path.basename(d).startswith("latency_"))   # lượt đo độ trễ tách riêng
     g = groups[key]
     g["k"] += int(ov["n_success"]); g["n"] += int(ov["n_episodes"])
     g["seeds"].append(str(st.get("seed", "?"))); g["runs"].append(os.path.basename(d))
@@ -43,6 +43,7 @@ for key in sorted(groups, key=lambda k: (str(k[1]), str(k[0]))):
     pc = 100 * g["k"] / max(1, g["n"])
     jump = "-" if not g["jumps"] else f"{sum(g['jumps']) / len(g['jumps']):.3f}"
     ms = "-" if not g["ms"] else f"{sum(g['ms']) / len(g['ms']):.0f}"
-    print(f"{key[0]:9s} {key[1]!s:>3s} {key[2]!s:>3s} {pc:10.1f}% {f'[{lo:.0f}; {hi:.0f}]':>14s} {g['k']:>3d}/{g['n']:<4d} "
+    print(f"{key[0] + ('*' if key[5] else ''):9s} {key[1]!s:>3s} {key[2]!s:>3s} {pc:10.1f}% {f'[{lo:.0f}; {hi:.0f}]':>14s} {g['k']:>3d}/{g['n']:<4d} "
           f"{','.join(g['seeds']):>10s} {jump:>8s} {ms:>7s}  {' '.join(g['runs'])}")
-print("\nKTC 95%: khoảng tin cậy Wilson của tỉ lệ thành công. Hai cấu hình có khoảng chồng nhau nhiều thì chưa kết luận được bên nào hơn.")
+print("\n* = lượt đo độ trễ (Lab 6), ít episode, không dùng để so thành công.")
+print("KTC 95%: khoảng tin cậy Wilson của tỉ lệ thành công. Hai cấu hình có khoảng chồng nhau nhiều thì chưa kết luận được bên nào hơn.")

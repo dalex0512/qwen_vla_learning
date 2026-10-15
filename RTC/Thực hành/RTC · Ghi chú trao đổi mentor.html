@@ -317,7 +317,9 @@ footer.pg{max-width:1200px;margin:30px auto;padding:0 16px;color:var(--muted);fo
 <li><b>Hiểu cơ chế bằng thí nghiệm:</b> bài đồ chơi dùng đúng hàm RTC của LeRobot. Nối ngây thơ đâm khoảng 50% khi có độ trễ; RTC còn 1–3%. (Bài đã chỉnh để hiện tượng lộ rõ: là minh họa, không phải bằng chứng.)</li>
 <li><b>Phát hiện trong code LeRobot:</b> guidance không lấy gradient đi qua mô hình như paper ① (<code>correction == err</code>). Đã kiểm bằng chạy trên commit b9cb121c và ae2b57f.</li>
 <li><b>Công cụ:</b> script đánh giá có độ trễ trên LIBERO (bọc <code>lerobot-eval</code>), script kiểm tra RTC cài đúng, patch thêm RTC lúc huấn luyện cho SmolVLA (đã kiểm trên mô hình tí hon).</li>
-<li><b>Chưa có:</b> số trên SmolVLA thật (độ trễ, LIBERO, fine-tune). Đang chạy.</li>
+<li><b>Trên SmolVLA thật (RTX 3050, checkpoint LIBERO-Object):</b> mỗi lần gọi mất ~520 ms, tức robot đã chạy 12–15 bước ở 20 Hz trong lúc mô hình nghĩ. RTC của LeRobot thêm ~18% thời gian; bản đúng paper gần gấp đôi.</li>
+<li><b>LIBERO có độ trễ giả lập (50 episode mỗi ô):</b> độ trễ làm nối ngây thơ tụt 90% → 56–62%. RTC giảm độ nhảy ở chỗ nối khoảng một nửa ở mọi mức trễ; thành công cao hơn 10–12 điểm nhưng chưa có ý nghĩa thống kê (p ≈ 0,10).</li>
+<li><b>Tự thêm RTC lúc huấn luyện cho SmolVLA (patch + fine-tune 4.000 bước, d = 15):</b> mượt ngang RTC lúc suy luận (độ nhảy 0,88 vs 0,90; ngây thơ 1,75) mà thời gian gọi bằng ngây thơ (455 vs 465 ms; RTC suy luận 565 ms). Thành công cả ba đều 35/50: chưa phân biệt được.</li>
 </ul>
 </section>
 

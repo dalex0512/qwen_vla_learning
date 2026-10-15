@@ -1,0 +1,52 @@
+nohup: ignoring input
+[18:09:24] == Lab 6: đo độ trễ (1 tác vụ, 2 episode mỗi cách)
+[18:09:24] bỏ qua latency_naive (đã có kết quả)
+[18:09:24] bỏ qua latency_rtc (đã có kết quả)
+[18:09:24] bỏ qua latency_rtc_full (đã có kết quả)
+[18:09:24] p95 (có RTC) → d = 15 bước (LIBERO 20 Hz); mức thứ hai = 23
+[18:09:24] == Kiểm tra cài đặt RTC
+=== Kiểm tra cài đặt RTC ===
+[THÔNG TIN] K0 nhiễu nền (chạy lại y hệt)        lệch lớn nhất 0.00e+00 (chỉ để tham khảo)
+[ĐẠT      ] K1 β ≈ 0 gần như không đổi gì        lệch 2.79e-02, so với tác động của β = 10 là 2.04e+00 (1.4%)
+[ĐẠT      ] K2 phần đầu bám chunk cũ             lệch 15 ô đầu: không RTC 0.386 → RTC 0.008
+[ĐẠT      ] K3a LeRobot: correction == err       10 bước có guidance
+[ĐẠT      ] K3b đúng paper: correction ≠ err     cos ở bước 2 = 0.643; lệch 15 ô đầu 0.044
+[BỎ QUA   ] K4 trained                           bỏ qua: checkpoint không có rtc_training_max_delay > 0
+
+Thời gian 1 lần gọi (lần đo đơn, chỉ tham khảo): không RTC 425 ms · RTC LeRobot 716 ms · RTC đúng paper 914 ms
+[18:09:46] == Lab 7: lưới naive / rtc × d = 0, 15, 23 × seed 1000 2000
+[18:09:46] bỏ qua naive_d0_s1000 (đã có kết quả)
+[18:09:46] bỏ qua rtc_d0_s1000 (đã có kết quả)
+[18:09:46] chạy naive_d15_s1000: mode=naive d=15 s=15 execution_horizon=25 seed=1000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 2.0313692259788514, "predict_ms_median": 459.479436998663, "predict_ms_p95": 605.0227239975356}
+[18:20:54] chạy rtc_d15_s1000: mode=rtc d=15 s=15 execution_horizon=25 seed=1000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 0.8974215865135193, "predict_ms_median": 546.2445960001787, "predict_ms_p95": 672.0154130016454}
+[18:31:37] chạy naive_d23_s1000: mode=naive d=23 s=23 execution_horizon=27 seed=1000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 1.4702909564971924, "predict_ms_median": 546.5576240021619, "predict_ms_p95": 656.2350960011827}
+[18:41:00] chạy rtc_d23_s1000: mode=rtc d=23 s=23 execution_horizon=27 seed=1000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 0.9700431156158448, "predict_ms_median": 634.2134629994689, "predict_ms_p95": 740.9145170022384}
+[18:50:30] bỏ qua naive_d0_s2000 (đã có kết quả)
+[18:50:30] bỏ qua rtc_d0_s2000 (đã có kết quả)
+[18:50:30] chạy naive_d15_s2000: mode=naive d=15 s=15 execution_horizon=25 seed=2000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 1.8356732821464539, "predict_ms_median": 437.96331499834196, "predict_ms_p95": 572.1825379987422}
+[19:00:54] chạy rtc_d15_s2000: mode=rtc d=15 s=15 execution_horizon=25 seed=2000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 1.009776074886322, "predict_ms_median": 529.656425002031, "predict_ms_p95": 641.2980019995302}
+[19:11:41] chạy naive_d23_s2000: mode=naive d=23 s=23 execution_horizon=27 seed=2000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 1.720345799922943, "predict_ms_median": 536.3604349986417, "predict_ms_p95": 661.4772610009823}
+[19:22:02] chạy rtc_d23_s2000: mode=rtc d=23 s=23 execution_horizon=27 seed=2000
+[rtc-lab] {"n_episodes_logged": 25, "mean_max_jump": 0.8578011965751648, "predict_ms_median": 631.0815960023319, "predict_ms_p95": 731.7784560000291}
+[19:31:47] == Tổng hợp
+mode        d   s  thành công        KTC 95%      k/n       seed  giật TB  ms/lần  lượt
+naive       0  10       90.0%       [79; 96]  45/50    1000,2000    1.673     439  naive_d0_s1000 naive_d0_s2000
+rtc         0  10       92.0%       [81; 97]  46/50    1000,2000    0.881     611  rtc_d0_s1000 rtc_d0_s2000
+naive      15  15       56.0%       [42; 69]  28/50    1000,2000    1.934     449  naive_d15_s1000 naive_d15_s2000
+rtc        15  15       66.0%       [52; 78]  33/50    1000,2000    0.954     538  rtc_d15_s1000 rtc_d15_s2000
+naive      23  23       62.0%       [48; 74]  31/50    1000,2000    1.595     541  naive_d23_s1000 naive_d23_s2000
+rtc        23  23       74.0%       [60; 84]  37/50    1000,2000    0.914     633  rtc_d23_s1000 rtc_d23_s2000
+naive*      4  10      100.0%      [34; 100]   2/2          1000    1.087     519  latency_naive
+rtc*        4  10      100.0%      [34; 100]   2/2          1000    0.801     613  latency_rtc
+rtc_full*   4  10      100.0%      [34; 100]   2/2          1000    0.775    1011  latency_rtc_full
+
+* = lượt đo độ trễ (Lab 6), ít episode, không dùng để so thành công.
+KTC 95%: khoảng tin cậy Wilson của tỉ lệ thành công. Hai cấu hình có khoảng chồng nhau nhiều thì chưa kết luận được bên nào hơn.
+[19:31:47] XONG. Gửi Claude: outputs/rtc_lab/tong_hop.txt và outputs/rtc_lab/kiem_tra_cai_dat.txt

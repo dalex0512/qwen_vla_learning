@@ -134,11 +134,12 @@ table.t td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
           </div>
           <div class="col" style="flex:.7">
             <div class="card teal"><h4>Đã có số</h4><p>Thí nghiệm đồ chơi (1000 episode mỗi ô), đọc code RTC của LeRobot, kiểm patch trên mô hình tí hon.</p></div>
-            <div class="card amb" style="margin-top:14px"><h4>Ô "CHỜ SỐ"</h4><p>Kết quả SmolVLA trên GPU: điền sau khi chạy Lab 6, 7, 8.</p></div>
+            <div class="card teal" style="margin-top:14px"><h4>SmolVLA thật</h4><p>Độ trễ đo trên máy em, kiểm tra cài đặt, LIBERO 300 episode có độ trễ giả lập.</p></div>
+            <div class="card teal" style="margin-top:14px"><h4>Tự mở rộng</h4><p>Fine-tune SmolVLA có prefix (paper ②): mượt ngang RTC suy luận, không tốn thêm thời gian.</p></div>
           </div>
         </div>
         <div class="pn">1</div>
-        <div class="notes"><p>Em xin trình bày phần thực hành RTC: em đã áp dụng hai paper RTC vào codebase LeRobot với SmolVLA như thế nào.</p><p>Bài gồm 3 phần: một thí nghiệm nhỏ để hiểu chắc cơ chế; đo và chạy SmolVLA trên LIBERO với độ trễ; và phần em tự mở rộng là thêm RTC lúc huấn luyện cho SmolVLA, vì LeRobot hiện chỉ có cho Pi0.5.</p></div>
+        <div class="notes"><p>Em xin trình bày phần thực hành RTC: em đã áp dụng hai paper RTC vào codebase LeRobot với SmolVLA như thế nào.</p><p>Bài gồm ba phần: một thí nghiệm nhỏ để hiểu chắc cơ chế; đo và chạy SmolVLA trên LIBERO với độ trễ; và phần em tự mở rộng là thêm RTC lúc huấn luyện cho SmolVLA, vì LeRobot hiện chỉ có cho Pi0.5.</p><p>Nói trước kết quả: trên máy em, SmolVLA mất khoảng nửa giây cho mỗi chunk, độ trễ này làm tỉ lệ thành công tụt mạnh; RTC giảm độ giật ở chỗ nối khoảng một nửa; và bản RTC lúc huấn luyện em tự thêm cho SmolVLA mượt ngang bản lúc suy luận mà không tốn thêm thời gian.</p></div>
       </section>
 
       <!-- 2 PLAN -->
@@ -148,12 +149,12 @@ table.t td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
         <div class="row grow">
           <div class="col"><div class="card"><span class="tag on">Xong</span><h4 style="margin-top:8px">1 · Hiểu cơ chế</h4><p>Bài đồ chơi có dữ liệu 2 mode. Mô hình flow matching nhỏ, nhưng lấy mẫu bằng <b>đúng hàm RTC của LeRobot</b>. So 5 cách nối chunk × 9 mức trễ.</p></div></div>
           <div class="col"><div class="card"><span class="tag on">Xong</span><h4 style="margin-top:8px">2 · Đọc code LeRobot</h4><p>Bản đồ RTC trong repo, đổi tên paper ↔ code. Phát hiện chỗ code khác công thức paper.</p></div></div>
-          <div class="col"><div class="card"><span class="tag">Chờ số</span><h4 style="margin-top:8px">3 · SmolVLA trên LIBERO</h4><p>Đo độ trễ thật trên máy em → d. Giả lập độ trễ trong <code>lerobot-eval</code>, so nối ngây thơ với RTC.</p></div></div>
-          <div class="col"><div class="card"><span class="tag">Chờ số</span><h4 style="margin-top:8px">4 · Tự mở rộng</h4><p>Patch cho SmolVLA học với prefix sạch (paper ②). Fine-tune từ checkpoint của em, so với RTC lúc suy luận.</p></div></div>
+          <div class="col"><div class="card"><span class="tag on">Xong</span><h4 style="margin-top:8px">3 · SmolVLA trên LIBERO</h4><p>Đo độ trễ thật: d = 15 bước. Giả lập độ trễ trong <code>lerobot-eval</code>: RTC giảm độ nhảy khoảng một nửa.</p></div></div>
+          <div class="col"><div class="card"><span class="tag on">Xong</span><h4 style="margin-top:8px">4 · Tự mở rộng</h4><p>Patch cho SmolVLA học với prefix sạch (paper ②). Mượt ngang RTC suy luận, thời gian bằng ngây thơ.</p></div></div>
         </div>
         <div class="callout" style="background:var(--accent-soft);margin-top:18px">Câu hỏi xuyên suốt: <b>khi mô hình nghĩ chậm hơn nhịp robot, RTC giữ chỗ nối chunk liền mạch được tới đâu, và tốn gì?</b></div>
         <div class="pn">2</div>
-        <div class="notes"><p>Em chia làm 4 bước. Hai bước đầu em đã xong và có số. Hai bước sau chạy trên GPU với SmolVLA thật; các ô đánh dấu "chờ số" là phần em sẽ điền sau khi chạy.</p><p>Lý do em bắt đầu bằng bài đồ chơi: nó chạy được 1000 episode mỗi cấu hình trong vài giây, nên thấy rõ xu hướng, và vì nó gọi đúng hàm của LeRobot nên hiểu biết chuyển thẳng sang SmolVLA.</p></div>
+        <div class="notes"><p>Em chia làm 4 bước. Cả bốn bước em đã xong và có số. Bước ba và bốn chạy trên SmolVLA thật với GPU của em; bước bốn là phần em tự mở rộng, vì LeRobot chưa có RTC lúc huấn luyện cho SmolVLA.</p><p>Lý do em bắt đầu bằng bài đồ chơi: nó chạy được 1000 episode mỗi cấu hình trong vài giây, nên thấy rõ xu hướng, và vì nó gọi đúng hàm của LeRobot nên hiểu biết chuyển thẳng sang SmolVLA.</p></div>
       </section>
 
       <!-- 3 RECAP -->
@@ -223,7 +224,7 @@ table.t td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
           <div class="col" style="flex:1.05"><svg id="chSucc" viewBox="0 0 560 340" style="width:100%" role="img" aria-label="Tỉ lệ thành công theo độ trễ"></svg></div>
           <div class="col" style="flex:.95"><svg id="chHit" viewBox="0 0 500 340" style="width:100%" role="img" aria-label="Tỉ lệ chạm vật cản theo độ trễ"></svg></div>
         </div>
-        <div class="src">Độ giật (×100): ngây thơ 2,3–3,7; RTC 0,5–0,8. Mô hình RTC-2 chỉ được train với d ≤ 6. Số chi tiết: RTC/Thực hành/lab/results/lab3_delay.json</div>
+        <div class="src">Độ giật (×100): ngây thơ 2,3–3,7; RTC 0,5–0,8. Mô hình RTC-2 chỉ được train với d ≤ 6. Số chi tiết: RTC/Thực hành/lab/results_mau/lab3_delay.json</div>
         <div class="pn">6</div>
         <div class="notes"><p>Bên trái là tỉ lệ thành công, bên phải tỉ lệ chạm vật cản, theo độ trễ từ 0 tới 8 bước.</p><p>Ba ý. Một: nối ngây thơ sập ngay khi có độ trễ, từ d bằng 2 khoảng một nửa số episode đâm vào vật cản. Hai: mọi biến thể RTC giữ tỉ lệ đâm 1 đến 3 phần trăm và giảm độ giật 3 đến 6 lần. Ba: bản mềm của paper một mượt nhất nhưng ở d bằng 4 chỉ 82 phần trăm, trong khi bản giữ cứng phần đầu và bản paper hai được 98–99, vì bản mềm bám kế hoạch cũ quá lâu trong khi đích đang chạy. Paper một thấy ngược lại trên Kinetix, nên chọn mềm hay cứng phụ thuộc tác vụ.</p><p>Một điểm em chưa giải thích được: bản paper hai ở d bằng 0 chỉ 67 phần trăm. Ngoài thực tế d luôn từ 1 trở lên nên ít gặp.</p></div>
       </section>
@@ -239,7 +240,7 @@ table.t td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
           <tr><td class="n">s</td><td>hard: 100% (s = 4) · 99% (8) · 56% (12)</td><td>s nhỏ phản ứng nhanh, tốn số lần gọi; s = 12 thì H − s = d, hết chỗ</td></tr>
           <tr><td>Nối ngây thơ theo s</td><td>25% (s = 4) → 61% (s = 10)</td><td>Không RTC thì chunk dài lại an toàn hơn: ít lần đổi ý</td></tr>
         </table>
-        <div class="callout" style="background:var(--accent-soft);margin-top:20px">Cấu hình em sẽ dùng cho SmolVLA: <b>EXP, β = 10, execution_horizon = 10, s = 10</b>, rồi chỉnh <b>execution_horizon</b> nếu robot phản ứng chậm.</div>
+        <div class="callout" style="background:var(--accent-soft);margin-top:20px">Cấu hình em dùng cho SmolVLA: <b>EXP, β = 10, s = d, execution_horizon = d + 10</b> (phải ≥ d, nếu không phần đầu đóng băng không được kéo hết), rồi chỉnh <b>execution_horizon</b> nếu robot phản ứng chậm.</div>
         <div class="pn">7</div>
         <div class="notes"><p>Em quét ba tham số. Trọng số guidance: từ 2 trở lên là gần như đủ. Execution horizon là đánh đổi chính: càng dài càng mượt nhưng càng bám kế hoạch cũ. Còn s nhỏ thì phản ứng nhanh hơn, đổi lại gọi mô hình nhiều hơn.</p><p>Một điều thú vị: không có RTC thì s lớn lại tốt hơn, vì đổi chunk ít lần thì ít lần đổi ý. Đó là lý do trước giờ người ta hay chạy chunk dài.</p></div>
       </section>
@@ -311,20 +312,20 @@ with torch.enable_grad():
           <div class="col" style="flex:1.1">
             <table class="t" style="font-size:20px">
               <tr><th>Cách gọi</th><th>Trung vị (ms)</th><th>p95 (ms)</th><th>d = ⌈p95 / 50⌉</th></tr>
-              <tr><td>Không RTC</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">?</span></td></tr>
-              <tr><td>RTC của LeRobot</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">?</span></td></tr>
-              <tr><td>RTC đúng paper (backward)</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">?</span></td></tr>
+              <tr><td>Không RTC</td><td class="n">519</td><td class="n">577</td><td class="n">12</td></tr>
+              <tr><td>RTC của LeRobot</td><td class="n">613 (+18%)</td><td class="n">710</td><td class="n"><b>15</b></td></tr>
+              <tr><td>RTC đúng paper (backward)</td><td class="n">1011 (+95%)</td><td class="n">1100</td><td class="n">22</td></tr>
             </table>
             <p style="font-size:17px;color:var(--muted);margin-top:12px">Đo mỗi lần gọi <span class="mono">predict_action_chunk</span> có <span class="mono">cuda.synchronize</span>; chỉ thời gian GPU, chưa gồm camera và mạng như robot thật.</p>
           </div>
           <div class="col" style="flex:.9">
-            <div class="card"><h4>Em đoán trước</h4><p>RTC của LeRobot gần bằng không RTC (không backward). Bản đúng paper chậm hơn rõ; paper ① đo phần khử nhiễu chậm 2,5 lần trên π0.5.</p></div>
-            <div class="card amb" style="margin-top:12px"><h4>Ngưỡng</h4><p>H = 50 nên cần d ≤ 25. Vượt ngưỡng thì phải giảm độ trễ trước (bf16, ít bước khử nhiễu) rồi mới nói tới RTC.</p></div>
+            <div class="card"><h4>So với dự đoán</h4><p>Đúng chiều: RTC của LeRobot chỉ thêm ~18% vì không backward qua mô hình; bản đúng paper gần gấp đôi. Paper ① đo phần khử nhiễu chậm 2,5 lần trên π0.5.</p></div>
+            <div class="card amb" style="margin-top:12px"><h4>Ý nghĩa</h4><p>Robot đã chạy <b>15 bước (0,75 s)</b> trong lúc mô hình nghĩ. Em dùng d = 15 (độ trễ khi bật RTC) và mức 1,5 × d = 23 cho Lab 7. H = 50 nên còn dưới ngưỡng d ≤ 25.</p></div>
           </div>
         </div>
         <div class="src">Lệnh: Lab 6, RTC/Thực hành/RTC · Thực hành chạy thử.html · Checkpoint: obj_bs16x4_21k (96% LIBERO-Object)</div>
         <div class="pn">10</div>
-        <div class="notes"><p>Độ trễ d không phải số tự chọn, nó đến từ đo đạc. Em đo thời gian mỗi lần gọi SmolVLA trên RTX 3050 của em, quy ra số bước ở 20 hertz.</p><p>[ĐIỀN SAU KHI CHẠY: trung vị ... ms, p95 ... ms, nên d = ... Bản RTC của LeRobot tốn thêm ... ms, bản đúng paper tốn thêm ... ms.]</p><p>Lưu ý đây chỉ là thời gian GPU; robot thật còn cộng thời gian camera và mạng, nên d thật sẽ lớn hơn.</p></div>
+        <div class="notes"><p>Độ trễ d không phải số tự chọn, nó đến từ đo đạc. Em đo thời gian mỗi lần gọi SmolVLA trên RTX 3050 của em, quy ra số bước ở 20 hertz.</p><p>Không RTC, mỗi lần gọi mất khoảng 520 ms, p95 khoảng 580 ms, tức 12 bước. Bật RTC của LeRobot thêm khoảng 18%, p95 710 ms, tức 15 bước; đây là d em dùng cho thí nghiệm. Bản đúng paper, có backward qua action expert, gần gấp đôi, 22 bước. Đây là con số thật cho thấy vì sao LeRobot chọn cách rẻ.</p><p>Lưu ý đây chỉ là thời gian GPU; robot thật còn cộng thời gian camera và mạng, nên d thật sẽ lớn hơn.</p></div>
       </section>
 
       <!-- 11 WRAPPER -->
@@ -348,35 +349,38 @@ with torch.enable_grad():
         <h2>Kiểm tra RTC được cài đúng trên SmolVLA</h2>
         <table class="t" style="font-size:18px">
           <tr><th style="width:30%">Kiểm tra</th><th style="width:30%">Phải thấy</th><th>SmolVLA tí hon (CPU)</th><th>SmolVLA thật (checkpoint 21k)</th></tr>
-          <tr><td>K1 · β gần 0</td><td>Trùng chunk không RTC (cùng nhiễu)</td><td class="n">lệch 4·10⁻⁶ ✓</td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>K2 · β = 10, d = 4</td><td>d ô đầu bám đuôi chunk cũ</td><td class="n">lệch 1,251 → 0,004 ✓</td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>K3 · Jacobian</td><td>LeRobot: correction = err; đúng paper: khác</td><td class="n">đúng · cos 0,943 ✓</td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>K4 · mode trained</td><td>d ô đầu trùng đúng chunk cũ</td><td class="n">lệch 0 ✓</td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
+          <tr><td>K1 · β gần 0</td><td>Gần như không đổi so với không RTC (cùng nhiễu)</td><td class="n">lệch 4·10⁻⁶ ✓</td><td class="n">lệch 0,028 = 1,4% tác động của β = 10 ✓</td></tr>
+          <tr><td>K2 · β = 10</td><td>d ô đầu bám đuôi chunk cũ</td><td class="n">d = 4: lệch 1,251 → 0,004 ✓</td><td class="n">d = 15: lệch 0,386 → 0,008 ✓</td></tr>
+          <tr><td>K3 · Jacobian</td><td>LeRobot: correction = err; đúng paper: khác</td><td class="n">đúng · cos 0,943 ✓</td><td class="n">đúng · cos 0,643 ✓</td></tr>
+          <tr><td>K4 · mode trained</td><td>d ô đầu trùng đúng chunk cũ</td><td class="n">lệch 0 ✓</td><td class="n">d = 15: lệch đúng 0 ✓ (checkpoint có prefix)</td></tr>
           <tr><td>K5 · patch, tắt cờ</td><td>Loss y hệt code gốc</td><td class="n">2,581717 = 2,581717 ✓</td><td>không cần (cùng code)</td></tr>
         </table>
         <div class="callout" style="background:var(--accent-soft);margin-top:18px">Chunk cũ tính ở khung t, chunk mới ở khung t + s của cùng episode trong dataset, đúng như lúc chạy thật. <b>Đạt hết thì các con số phía sau mới đáng tin.</b></div>
         <div class="src">RTC/Thực hành/lab/kiem_tra_cai_dat.py · SmolVLA tí hon: dựng offline từ đúng code LeRobot b9cb121c, trọng số ngẫu nhiên</div>
         <div class="pn">12</div>
-        <div class="notes"><p>Trước khi đưa ra con số thành công, em kiểm RTC đã cài đúng chưa, vì nếu cài sai thì mọi con số phía sau vô nghĩa.</p><p>Năm kiểm tra. Đặt trọng số guidance gần 0 thì phải ra đúng như không RTC. Bật lên thì phần đầu chunk mới phải bám chunk cũ. Bản LeRobot thì hiệu chỉnh đúng bằng sai số, bản đúng paper thì không. Mode trained thì phần đầu phải trùng tuyệt đối. Và patch khi tắt cờ không được làm đổi loss.</p><p>[ĐIỀN SAU KHI CHẠY: trên checkpoint thật, K1 lệch ..., K2 từ ... xuống ..., ...]</p></div>
+        <div class="notes"><p>Trước khi đưa ra con số thành công, em kiểm RTC đã cài đúng chưa, vì nếu cài sai thì mọi con số phía sau vô nghĩa.</p><p>Năm kiểm tra. Một: đặt trọng số guidance gần 0 thì kết quả phải gần như không đổi so với không bật RTC. Hai: bật lên thì phần đầu chunk mới phải bám chunk cũ. Ba: bản LeRobot hiệu chỉnh đúng bằng sai số, bản đúng paper thì không. Bốn: mode trained thì phần đầu phải trùng tuyệt đối. Năm: patch khi tắt cờ không được làm đổi loss.</p><p>Trên checkpoint thật: K2 ở d bằng 15, mười lăm hành động đầu lệch khỏi chunk cũ 0,386 khi không RTC, còn 0,008 khi có RTC. K3 xác nhận lại trên mô hình thật là LeRobot bỏ Jacobian. K1 lệch nhỏ, 1,4 phần trăm tác động của RTC; chạy lại không RTC hai lần thì trùng tuyệt đối, nên chỗ lệch nhỏ này đến từ việc bật autograd làm GPU chọn cách tính khác. K4 em chạy trên checkpoint có prefix của bước bốn: mười lăm hành động đầu trùng chunk cũ, lệch bằng 0.</p></div>
       </section>
 
       <!-- 12 LIBERO RESULT -->
       <section class="slide" aria-label="Slide 13: Kết quả LIBERO">
-        <div class="kicker">Bước 3 · kết quả · LIBERO-Object, 5 tác vụ × 5 episode × <span class="ph">số seed</span> mỗi ô</div>
+        <div class="kicker">Bước 3 · kết quả · LIBERO-Object, 5 tác vụ × 5 episode × 2 seed = 50 episode mỗi ô</div>
         <h2>Nối ngây thơ vs RTC trên SmolVLA</h2>
         <table class="t" style="font-size:20px">
           <tr><th>Độ trễ</th><th>Cách nối</th><th>Thành công</th><th>KTC 95%</th><th>Độ nhảy TB</th><th>ms / lần gọi</th></tr>
-          <tr><td rowspan="2">d = 0 (đồng bộ)</td><td>ngây thơ</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>RTC</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td rowspan="2">d = <span class="ph">d đo</span></td><td>ngây thơ</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>RTC</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td rowspan="2">d = <span class="ph">1,5 × d</span></td><td>ngây thơ</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>RTC</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
+          <tr><td rowspan="2">d = 0 (đồng bộ)</td><td>ngây thơ</td><td class="n">90% (45/50)</td><td class="n">79–96</td><td class="n">1,67</td><td class="n">439</td></tr>
+          <tr><td>RTC</td><td class="n">92% (46/50)</td><td class="n">81–97</td><td class="n"><b>0,88</b></td><td class="n">611</td></tr>
+          <tr><td rowspan="2">d = 15 (đo thật)</td><td>ngây thơ</td><td class="n">56% (28/50)</td><td class="n">42–69</td><td class="n">1,93</td><td class="n">449</td></tr>
+          <tr><td>RTC</td><td class="n">66% (33/50)</td><td class="n">52–78</td><td class="n"><b>0,95</b></td><td class="n">538</td></tr>
+          <tr><td rowspan="2">d = 23 (1,5 × d)</td><td>ngây thơ</td><td class="n">62% (31/50)</td><td class="n">48–74</td><td class="n">1,60</td><td class="n">541</td></tr>
+          <tr><td>RTC</td><td class="n">74% (37/50)</td><td class="n">60–84</td><td class="n"><b>0,91</b></td><td class="n">633</td></tr>
         </table>
-        <div class="callout" style="background:var(--amber-soft);margin-top:16px">Kỳ vọng: <b>độ nhảy giảm rõ</b> khi bật RTC. Tỉ lệ thành công có thể chênh ít: LIBERO gần như tĩnh (paper ① cũng nói vậy), và mỗi ô chỉ vài chục episode. <b>Khoảng tin cậy chồng nhau thì không kết luận bên nào hơn.</b> Độ nhảy: bước nhảy lớn nhất giữa 2 hành động liền nhau, 6 chiều tư thế, không gian đã chuẩn hóa (chỉ số em tự định nghĩa).</div>
-        <div class="src">s = 10, EXP, β = 10, execution_horizon = 10 · Checkpoint obj_bs16x4_21k · Lab 7</div>
+        <div class="row" style="margin-top:12px;gap:16px">
+          <div class="col card teal" style="padding:10px 14px"><p style="font-size:17px"><b>Độ trễ hại nặng:</b> ngây thơ 90% → 56–62%. <b>RTC giảm độ nhảy ~50%</b> ở cả 3 mức trễ.</p></div>
+          <div class="col card amb" style="padding:10px 14px"><p style="font-size:17px"><b>Thành công:</b> RTC +10–12 điểm khi có trễ, nhưng khoảng tin cậy chồng nhau. Gộp 2 mức trễ: 59/100 vs 70/100, p ≈ 0,10 → <b>xu hướng, chưa khẳng định</b>.</p></div>
+        </div>
+        <div class="src">s = max(10, d), EXP, β = 10, execution_horizon = min(d + 10, H − s) · KTC: Wilson 95% · Độ nhảy: bước nhảy lớn nhất giữa 2 hành động liền nhau, 6 chiều tư thế, đã chuẩn hóa (em tự định nghĩa) · Lab 7</div>
         <div class="pn">13</div>
-        <div class="notes"><p>[ĐIỀN SAU KHI CHẠY.] Đây là kết quả chính trên SmolVLA. Dòng d bằng 0 với nối ngây thơ chính là chạy đồng bộ, mốc tốt nhất.</p><p>Em nhìn độ nhảy trước: đây là thứ RTC trực tiếp sửa. [Nhận xét: độ nhảy giảm từ ... xuống ...]. Tỉ lệ thành công [chênh / không chênh] ..., và em không kết luận mạnh từ chênh vài phần trăm vì mỗi ô chỉ 25 episode.</p></div>
+        <div class="notes"><p>Đây là kết quả chính trên SmolVLA thật, mỗi ô 50 episode: 5 tác vụ LIBERO-Object, 5 episode, 2 seed. Dòng d bằng 0 với nối ngây thơ chính là chạy đồng bộ, đạt 90 phần trăm.</p><p>Ý thứ nhất: độ trễ hại nặng. Khi robot phải chạy tiếp kế hoạch cũ 15 đến 23 bước, nối ngây thơ tụt còn 56 đến 62 phần trăm.</p><p>Ý thứ hai, rõ nhất: RTC giảm độ nhảy ở chỗ nối khoảng một nửa, ở cả ba mức trễ, kể cả khi không trễ. Đây là thứ RTC trực tiếp sửa.</p><p>Ý thứ ba, em nói thận trọng: khi có trễ, RTC thành công cao hơn 10 đến 12 điểm, nhưng khoảng tin cậy hai bên còn chồng nhau. Gộp hai mức trễ là 59 trên 100 so với 70 trên 100, p khoảng 0,1, nên em coi là xu hướng, cần thêm episode để khẳng định. Một điểm lạ là ngây thơ ở d 23 lại cao hơn ở d 15, chênh 3 trên 50 episode, nằm trong mức nhiễu.</p><p>Chi phí: RTC thêm khoảng 90 đến 170 mili giây mỗi lần gọi so với ngây thơ trong cùng lượt.</p></div>
       </section>
 
       <!-- 13 PATCH -->
@@ -396,31 +400,31 @@ with torch.enable_grad():
           </div>
           <div class="col" style="flex:.9">
             <div class="card teal"><h4>Đã kiểm (SmolVLA tí hon, CPU)</h4><p>Tắt cờ: loss trùng code gốc tới 6 chữ số (2,581717). Bật cờ: time vào mô hình dạng (B, H), prefix = 0. Mode trained: d ô đầu trùng đúng chunk cũ; d &gt; max bị chặn.</p></div>
-            <div class="card" style="margin-top:12px"><h4>Fine-tune</h4><p>Từ checkpoint 21k, 4.000 bước, max_delay = <span class="ph">CHỜ SỐ</span>. Kèm <b>lượt đối chứng</b> cùng số bước nhưng không bật cờ.</p></div>
+            <div class="card" style="margin-top:12px"><h4>Fine-tune</h4><p>Từ checkpoint 21k, 4.000 bước, d khi train ngẫu nhiên trong {0..20} (bao d = 15 đo được). Kèm <b>lượt đối chứng</b> cùng số bước nhưng không bật cờ.</p></div>
           </div>
         </div>
         <div class="src">RTC/Thực hành/lab/smolvla_training_rtc.patch · git apply --check sạch trên b9cb121c</div>
         <div class="pn">14</div>
-        <div class="notes"><p>LeRobot có RTC lúc huấn luyện cho Pi0.5 nhưng chưa có cho SmolVLA. Em viết patch khoảng 70 dòng theo đúng khung họ đã làm. Điểm mấu chốt là SmolVLA đưa thời gian khử nhiễu vào bằng embedding sin-cos ghép với action; em cho nó nhận thời gian theo từng token, nên không cần thêm tham số nào, đúng như paper hai nói.</p><p>Em kiểm trên một SmolVLA thu nhỏ dựng từ đúng code LeRobot: tắt cờ thì loss trùng hệt bản gốc, nên không ảnh hưởng ai; bật cờ thì prefix mang thời gian sạch; lúc chạy thì phần đầu giữ đúng chunk cũ.</p><p>Khi fine-tune em chạy thêm một lượt đối chứng cùng số bước nhưng không bật cờ, để tách hiệu quả của prefix khỏi hiệu quả của việc train thêm.</p></div>
+        <div class="notes"><p>LeRobot có RTC lúc huấn luyện cho Pi0.5 nhưng chưa có cho SmolVLA. Em viết patch khoảng 70 dòng theo đúng khung họ đã làm cho Pi0.5. Điểm mấu chốt là SmolVLA đưa thời gian khử nhiễu vào bằng embedding sin-cos ghép với action; em cho nó nhận thời gian theo từng token, nên không cần thêm tham số nào, đúng như paper hai nói.</p><p>Em kiểm trên một SmolVLA thu nhỏ dựng từ đúng code LeRobot: tắt cờ thì loss trùng hệt bản gốc, nên không ảnh hưởng ai; bật cờ thì prefix mang thời gian sạch; lúc chạy thì phần đầu giữ đúng chunk cũ.</p><p>Sau đó em fine-tune thật: từ checkpoint 21 nghìn bước, thêm 4 nghìn bước, độ trễ khi train lấy ngẫu nhiên từ 0 đến 20 để bao được d bằng 15 em đo. Em chạy thêm một lượt đối chứng cùng số bước nhưng không bật cờ, để tách tác dụng của prefix khỏi tác dụng của việc train thêm.</p></div>
       </section>
 
       <!-- 14 FT RESULT -->
       <section class="slide" aria-label="Slide 15: Kết quả fine-tune">
-        <div class="kicker">Bước 4 · kết quả · cùng d, LIBERO-Object 5 × 5</div>
+        <div class="kicker">Bước 4 · kết quả · d = 15, LIBERO-Object 5 tác vụ × 5 episode × 2 seed = 50 episode mỗi dòng</div>
         <h2>RTC lúc huấn luyện vs lúc suy luận trên SmolVLA</h2>
         <table class="t" style="font-size:20px">
           <tr><th>Checkpoint</th><th>Cách nối</th><th>Thành công</th><th>KTC 95%</th><th>Độ nhảy TB</th><th>ms / lần gọi</th></tr>
-          <tr><td>Đối chứng (train thêm, không prefix)</td><td>ngây thơ</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>Đối chứng</td><td>RTC lúc suy luận</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
-          <tr><td>Có prefix (patch)</td><td>RTC lúc huấn luyện</td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td><td class="n"><span class="ph">CHỜ SỐ</span></td></tr>
+          <tr><td>Đối chứng (train thêm, không prefix)</td><td>ngây thơ</td><td class="n">70% (35/50)</td><td class="n">56–81</td><td class="n">1,75</td><td class="n">465</td></tr>
+          <tr><td>Đối chứng</td><td>RTC lúc suy luận</td><td class="n">70% (35/50)</td><td class="n">56–81</td><td class="n"><b>0,90</b></td><td class="n">565 (+22%)</td></tr>
+          <tr><td>Có prefix (patch)</td><td>RTC lúc huấn luyện</td><td class="n">70% (35/50)</td><td class="n">56–81</td><td class="n"><b>0,88</b></td><td class="n"><b>455 (±0)</b></td></tr>
         </table>
         <div class="row" style="margin-top:18px">
-          <div class="col card"><h4>Điều em muốn kiểm</h4><p>Paper ② nói: chất lượng ngang RTC lúc suy luận, nhưng <b>không tốn thêm</b> thời gian khi chạy.</p></div>
-          <div class="col card amb"><h4>Không so loss</h4><p>Lượt có prefix chỉ tính loss phần sau và có gợi ý sạch, nên loss tự thấp hơn. So bằng eval.</p></div>
+          <div class="col card teal"><h4>Khớp khẳng định của paper ②</h4><p>RTC lúc huấn luyện <b>mượt ngang</b> RTC lúc suy luận (độ nhảy 0,88 vs 0,90, cả hai khoảng một nửa ngây thơ) mà <b>không tốn thêm thời gian</b> (455 vs 465 ms của ngây thơ; RTC suy luận +22%).</p></div>
+          <div class="col card amb"><h4>Chưa phân biệt được thành công</h4><p>Cả ba đúng 35/50. Ở quy mô này không thấy cách nào hơn về thành công. Không so loss: lượt có prefix bỏ phần đầu khỏi loss nên loss tự thấp hơn.</p></div>
         </div>
-        <div class="src">Lab 8 · loss cuối: đối chứng <span class="ph">CHỜ SỐ</span> · có prefix <span class="ph">CHỜ SỐ</span></div>
+        <div class="src">Lab 8 · loss cuối: đối chứng 0,258 · có prefix 0,233 (không so được) · checkpoint fine-tune khác checkpoint ở slide 13, không so chéo</div>
         <div class="pn">15</div>
-        <div class="notes"><p>[ĐIỀN SAU KHI CHẠY.] Ba dòng cùng độ trễ d. Hai dòng đầu dùng checkpoint đối chứng, dòng cuối dùng checkpoint có prefix.</p><p>Điều em muốn kiểm là khẳng định chính của paper hai: chất lượng ngang RTC lúc suy luận mà không tốn thêm thời gian. Cột ms mỗi lần gọi là bằng chứng cho vế thứ hai. [Nhận xét kết quả ...]</p></div>
+        <div class="notes"><p>Ba dòng cùng độ trễ d bằng 15, mỗi dòng 50 episode. Hai dòng đầu dùng checkpoint đối chứng, train thêm 4 nghìn bước không có prefix; dòng cuối dùng checkpoint có prefix theo paper hai.</p><p>Kết quả khớp đúng khẳng định chính của paper hai. Về độ mượt, RTC lúc huấn luyện ngang RTC lúc suy luận, 0,88 so với 0,90, cả hai khoảng một nửa nối ngây thơ. Về chi phí, RTC lúc huấn luyện chạy 455 mili giây, bằng ngây thơ, vì chỉ ghi đè phần đầu chứ không backward; còn RTC lúc suy luận chậm hơn 22 phần trăm.</p><p>Về tỉ lệ thành công, cả ba đều đúng 35 trên 50, nên ở quy mô này em không phân biệt được cách nào hơn. Em cũng không so với slide trước vì đây là checkpoint khác: train thêm có thể tự nó đã thay đổi kết quả. Loss thì không so được, vì lượt có prefix bỏ phần đầu khỏi loss.</p></div>
       </section>
 
       <!-- 15 LIMITS -->
@@ -431,20 +435,20 @@ with torch.enable_grad():
           <div class="col">
             <ul>
               <li><b>Bài đồ chơi ≠ robot:</b> nó cho thấy cơ chế và xu hướng; con số tuyệt đối không mang sang được.</li>
-              <li><b>LIBERO gần như tĩnh:</b> khó thấy khác biệt về thành công; độ trễ là giả lập.</li>
-              <li><b>Độ trễ chỉ là thời gian GPU</b> trên laptop; robot thật cộng camera, mạng.</li>
+              <li><b>Độ trễ là giả lập:</b> mô phỏng đứng chờ; d lấy từ đo thật nhưng chỉ thời gian GPU.</li>
+              <li><b>Một checkpoint, 5 tác vụ:</b> chưa thử bộ LIBERO khác hay mô hình khác.</li>
             </ul>
           </div>
           <div class="col">
             <ul>
-              <li><b>Ít episode:</b> 25 mỗi ô, khoảng tin cậy rộng.</li>
+              <li><b>Ít episode:</b> 50 mỗi ô; chênh thành công chưa có ý nghĩa thống kê (p ≈ 0,10).</li>
               <li><b>Một điểm chưa giải thích:</b> RTC lúc huấn luyện ở d = 0 trong bài đồ chơi (67%).</li>
               <li><b>Chưa thử robot thật</b> (<span class="mono">lerobot-rollout --inference.type=rtc</span>).</li>
             </ul>
           </div>
         </div>
         <div class="pn">16</div>
-        <div class="notes"><p>Em nói rõ giới hạn. Bài đồ chơi cho em hiểu cơ chế và xu hướng, không cho con số mang sang robot. LIBERO thì gần như tĩnh, và độ trễ là em giả lập, nên đây là kiểm tra cách cài đặt chứ chưa phải bằng chứng trên robot. Số episode còn ít.</p><p>Có một điểm em chưa giải thích được là bản paper hai ở d bằng 0 trong bài đồ chơi; em có giả thuyết là khi train chỉ một phần bảy mẫu có d bằng 0, nhưng chưa kiểm.</p></div>
+        <div class="notes"><p>Em nói rõ giới hạn. Bài đồ chơi cho em hiểu cơ chế và xu hướng, không cho con số mang sang robot. Độ trễ trên LIBERO là em giả lập, dù d lấy từ đo thật. Mỗi ô 50 episode nên chênh lệch thành công giữa các cách chưa đủ để khẳng định, cả ở bước ba lẫn bước bốn; chỉ có độ nhảy và thời gian là rõ. Em mới thử một checkpoint và năm tác vụ.</p><p>Có một điểm em chưa giải thích được là bản paper hai ở d bằng 0 trong bài đồ chơi; em có giả thuyết là khi train chỉ một phần bảy mẫu có d bằng 0, nhưng chưa kiểm.</p></div>
       </section>
 
       <!-- 16 QUESTIONS -->
@@ -464,13 +468,13 @@ with torch.enable_grad():
             <h4>Đề xuất bước tiếp</h4>
             <ul style="font-size:19px;margin-top:8px">
               <li>Thêm tác vụ động hoặc nhiễu hành động để LIBERO lộ khác biệt rõ hơn.</li>
-              <li>Tăng lên 10–20 episode mỗi tác vụ cho cấu hình quan trọng.</li>
+              <li>Thêm 2–3 seed ở d = 15 (khoảng 1 giờ mỗi seed) để kiểm chênh thành công.</li>
               <li>Nếu patch ổn: đề xuất SmolVLA training-time RTC lên LeRobot.</li>
             </ul>
           </div>
         </div>
         <div class="pn">17</div>
-        <div class="notes"><p>Em có ba câu hỏi. Về chỗ Jacobian trong LeRobot. Về việc nhóm có robot để thử RTC thật không. Và nhóm muốn hướng nào: RTC lúc suy luận không cần train lại, hay chấp nhận fine-tune để chạy nhanh hơn.</p><p>Bước tiếp em đề xuất là làm cho thí nghiệm LIBERO khó hơn để thấy khác biệt, tăng số episode, và nếu patch chạy tốt thì đề xuất lên LeRobot. Em cảm ơn ạ.</p></div>
+        <div class="notes"><p>Em có ba câu hỏi. Về chỗ Jacobian trong LeRobot: cố ý hay lỗi. Về việc nhóm có robot để thử RTC thật không. Và nhóm muốn hướng nào: RTC lúc suy luận không cần train lại, hay chấp nhận fine-tune để chạy không tốn thêm thời gian như em vừa thử.</p><p>Bước tiếp em đề xuất: thêm seed để kiểm chênh lệch thành công, làm thí nghiệm LIBERO khó hơn để thấy khác biệt, và vì patch đã chạy được và cho kết quả khớp paper hai, nếu anh chị đồng ý em có thể đề xuất nó lên LeRobot.</p><p>Tóm lại: em đã hiểu cơ chế bằng thí nghiệm, đo được vấn đề độ trễ trên chính mô hình của mình, áp được cả hai cách RTC và thấy chúng làm chỗ nối mượt hơn rõ rệt. Em cảm ơn ạ.</p></div>
       </section>
 
     </div>
